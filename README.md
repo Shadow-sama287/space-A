@@ -1,73 +1,62 @@
-# DSA Spaced Repetition (Striver SDE Sheet)
+# DSA Spaced Repetition (SDE Sheet Track)
 
-An Anki-style spaced repetition tracking application designed to help software engineers systematically revise DSA sheets. Pre-seeded with the complete **191 problems of Striver's SDE Sheet** linked directly to their respective coding editors on LeetCode, GeeksforGeeks, Coding Ninjas (Code360), InterviewBit, and Spoj.
+An Anki-style spaced repetition revision engine built for software engineers preparing for technical interviews. The platform is pre-seeded with the complete **191 problems of Striver's SDE Sheet** and dynamically schedules coding revisions using the SuperMemo-2 (SM-2) algorithm.
 
-The interface is built using a striking **Monochrome & Minimalist Brutalism** design aesthetic (strict raw concrete colors, 90-degree sharp corners, bold borders, monospace typography, and hard-flat shadows).
-
----
-
-## Key Features
-
-*   **Anki-Style SM-2 Scheduler**: Uses the SuperMemo-2 (SM-2) algorithm to compute optimal revision intervals based on your self-reported solving quality:
-    *   `Again (0)`: Resets the interval to 1 day and drops the Ease Factor.
-    *   `Hard (1)`: Keeps the interval low and decreases the Ease Factor.
-    *   `Good (2)`: Multiplies the interval standardly.
-    *   `Easy (3)`: Quickly expands the interval and increases the Ease Factor.
-*   **Seeded 191 Sheet Problems**: Out-of-the-box pre-seeded problems spanning 27 days of topics (Arrays, Linked Lists, Trees, Stacks, Queues, Graphs, Tries, Dynamic Programming, etc.).
-*   **Direct practice links**: Opens LeetCode, GFG, Code360, Spoj, or InterviewBit directly in a new tab when solving.
-*   **Direct quick-review modal**: Practiced a problem randomly outside of your queue? Submit a review rating directly from the Explorer list to immediately add it to your spaced repetition queue.
-*   **Analytics Dashboard**: Track your daily streaks, topic-wise progress bars, 28-day calendar heatmap, and a 7-day review forecast bar chart.
-*   **Full-Stack Next.js + Supabase**: Client/Server SSR setup, secure session-refreshing middleware, and Cloud Database storage.
+The application follows a strict **Monochrome & Minimalist Brutalism** design system—offering a highly focused, distraction-free environment that prioritizes logic over design fluff.
 
 ---
 
-## Technical Stack
+## Why This App Exists
 
-*   **Framework**: Next.js 15 (App Router, TypeScript)
-*   **Database & Auth**: Supabase (PostgreSQL with Row Level Security)
-*   **Styling**: Vanilla CSS (Global Brutalist Tokens, no external library styling clutter)
-*   **Hosting**: Vercel (Frontend) + Supabase Cloud (Database)
+Preparing for technical SDE interviews is a marathon. Candidates often solve hundreds of problems on platforms like LeetCode or GeeksforGeeks, only to realize weeks later that they have forgotten the core patterns or optimal approaches to problems they previously solved. 
+
+Re-solving sheets from scratch is highly inefficient. This application solves that by introducing **Spaced Repetition** to DSA preparation:
+1. You practice coding problems directly on their native platforms (LeetCode, GFG, Coding Ninjas, etc.).
+2. You grade your recall quality and speed.
+3. The system dynamically schedules your next review date, ensuring you revise the problems right when you are about to forget them.
 
 ---
 
-## Local Setup & Installation
+## How It Works
 
-### 1. Database Migrations
-Create a project on [Supabase](https://supabase.com). Go to the **SQL Editor** in your Supabase dashboard, copy the contents of `schema.sql`, paste it, and click **Run**. This will create the required tables and security policies:
-*   `profiles` (user metrics & streaks)
-*   `problems` (sheet problems list)
-*   `user_problems` (spaced repetition progression)
-*   `review_history` (audit logs of all saves)
-
-*Note: Make sure to disable email confirmation in your Supabase Auth settings (**Authentication -> Providers -> Email -> Confirm email**) for seamless testing during local development.*
-
-### 2. Configure Environment Variables
-Create a `.env.local` file in the root directory:
-```env
-NEXT_PUBLIC_SUPABASE_URL=your_supabase_project_api_url
-NEXT_PUBLIC_SUPABASE_ANON_KEY=your_supabase_anon_token
+```mermaid
+graph TD
+    A[Start: Pick Due Question / Browse Explorer] --> B[Practice on Coding Platform e.g. LeetCode]
+    B --> C[Self-Grade Solution Quality 0-3]
+    C --> D{Submit Grade via SM-2}
+    D -->|Again: 0| E[Reset Interval to 1 Day & Reduce Ease Factor]
+    D -->|Hard: 1| F[Decrease Ease Factor slightly & Keep Interval low]
+    D -->|Good: 2| G[Standard Interval Expansion: prev_interval * EF]
+    D -->|Easy: 3| H[Fast Interval Expansion: prev_interval * EF + Ease increase]
+    E --> I[Updates User Metrics & Streaks]
+    F --> I
+    G --> I
+    H --> I
+    I --> J[Question Scheduled for future Date]
 ```
 
-### 3. Run Development Server
-Install dependencies and launch the dev environment:
-```bash
-npm install
-npm run dev
-```
-Open [http://localhost:3000](http://localhost:3000) in your browser.
+### 1. The Spaced Repetition Loop
+*   **Explorer**: Browse the entire 191-problem Striver SDE sheet. Click **SOLVE ↗** to open the actual coding platform directly.
+*   **Self-Grading**: Once solved, click **REVIEW** and submit a grade from `0` to `3` based on your performance:
+    *   **Again (0)**: Memory blackout / failed to solve. reschedules for **tomorrow** (1 day) and reduces the ease factor.
+    *   **Hard (1)**: Correct but with major hesitation or suboptimal code. Schedules a quick review.
+    *   **Good (2)**: Correct with normal speed/recall. Schedules standard progression.
+    *   **Easy (3)**: Solved instantly with clean, optimal code. Multiplies the schedule interval rapidly.
+*   **Queue**: Problems automatically enter your review queue. Each day, the app presents only the questions that are **due** for revision.
 
-### 4. Seed the problems
-1. Register a new user profile on the landing page.
-2. Go to the **Explorer** tab (`/problems`).
-3. Click the **SEED STRIVER SDE SHEET** button to load all 191 SDE problems.
+### 2. Under the Hood: The SM-2 Algorithm
+The application utilizes the classic SuperMemo-2 (SM-2) algorithm (famous for power-learning apps like Anki) to calculate dynamic review schedules. 
 
----
+Every time you submit a review, the engine updates three variables for that problem:
+*   **Consecutive Repetitions ($R$)**: The number of consecutive successful reviews.
+*   **Ease Factor ($EF$)**: A multiplier representing how easy the problem is for you (defaults to `2.5` and ranges down to `1.3`).
+*   **Interval ($I$)**: The number of days before the problem is scheduled next.
+    *   $I_1 = 1$ day
+    *   $I_2 = 4$ days
+    *   $I_n = I_{n-1} \times EF$ (for subsequent passes)
 
-## Deployment
-
-Deploying the frontend to **Vercel** takes seconds:
-1. Initialize Git and push your repository to GitHub.
-2. Link your repository in Vercel.
-3. Configure the environment variables (`NEXT_PUBLIC_SUPABASE_URL` and `NEXT_PUBLIC_SUPABASE_ANON_KEY`) in your Vercel settings.
-4. Click **Deploy**.
-5. Copy your live Vercel URL, go to your **Supabase Dashboard -> Authentication -> Redirect URLs**, and add it to the list to secure redirect paths.
+### 3. Progress Tracking & Analytics
+*   **Daily Solve Streak**: Tracks your consistency. Solve at least one due review per day to keep your streak alive.
+*   **28-Day Heatmap**: A raw visual calendar tracking the days you successfully completed coding revisions.
+*   **7-Day Review Forecast**: A CSS-based forecast chart showing how many reviews are scheduled to hit your queue each day of the upcoming week.
+*   **Topic Progress**: Dynamic completion bars showing your coverage across all SDE sheet topics (Arrays, Trees, Graphs, DP, Tries, etc.).
