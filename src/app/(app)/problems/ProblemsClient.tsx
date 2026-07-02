@@ -54,12 +54,15 @@ export default function ProblemsClient({ problems, userProgress }: ProblemsClien
     progressMap.set(up.problem_id, up);
   });
 
-  // Unique categories for filtering
-  const categories = Array.from(new Set(problems.map(p => p.category)));
+  // Dynamic categories per selected sheet
+  const categories = Array.from(
+    new Set(problems.filter(p => p.sheet === sheetFilter).map(p => p.category))
+  );
 
-  // Available sheets (can be expanded dynamically)
+  // Available sheets
   const availableSheets = [
-    { id: 'striver_sde', label: 'Striver SDE Sheet' },
+    { id: 'striver_sde', label: 'Striver SDE Sheet (191 Problems)' },
+    { id: 'striver_a2z', label: "Striver's A2Z Sheet (474 Problems)" },
     { id: 'neetcode_150', label: 'NeetCode 150 (Future)' },
     { id: 'neetcode_100', label: 'NeetCode 100 (Future)' },
   ];
@@ -72,7 +75,7 @@ export default function ProblemsClient({ problems, userProgress }: ProblemsClien
       const res = await fetch('/api/seed', { method: 'POST' });
       const data = await res.json();
       if (data.success) {
-        setSeedResult(`SUCCESS: Preseeded ${data.count} problems!`);
+        setSeedResult(`SUCCESS: Preseeded ${data.count} problems across all sheets!`);
         startTransition(() => {
           router.refresh();
         });
@@ -135,9 +138,9 @@ export default function ProblemsClient({ problems, userProgress }: ProblemsClien
       {problems.length === 0 && (
         <div className="card" style={{ backgroundColor: 'var(--bg-secondary)', marginBottom: '2rem' }}>
           <h2 className="card-title">Database is empty</h2>
-          <p className="mb-2">Your Supabase database has no problems loaded. Click below to seed the database with the Striver SDE sheet problems.</p>
+          <p className="mb-2">Your Supabase database has no problems loaded. Click below to seed the database with Striver SDE & A2Z sheet problems.</p>
           <button onClick={handleSeed} disabled={seeding} className="btn btn-black">
-            {seeding ? 'SEEDING DATABASE...' : 'SEED STRIVER SDE SHEET'}
+            {seeding ? 'SEEDING DATABASE...' : 'SEED ALL SHEETS (SDE & A2Z)'}
           </button>
           {seedResult && <div className="mt-2" style={{ fontWeight: 'bold' }}>{seedResult}</div>}
         </div>
@@ -146,6 +149,20 @@ export default function ProblemsClient({ problems, userProgress }: ProblemsClien
       {/* FILTER CONTROL BAR */}
       {problems.length > 0 && (
         <div className="card" style={{ padding: '1rem', marginBottom: '1.5rem' }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem', paddingBottom: '0.5rem', borderBottom: '2px solid #000' }}>
+            <div style={{ fontSize: '0.85rem', fontWeight: 'bold' }}>
+              TOTAL LOADED PROBLEMS: {problems.length}
+            </div>
+            <button 
+              onClick={handleSeed} 
+              disabled={seeding} 
+              className="btn btn-sm"
+              style={{ fontSize: '0.75rem', padding: '0.25rem 0.6rem' }}
+            >
+              {seeding ? 'RE-SEEDING...' : 'RE-SEED / RELOAD ALL SHEETS'}
+            </button>
+          </div>
+          {seedResult && <div className="mb-3" style={{ fontWeight: 'bold', fontSize: '0.85rem' }}>{seedResult}</div>}
           <div className="grid-3" style={{ gap: '1rem' }}>
             {/* Sheet Selector */}
             <div>
@@ -154,12 +171,15 @@ export default function ProblemsClient({ problems, userProgress }: ProblemsClien
               </label>
               <select
                 value={sheetFilter}
-                onChange={(e) => setSheetFilter(e.target.value)}
+                onChange={(e) => {
+                  setSheetFilter(e.target.value);
+                  setCategoryFilter('');
+                }}
                 className="input"
                 style={{ height: '42px', padding: '0.4rem' }}
               >
                 {availableSheets.map(s => (
-                  <option key={s.id} value={s.id} disabled={s.id !== 'striver_sde'}>
+                  <option key={s.id} value={s.id} disabled={!['striver_sde', 'striver_a2z'].includes(s.id)}>
                     {s.label}
                   </option>
                 ))}

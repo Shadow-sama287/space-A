@@ -1,5 +1,6 @@
 import { createClient } from '@/lib/supabase/server';
 import { striverProblems } from '@/data/striverSheet';
+import { striverA2ZProblems } from '@/data/striverA2ZSheet';
 import { NextResponse } from 'next/server';
 
 export async function POST() {
@@ -15,17 +16,19 @@ export async function POST() {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    // Clear existing striver_sde problems to prevent duplicates/orphans from old seeding versions
+    const allProblems = [...striverProblems, ...striverA2ZProblems];
+
+    // Clear existing problems for striver_sde and striver_a2z
     await supabase
       .from('problems')
       .delete()
-      .eq('sheet', 'striver_sde');
+      .in('sheet', ['striver_sde', 'striver_a2z']);
 
     // Seed/upsert problems into database
     const { data, error } = await supabase
       .from('problems')
       .upsert(
-        striverProblems.map(p => ({
+        allProblems.map(p => ({
           sheet: p.sheet,
           title: p.title,
           category: p.category,
