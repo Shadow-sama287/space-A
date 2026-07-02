@@ -123,3 +123,27 @@ $$ LANGUAGE plpgsql SECURITY DEFINER;
 CREATE OR REPLACE TRIGGER on_auth_user_created
     AFTER INSERT ON auth.users
     FOR EACH ROW EXECUTE PROCEDURE public.handle_new_user();
+
+-- FEEDBACKS TABLE
+CREATE TABLE IF NOT EXISTS public.feedbacks (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    user_id UUID REFERENCES auth.users(id) ON DELETE SET NULL,
+    user_email TEXT,
+    type TEXT NOT NULL CHECK (type IN ('Issue', 'Idea', 'Other')),
+    message TEXT NOT NULL,
+    page_url TEXT,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
+ALTER TABLE public.feedbacks ENABLE ROW LEVEL SECURITY;
+
+CREATE POLICY "Users can insert their own feedback"
+    ON public.feedbacks FOR INSERT
+    TO authenticated
+    WITH CHECK (auth.uid() = user_id);
+
+CREATE POLICY "Users can view their own feedback"
+    ON public.feedbacks FOR SELECT
+    TO authenticated
+    USING (auth.uid() = user_id);
+

@@ -2,8 +2,8 @@ import type { Metadata } from "next";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "DSA SPACED REPETITION | ANKI FOR DSA",
-  description: "Solve problems, rate your recall using SM-2 algorithm, and build your DSA streak.",
+  title: "SPACE A | DSA Spaced Repetition Engine",
+  description: "Solve problems, rate your recall using SM-2 algorithm, and build your DSA streak with Space A.",
 };
 
 export default function RootLayout({

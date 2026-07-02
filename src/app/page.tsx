@@ -17,11 +17,11 @@ export default function AuthPage() {
         
         {/* BIG BRUTALIST BRAND BLOCK */}
         <div className="card text-center" style={{ backgroundColor: 'var(--text-primary)', color: 'var(--bg-primary)', marginBottom: '2rem', padding: '2rem 1.5rem' }}>
-          <h1 style={{ fontSize: '2.25rem', fontWeight: 900, textTransform: 'uppercase', letterSpacing: '-1px', lineHeight: '1' }}>
-            DSA SPCD RPT
+          <h1 style={{ fontSize: '2.5rem', fontWeight: 900, textTransform: 'uppercase', letterSpacing: '-1px', lineHeight: '1' }}>
+            SPACE A
           </h1>
           <p className="mt-1" style={{ fontSize: '0.8rem', textTransform: 'uppercase', opacity: 0.8, letterSpacing: '1px' }}>
-            Spaced Repetition for SDE Sheets
+            Spaced Repetition Engine for DSA Sheets
           </p>
         </div>
 

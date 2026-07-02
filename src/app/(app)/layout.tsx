@@ -1,5 +1,6 @@
 import Link from 'next/link';
 import { logout } from '../auth-actions';
+import FeedbackDrawer from '@/components/FeedbackDrawer';
 
 export default function AppLayout({
   children,
@@ -11,7 +12,7 @@ export default function AppLayout({
       <header className="nav-header">
         <div className="nav-container">
           <Link href="/dashboard" className="nav-logo">
-            DSA REPS
+            SPACE A
           </Link>
           <nav>
             <ul className="nav-links">
@@ -42,6 +43,7 @@ export default function AppLayout({
         </div>
       </header>
       <main className="app-container">{children}</main>
+      <FeedbackDrawer />
     </div>
   );
 }

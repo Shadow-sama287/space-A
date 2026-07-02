@@ -464,3 +464,13 @@ body {
   font-size: 0.8rem;
   font-weight: bold;
 }
+
+@keyframes slideInRight {
+  from {
+    transform: translateX(100%);
+  }
+  to {
+    transform: translateX(0);
+  }
+}
+

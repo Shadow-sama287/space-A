@@ -1,4 +1,4 @@
-# DSA Spaced Repetition (SDE & A2Z Sheets)
+# Space A — DSA Spaced Repetition Engine
 
 An Anki-style spaced repetition revision engine built for software engineers preparing for technical interviews. The platform is pre-seeded with **665+ problems** across both **Striver's SDE Sheet (191 problems)** and **Striver's A2Z DSA Sheet (474 problems)**, dynamically scheduling coding revisions using the SuperMemo-2 (SM-2) algorithm.
 
