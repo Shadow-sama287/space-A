@@ -2,6 +2,7 @@ import Link from 'next/link';
 import { logout } from '../auth-actions';
 import FeedbackDrawer from '@/components/FeedbackDrawer';
 import NavigationProgressBar from '@/components/NavigationProgressBar';
+import ThemeProvider from '@/components/ThemeProvider';
 
 export default function AppLayout({
   children,
@@ -10,6 +11,7 @@ export default function AppLayout({
 }) {
   return (
     <div>
+      <ThemeProvider />
       <NavigationProgressBar />
       <header className="nav-header">
         <div className="nav-container">

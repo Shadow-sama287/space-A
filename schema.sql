@@ -10,6 +10,7 @@ CREATE TABLE IF NOT EXISTS public.profiles (
     enabled_sheets TEXT[] DEFAULT ARRAY['striver_sde', 'striver_a2z']::TEXT[],
     default_sheet TEXT DEFAULT 'striver_sde',
     daily_goal INTEGER DEFAULT 10,
+    theme TEXT DEFAULT 'monochrome',
     created_at TIMESTAMPTZ DEFAULT NOW()
 );
 

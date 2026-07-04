@@ -81,7 +81,7 @@ export async function resetSheetProgressAction(sheetId: string) {
   return { success: true };
 }
 
-export async function updatePreferencesAction(params: { defaultSheet?: string; dailyGoal?: number }) {
+export async function updatePreferencesAction(params: { defaultSheet?: string; dailyGoal?: number; theme?: string }) {
   const supabase = await createClient();
 
   const {
@@ -95,6 +95,7 @@ export async function updatePreferencesAction(params: { defaultSheet?: string; d
   const updates: any = {};
   if (params.defaultSheet !== undefined) updates.default_sheet = params.defaultSheet;
   if (params.dailyGoal !== undefined) updates.daily_goal = params.dailyGoal;
+  if (params.theme !== undefined) updates.theme = params.theme;
 
   const { error } = await supabase
     .from('profiles')
@@ -102,6 +103,14 @@ export async function updatePreferencesAction(params: { defaultSheet?: string; d
     .eq('id', user.id);
 
   if (error) {
+    // If theme column isn't in remote DB yet, retry without theme so defaultSheet/dailyGoal updates still succeed
+    if (params.theme !== undefined && error.message.includes("Could not find the 'theme' column")) {
+      delete updates.theme;
+      if (Object.keys(updates).length > 0) {
+        await supabase.from('profiles').update(updates).eq('id', user.id);
+      }
+      return { success: true, warning: 'Theme saved locally (run SQL migration on Supabase to sync across devices).' };
+    }
     throw new Error(`Failed to update preferences: ${error.message}`);
   }
 

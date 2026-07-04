@@ -20,10 +20,122 @@ interface SettingsClientProps {
   enabledSheets: string[];
   defaultSheet: string;
   dailyGoal: number;
+  currentTheme: string;
   sheetProgressList: SheetProgress[];
 }
 
-type CategoryTab = 'sheets' | 'preferences' | 'account' | 'developer';
+type CategoryTab = 'sheets' | 'preferences' | 'themes' | 'account' | 'developer';
+
+const THEMES = [
+  {
+    id: 'monochrome',
+    name: 'MONOCHROME LIGHT',
+    desc: 'Stark White & Jet Black Brutalism',
+    bg: '#ffffff',
+    card: '#f3f3f3',
+    accent: '#000000',
+    text: '#000000',
+  },
+  {
+    id: 'monochrome_dark',
+    name: 'MONOCHROME DARK',
+    desc: 'Main Base Dark Mode (Jet Black & White)',
+    bg: '#0a0a0a',
+    card: '#181818',
+    accent: '#ffffff',
+    text: '#ffffff',
+  },
+  {
+    id: 'cyberpunk',
+    name: 'CYBERPUNK NEON',
+    desc: 'Electric Neon Yellow on Midnight Void Black',
+    bg: '#0a0a0c',
+    card: '#16161a',
+    accent: '#ffef00',
+    text: '#ffef00',
+  },
+  {
+    id: 'dracula',
+    name: 'DRACULA DARK',
+    desc: 'Vibrant Coral Pink & Soft Cyan Slate',
+    bg: '#282a36',
+    card: '#44475a',
+    accent: '#ff79c6',
+    text: '#f8f8f2',
+  },
+  {
+    id: 'matrix',
+    name: 'MATRIX TERMINAL',
+    desc: 'Retro CRT Neon Green & Deep Charcoal',
+    bg: '#0d1117',
+    card: '#161b22',
+    accent: '#00ff66',
+    text: '#00ff66',
+  },
+  {
+    id: 'solarized',
+    name: 'SOLARIZED AMBER',
+    desc: 'Warm Paper Cream, Indigo & Burnt Orange',
+    bg: '#fdf6e3',
+    card: '#eee8d5',
+    accent: '#cb4b16',
+    text: '#073642',
+  },
+  {
+    id: 'abyss',
+    name: 'ABYSS VOID',
+    desc: 'Deep Void Navy & Electric Cyan',
+    bg: '#050814',
+    card: '#0e162d',
+    accent: '#00f0ff',
+    text: '#e0f7fc',
+  },
+  {
+    id: 'tokyo_night',
+    name: 'TOKYO NIGHT',
+    desc: 'Dark Indigo, Slate & Electric Purple',
+    bg: '#1a1b26',
+    card: '#24283b',
+    accent: '#bb9af7',
+    text: '#c0caf5',
+  },
+  {
+    id: 'grayscale',
+    name: 'GRAYSCALE NEUTRAL',
+    desc: 'Eye-Care Muted Paper Slate Gray',
+    bg: '#181818',
+    card: '#262626',
+    accent: '#737373',
+    text: '#e5e5e5',
+  },
+  {
+    id: 'nord',
+    name: 'NORD ARCTIC',
+    desc: 'Eye-Care Arctic Ice Blue & Slate',
+    bg: '#2e3440',
+    card: '#3b4252',
+    accent: '#88c0d0',
+    text: '#eceff4',
+  },
+  {
+    id: 'gruvbox',
+    name: 'GRUVBOX WARM',
+    desc: 'Eye-Care Warm Retro Amber & Dark Cream',
+    bg: '#282828',
+    card: '#3c3836',
+    accent: '#fe8019',
+    text: '#ebdbb2',
+  },
+  {
+    id: 'catppuccin',
+    name: 'CATPPUCCIN MOCHA',
+    desc: 'Eye-Care Soft Pastel Mauve & Slate',
+    bg: '#1e1e2e',
+    card: '#313244',
+    accent: '#cba6f7',
+    text: '#cdd6f4',
+  },
+];
 
 export default function SettingsClient({
   userEmail,
@@ -32,6 +144,7 @@ export default function SettingsClient({
   enabledSheets: initialEnabledSheets,
   defaultSheet: initialDefaultSheet,
   dailyGoal: initialDailyGoal,
+  currentTheme: initialTheme,
   sheetProgressList,
 }: SettingsClientProps) {
   const router = useRouter();
@@ -45,6 +158,7 @@ export default function SettingsClient({
   const [enabledSheets, setEnabledSheets] = useState<string[]>(initialEnabledSheets);
   const [defaultSheet, setDefaultSheet] = useState<string>(initialDefaultSheet);
   const [dailyGoal, setDailyGoal] = useState<number>(initialDailyGoal);
+  const [activeTheme, setActiveTheme] = useState<string>(initialTheme);
   const [togglingSheet, setTogglingSheet] = useState<string | null>(null);
   const [statusMsg, setStatusMsg] = useState<{ text: string; isError: boolean } | null>(null);
 
@@ -70,7 +184,7 @@ export default function SettingsClient({
   // Reset Sheet Progress Handler
   async function handleResetProgress(sheetId: string, sheetLabel: string) {
     const confirmed = window.confirm(
-      `ARE YOU SURE YOU WANT TO CLEAR ALL REVIEW PROGRESS FOR "${sheetLabel.toUpperCase()}"?\n\nThis will reset your SM-2 repetitions, ease factors, and scheduled review dates for this sheet. This action cannot be undone.`
+      `ARE YOU SURE YOU WANT TO CLEAR ALL REVIEW PROGRESS FOR "${sheetLabel.toUpperCase()}"?\n\nThis will reset your SM-2 repetitions, ease factors, and scheduled review dates for this sheet. Action cannot be undone.`
     );
     if (!confirmed) return;
 
@@ -86,6 +200,30 @@ export default function SettingsClient({
       setStatusMsg({ text: `ERROR: ${err.message}`, isError: true });
     } finally {
       setTogglingSheet(null);
+    }
+  }
+
+  // Theme Select Handler
+  async function handleThemeSelect(themeId: string) {
+    setActiveTheme(themeId);
+    document.documentElement.setAttribute('data-theme', themeId);
+    localStorage.setItem('space_a_theme', themeId);
+
+    try {
+      const res = await updatePreferencesAction({ theme: themeId });
+      if (res?.warning) {
+        setStatusMsg({ text: `THEME ACTIVATED: ${themeId.toUpperCase()} (SAVED LOCALLY)`, isError: false });
+      } else {
+        setStatusMsg({ text: `THEME ACTIVATED: ${themeId.toUpperCase()}`, isError: false });
+      }
+      startTransition(() => {
+        router.refresh();
+      });
+      setTimeout(() => setStatusMsg(null), 3000);
+    } catch (err: any) {
+      // Even if server sync fails, theme is active locally in localStorage & DOM
+      setStatusMsg({ text: `THEME ACTIVATED LOCALLY: ${themeId.toUpperCase()}`, isError: false });
+      setTimeout(() => setStatusMsg(null), 3000);
     }
   }
 
@@ -128,7 +266,7 @@ export default function SettingsClient({
           </svg>
           <input
             type="text"
-            placeholder="Search settings (e.g. SDE Sheet, Daily Goal, Default Sheet)..."
+            placeholder="Search settings (e.g. Cyberpunk, SDE Sheet, Daily Goal)..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             className="input"
@@ -139,13 +277,13 @@ export default function SettingsClient({
               fontFamily: 'monospace',
               fontWeight: 'bold',
               padding: '0.4rem 0.75rem',
-              border: '2px solid #000000',
+              border: '2px solid var(--border-color)',
             }}
           />
           {searchQuery && (
             <button
               onClick={() => setSearchQuery('')}
-              className=""
+              className="btn btn-sm btn-black"
               style={{ padding: '0.3rem 0.6rem', fontSize: '0.75rem', fontFamily: 'monospace' }}
             >
               CLEAR
@@ -162,9 +300,9 @@ export default function SettingsClient({
             fontFamily: 'monospace',
             fontSize: '0.8rem',
             fontWeight: 'bold',
-            border: '2px solid #000000',
-            backgroundColor: statusMsg.isError ? '#ffdddd' : '#ddffdd',
-            boxShadow: '3px 3px 0px 0px #000000',
+            border: '2px solid var(--border-color)',
+            backgroundColor: statusMsg.isError ? '#ffdddd' : 'var(--bg-secondary)',
+            boxShadow: '3px 3px 0px 0px var(--shadow-color)',
           }}
         >
           {statusMsg.text}
@@ -192,10 +330,10 @@ export default function SettingsClient({
                 fontWeight: 900,
                 textTransform: 'uppercase',
                 cursor: 'pointer',
-                backgroundColor: activeTab === 'sheets' ? '#000000' : 'transparent',
-                color: activeTab === 'sheets' ? '#ffffff' : '#a0a0a0',
-                border: activeTab === 'sheets' ? '2px solid #000000' : '2px solid transparent',
-                boxShadow: activeTab === 'sheets' ? '2px 2px 0px 0px #000000' : 'none',
+                backgroundColor: activeTab === 'sheets' ? 'var(--text-primary)' : 'transparent',
+                color: activeTab === 'sheets' ? 'var(--bg-primary)' : 'var(--text-primary)',
+                border: activeTab === 'sheets' ? '2px solid var(--border-color)' : '2px solid transparent',
+                boxShadow: activeTab === 'sheets' ? '2px 2px 0px 0px var(--shadow-color)' : 'none',
                 display: 'flex',
                 alignItems: 'center',
                 gap: '0.6rem',
@@ -219,10 +357,10 @@ export default function SettingsClient({
                 fontWeight: 900,
                 textTransform: 'uppercase',
                 cursor: 'pointer',
-                backgroundColor: activeTab === 'preferences' ? '#000000' : 'transparent',
-                color: activeTab === 'preferences' ? '#ffffff' : '#a0a0a0',
-                border: activeTab === 'preferences' ? '2px solid #000000' : '2px solid transparent',
-                boxShadow: activeTab === 'preferences' ? '2px 2px 0px 0px #000000' : 'none',
+                backgroundColor: activeTab === 'preferences' ? 'var(--text-primary)' : 'transparent',
+                color: activeTab === 'preferences' ? 'var(--bg-primary)' : 'var(--text-primary)',
+                border: activeTab === 'preferences' ? '2px solid var(--border-color)' : '2px solid transparent',
+                boxShadow: activeTab === 'preferences' ? '2px 2px 0px 0px var(--shadow-color)' : 'none',
                 display: 'flex',
                 alignItems: 'center',
                 gap: '0.6rem',
@@ -236,7 +374,35 @@ export default function SettingsClient({
               PREFERENCES
             </button>
 
-            {/* TAB 3: ACCOUNT */}
+            {/* TAB 3: THEMES */}
+            <button
+              onClick={() => setActiveTab('themes')}
+              style={{
+                textAlign: 'left',
+                padding: '0.65rem 0.85rem',
+                fontFamily: 'monospace',
+                fontSize: '0.8rem',
+                fontWeight: 900,
+                textTransform: 'uppercase',
+                cursor: 'pointer',
+                backgroundColor: activeTab === 'themes' ? 'var(--text-primary)' : 'transparent',
+                color: activeTab === 'themes' ? 'var(--bg-primary)' : 'var(--text-primary)',
+                border: activeTab === 'themes' ? '2px solid var(--border-color)' : '2px solid transparent',
+                boxShadow: activeTab === 'themes' ? '2px 2px 0px 0px var(--shadow-color)' : 'none',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '0.6rem',
+                transition: 'all 0.1s ease',
+              }}
+            >
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+                <circle cx="12" cy="12" r="10"/>
+                <path d="M12 2a10 10 0 0 0 0 20z" fill="currentColor"/>
+              </svg>
+              COLOR THEMES
+            </button>
+
+            {/* TAB 4: ACCOUNT */}
             <button
               onClick={() => setActiveTab('account')}
               style={{
@@ -247,10 +413,10 @@ export default function SettingsClient({
                 fontWeight: 900,
                 textTransform: 'uppercase',
                 cursor: 'pointer',
-                backgroundColor: activeTab === 'account' ? '#000000' : 'transparent',
-                color: activeTab === 'account' ? '#ffffff' : '#a0a0a0',
-                border: activeTab === 'account' ? '2px solid #000000' : '2px solid transparent',
-                boxShadow: activeTab === 'account' ? '2px 2px 0px 0px #000000' : 'none',
+                backgroundColor: activeTab === 'account' ? 'var(--text-primary)' : 'transparent',
+                color: activeTab === 'account' ? 'var(--bg-primary)' : 'var(--text-primary)',
+                border: activeTab === 'account' ? '2px solid var(--border-color)' : '2px solid transparent',
+                boxShadow: activeTab === 'account' ? '2px 2px 0px 0px var(--shadow-color)' : 'none',
                 display: 'flex',
                 alignItems: 'center',
                 gap: '0.6rem',
@@ -264,7 +430,7 @@ export default function SettingsClient({
               PROFILE & ACCOUNT
             </button>
 
-            {/* TAB 4: DEVELOPER */}
+            {/* TAB 5: DEVELOPER */}
             <button
               onClick={() => setActiveTab('developer')}
               style={{
@@ -275,10 +441,10 @@ export default function SettingsClient({
                 fontWeight: 900,
                 textTransform: 'uppercase',
                 cursor: 'pointer',
-                backgroundColor: activeTab === 'developer' ? '#000000' : 'transparent',
-                color: activeTab === 'developer' ? '#ffffff' : '#a0a0a0',
-                border: activeTab === 'developer' ? '2px solid #000000' : '2px solid transparent',
-                boxShadow: activeTab === 'developer' ? '2px 2px 0px 0px #000000' : 'none',
+                backgroundColor: activeTab === 'developer' ? 'var(--text-primary)' : 'transparent',
+                color: activeTab === 'developer' ? 'var(--bg-primary)' : 'var(--text-primary)',
+                border: activeTab === 'developer' ? '2px solid var(--border-color)' : '2px solid transparent',
+                boxShadow: activeTab === 'developer' ? '2px 2px 0px 0px var(--shadow-color)' : 'none',
                 display: 'flex',
                 alignItems: 'center',
                 gap: '0.6rem',
@@ -308,7 +474,7 @@ export default function SettingsClient({
           {/* CATEGORY 1: SHEETS & DATASETS */}
           {(activeTab === 'sheets' || searchQuery) && (
             <div className="card">
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '2px solid #000', paddingBottom: '0.5rem', marginBottom: '1.25rem' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '2px solid var(--border-color)', paddingBottom: '0.5rem', marginBottom: '1.25rem' }}>
                 <h3 className="card-title" style={{ margin: 0, fontSize: '1rem' }}>
                   SHEETS & CONTENT DATASETS
                 </h3>
@@ -331,17 +497,17 @@ export default function SettingsClient({
                     <div
                       key={sp.sheetId}
                       style={{
-                        border: '2px solid #000000',
+                        border: '2px solid var(--border-color)',
                         padding: '1rem',
-                        backgroundColor: isEnabled ? '#ffffff' : '#f8f8f8',
-                        boxShadow: isEnabled ? '3px 3px 0px 0px #000000' : 'none',
+                        backgroundColor: isEnabled ? 'var(--bg-primary)' : 'var(--bg-secondary)',
+                        boxShadow: isEnabled ? '3px 3px 0px 0px var(--shadow-color)' : 'none',
                         transition: 'all 0.15s ease',
                       }}
                     >
                       {/* SETTING ROW TITLE & DUAL-SEGMENT LIGHT SWITCH TOGGLE */}
                       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '1rem', flexWrap: 'wrap' }}>
                         <div style={{ flex: 1 }}>
-                          <div style={{ fontWeight: 900, fontSize: '0.9rem', fontFamily: 'monospace', textTransform: 'uppercase', color:"black"}}>
+                          <div style={{ fontWeight: 900, fontSize: '0.9rem', fontFamily: 'monospace', textTransform: 'uppercase' }}>
                             {sp.label}
                           </div>
                           <div style={{ fontSize: '0.75rem', fontFamily: 'monospace', color: 'var(--text-secondary)', marginTop: '2px' }}>
@@ -385,7 +551,6 @@ export default function SettingsClient({
                           className="progress-bar-fill"
                           style={{
                             width: `${pct}%`,
-                            backgroundColor: isEnabled ? '#000000' : '#999999',
                           }}
                         />
                       </div>
@@ -396,10 +561,92 @@ export default function SettingsClient({
             </div>
           )}
 
-          {/* CATEGORY 2: PREFERENCES & SM-2 */}
+          {/* CATEGORY 2: COLOR THEMES */}
+          {(activeTab === 'themes' || searchQuery) && (
+            <div className="card">
+              <h3 className="card-title mb-3" style={{ borderBottom: '2px solid var(--border-color)', paddingBottom: '0.5rem', fontSize: '1rem' }}>
+                COLOR THEMES COLLECTION
+              </h3>
+
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(260px, 1fr))', gap: '1.25rem' }}>
+                {THEMES.map((theme) => {
+                  const isCurrent = activeTheme === theme.id;
+                  if (!matchesSearch(theme.name, theme.desc)) return null;
+
+                  return (
+                    <div
+                      key={theme.id}
+                      onClick={() => handleThemeSelect(theme.id)}
+                      style={{
+                        border: '2px solid var(--border-color)',
+                        padding: '1rem',
+                        backgroundColor: theme.bg,
+                        color: theme.text,
+                        boxShadow: isCurrent ? `4px 4px 0px 0px ${theme.accent}` : '2px 2px 0px 0px var(--shadow-color)',
+                        cursor: 'pointer',
+                        display: 'flex',
+                        flexDirection: 'column',
+                        justifyContent: 'space-between',
+                        gap: '0.75rem',
+                        transition: 'all 0.15s ease',
+                      }}
+                    >
+                      <div>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.3rem' }}>
+                          <span style={{ fontWeight: 900, fontFamily: 'monospace', fontSize: '0.85rem', color: theme.text }}>
+                            {theme.name}
+                          </span>
+                          {isCurrent && (
+                            <span style={{ fontSize: '0.65rem', fontWeight: 900, fontFamily: 'monospace', backgroundColor: theme.accent, color: theme.bg, padding: '0.15rem 0.4rem', border: `1px solid ${theme.text}` }}>
+                              ACTIVE
+                            </span>
+                          )}
+                        </div>
+                        <div style={{ fontSize: '0.7rem', fontFamily: 'monospace', opacity: 0.85, color: theme.text }}>
+                          {theme.desc}
+                        </div>
+                      </div>
+
+                      {/* MINI COLOR SWATCHES PREVIEW */}
+                      <div style={{ display: 'flex', gap: '6px', borderTop: `1px solid ${theme.accent}`, paddingTop: '0.6rem' }}>
+                        <div title="Background" style={{ width: '22px', height: '22px', backgroundColor: theme.bg, border: `1px solid ${theme.text}` }} />
+                        <div title="Card Fill" style={{ width: '22px', height: '22px', backgroundColor: theme.card, border: `1px solid ${theme.text}` }} />
+                        <div title="Accent Color" style={{ width: '22px', height: '22px', backgroundColor: theme.accent, border: `1px solid ${theme.text}` }} />
+                        <div title="Text Color" style={{ width: '22px', height: '22px', backgroundColor: theme.text, border: `1px solid ${theme.accent}` }} />
+                      </div>
+
+                      <button
+                        type="button"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleThemeSelect(theme.id);
+                        }}
+                        style={{
+                          width: '100%',
+                          padding: '0.4rem',
+                          fontFamily: 'monospace',
+                          fontSize: '0.75rem',
+                          fontWeight: 900,
+                          backgroundColor: isCurrent ? theme.accent : 'transparent',
+                          color: isCurrent ? theme.bg : theme.text,
+                          border: `2px solid ${theme.text}`,
+                          cursor: 'pointer',
+                          marginTop: '0.2rem',
+                        }}
+                      >
+                        {isCurrent ? 'SELECTED THEME' : 'SELECT THEME'}
+                      </button>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          )}
+
+          {/* CATEGORY 3: PREFERENCES */}
           {(activeTab === 'preferences' || searchQuery) && (
             <div className="card">
-              <h3 className="card-title mb-3" style={{ borderBottom: '2px solid #000', paddingBottom: '0.5rem', fontSize: '1rem' }}>
+              <h3 className="card-title mb-3" style={{ borderBottom: '2px solid var(--border-color)', paddingBottom: '0.5rem', fontSize: '1rem' }}>
                 PREFERENCES & SM-2 ENGINE
               </h3>
 
@@ -407,7 +654,7 @@ export default function SettingsClient({
                 
                 {/* ROW 1: DEFAULT SHEET */}
                 {matchesSearch('Default Explorer Sheet', 'Select which DSA sheet loads first when opening Explorer') && (
-                  <div style={{ border: '2px solid #000000', padding: '1rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '1rem' }}>
+                  <div style={{ border: '2px solid var(--border-color)', padding: '1rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '1rem' }}>
                     <div style={{ flex: 1 }}>
                       <div style={{ fontWeight: 900, fontSize: '0.85rem', fontFamily: 'monospace', textTransform: 'uppercase' }}>
                         Default Explorer Sheet
@@ -431,7 +678,7 @@ export default function SettingsClient({
 
                 {/* ROW 2: DAILY GOAL */}
                 {matchesSearch('Daily Review Target Goal', 'Set target number of due problems to complete per day') && (
-                  <div style={{ border: '2px solid #000000', padding: '1rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '1rem' }}>
+                  <div style={{ border: '2px solid var(--border-color)', padding: '1rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '1rem' }}>
                     <div style={{ flex: 1 }}>
                       <div style={{ fontWeight: 900, fontSize: '0.85rem', fontFamily: 'monospace', textTransform: 'uppercase' }}>
                         Daily Review Target Goal
@@ -459,23 +706,23 @@ export default function SettingsClient({
             </div>
           )}
 
-          {/* CATEGORY 3: PROFILE & ACCOUNT */}
+          {/* CATEGORY 4: PROFILE & ACCOUNT */}
           {(activeTab === 'account' || searchQuery) && (
             <div className="card">
-              <h3 className="card-title mb-3" style={{ borderBottom: '2px solid #000', paddingBottom: '0.5rem', fontSize: '1rem' }}>
+              <h3 className="card-title mb-3" style={{ borderBottom: '2px solid var(--border-color)', paddingBottom: '0.5rem', fontSize: '1rem' }}>
                 PROFILE & ACCOUNT SETTINGS
               </h3>
 
               <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-                <div style={{ border: '2px solid #000', padding: '1rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontFamily: 'monospace' }}>
+                <div style={{ border: '2px solid var(--border-color)', padding: '1rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontFamily: 'monospace' }}>
                   <div>
                     <div style={{ fontSize: '0.7rem', color: 'var(--text-secondary)', textTransform: 'uppercase' }}>User Email</div>
                     <div style={{ fontWeight: 900, fontSize: '0.85rem', marginTop: '2px' }}>{userEmail}</div>
                   </div>
-                  <span style={{ color:"black", fontSize: '0.75rem', fontWeight: 900, backgroundColor: '#ddffdd', border: '1px solid #000', padding: '0.2rem 0.5rem' }}>AUTHENTICATED</span>
+                  <span style={{ fontSize: '0.75rem', fontWeight: 900, backgroundColor: 'var(--bg-secondary)', border: '1px solid var(--border-color)', padding: '0.2rem 0.5rem' }}>AUTHENTICATED</span>
                 </div>
 
-                <div style={{ border: '2px solid #000', padding: '1rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontFamily: 'monospace' }}>
+                <div style={{ border: '2px solid var(--border-color)', padding: '1rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontFamily: 'monospace' }}>
                   <div>
                     <div style={{ fontSize: '0.7rem', color: 'var(--text-secondary)', textTransform: 'uppercase' }}>Solve Streak</div>
                     <div style={{ fontWeight: 900, fontSize: '0.85rem', marginTop: '2px' }}>{streak} Days Active</div>
@@ -499,7 +746,7 @@ export default function SettingsClient({
             </div>
           )}
 
-          {/* CATEGORY 4: FEEDBACK & DEVELOPER */}
+          {/* CATEGORY 5: FEEDBACK & DEVELOPER */}
           {(activeTab === 'developer' || searchQuery) && (
             <div className="card" style={{ backgroundColor: 'var(--bg-secondary)' }}>
               <h3 className="card-title mb-2" style={{ fontSize: '1rem' }}>

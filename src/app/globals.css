@@ -1,39 +1,198 @@
-/* MONOCHROME / MINIMALIST BRUTALISM DESIGN SYSTEM */
-
 :root {
+  --border-width: 3px;
+  --shadow-offset: 4px;
+  --font-mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
   --bg-primary: #ffffff;
   --bg-secondary: #f3f3f3;
   --bg-tertiary: #dbdbdb;
   --text-primary: #000000;
   --text-secondary: #555555;
   --border-color: #000000;
-  --border-width: 3px;
-  --shadow-offset: 4px;
   --shadow-color: #000000;
-  
-  --font-mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
-  
   --difficulty-easy: #ffffff;
   --difficulty-medium: #e0e0e0;
   --difficulty-hard: #000000;
   --difficulty-hard-text: #ffffff;
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --bg-primary: #0a0a0a;
-    --bg-secondary: #1a1a1a;
-    --bg-tertiary: #2e2e2e;
-    --text-primary: #ffffff;
-    --text-secondary: #a0a0a0;
-    --border-color: #ffffff;
-    --shadow-color: #ffffff;
-    
-    --difficulty-easy: #0a0a0a;
-    --difficulty-medium: #2e2e2e;
-    --difficulty-hard: #ffffff;
-    --difficulty-hard-text: #0a0a0a;
-  }
+/* 1. MONOCHROME LIGHT (DEFAULT) */
+[data-theme="monochrome"] {
+  --bg-primary: #ffffff;
+  --bg-secondary: #f3f3f3;
+  --bg-tertiary: #dbdbdb;
+  --text-primary: #000000;
+  --text-secondary: #555555;
+  --border-color: #000000;
+  --shadow-color: #000000;
+  --difficulty-easy: #ffffff;
+  --difficulty-medium: #e0e0e0;
+  --difficulty-hard: #000000;
+  --difficulty-hard-text: #ffffff;
+}
+
+/* 2. MONOCHROME DARK (MAIN BASE DARK THEME) */
+[data-theme="monochrome_dark"] {
+  --bg-primary: #0a0a0a;
+  --bg-secondary: #181818;
+  --bg-tertiary: #2a2a2a;
+  --text-primary: #ffffff;
+  --text-secondary: #a0a0a0;
+  --border-color: #ffffff;
+  --shadow-color: #ffffff;
+  --difficulty-easy: #0a0a0a;
+  --difficulty-medium: #2a2a2a;
+  --difficulty-hard: #ffffff;
+  --difficulty-hard-text: #0a0a0a;
+}
+
+/* 3. CYBERPUNK NEON */
+[data-theme="cyberpunk"] {
+  --bg-primary: #0a0a0c;
+  --bg-secondary: #16161a;
+  --bg-tertiary: #242429;
+  --text-primary: #ffef00;
+  --text-secondary: #ffff99;
+  --border-color: #ffef00;
+  --shadow-color: #ffef00;
+  --difficulty-easy: #16161a;
+  --difficulty-medium: #242429;
+  --difficulty-hard: #ffef00;
+  --difficulty-hard-text: #0a0a0c;
+}
+
+/* 4. DRACULA DARK */
+[data-theme="dracula"] {
+  --bg-primary: #282a36;
+  --bg-secondary: #44475a;
+  --bg-tertiary: #6272a4;
+  --text-primary: #f8f8f2;
+  --text-secondary: #ff79c6;
+  --border-color: #8be9fd;
+  --shadow-color: #bd93f9;
+  --difficulty-easy: #44475a;
+  --difficulty-medium: #6272a4;
+  --difficulty-hard: #ff79c6;
+  --difficulty-hard-text: #282a36;
+}
+
+/* 5. MATRIX TERMINAL */
+[data-theme="matrix"] {
+  --bg-primary: #0d1117;
+  --bg-secondary: #161b22;
+  --bg-tertiary: #21262d;
+  --text-primary: #00ff66;
+  --text-secondary: #7ee787;
+  --border-color: #00ff66;
+  --shadow-color: #00ff66;
+  --difficulty-easy: #161b22;
+  --difficulty-medium: #21262d;
+  --difficulty-hard: #00ff66;
+  --difficulty-hard-text: #0d1117;
+}
+
+/* 6. SOLARIZED AMBER */
+[data-theme="solarized"] {
+  --bg-primary: #fdf6e3;
+  --bg-secondary: #eee8d5;
+  --bg-tertiary: #93a1a1;
+  --text-primary: #073642;
+  --text-secondary: #657b83;
+  --border-color: #cb4b16;
+  --shadow-color: #cb4b16;
+  --difficulty-easy: #eee8d5;
+  --difficulty-medium: #93a1a1;
+  --difficulty-hard: #cb4b16;
+  --difficulty-hard-text: #fdf6e3;
+}
+
+/* 7. ABYSS VOID */
+[data-theme="abyss"] {
+  --bg-primary: #050814;
+  --bg-secondary: #0e162d;
+  --bg-tertiary: #19274e;
+  --text-primary: #e0f7fc;
+  --text-secondary: #80d8ff;
+  --border-color: #00f0ff;
+  --shadow-color: #00f0ff;
+  --difficulty-easy: #0e162d;
+  --difficulty-medium: #19274e;
+  --difficulty-hard: #00f0ff;
+  --difficulty-hard-text: #050814;
+}
+
+/* 8. TOKYO NIGHT */
+[data-theme="tokyo_night"] {
+  --bg-primary: #1a1b26;
+  --bg-secondary: #24283b;
+  --bg-tertiary: #414868;
+  --text-primary: #c0caf5;
+  --text-secondary: #9d7cd8;
+  --border-color: #bb9af7;
+  --shadow-color: #7aa2f7;
+  --difficulty-easy: #24283b;
+  --difficulty-medium: #414868;
+  --difficulty-hard: #bb9af7;
+  --difficulty-hard-text: #1a1b26;
+}
+
+/* 9. GRAYSCALE NEUTRAL (EYE CARE) */
+[data-theme="grayscale"] {
+  --bg-primary: #181818;
+  --bg-secondary: #262626;
+  --bg-tertiary: #404040;
+  --text-primary: #e5e5e5;
+  --text-secondary: #a3a3a3;
+  --border-color: #737373;
+  --shadow-color: #525252;
+  --difficulty-easy: #262626;
+  --difficulty-medium: #404040;
+  --difficulty-hard: #737373;
+  --difficulty-hard-text: #181818;
+}
+
+/* 10. NORD ARCTIC (EYE CARE) */
+[data-theme="nord"] {
+  --bg-primary: #2e3440;
+  --bg-secondary: #3b4252;
+  --bg-tertiary: #434c5e;
+  --text-primary: #eceff4;
+  --text-secondary: #88c0d0;
+  --border-color: #88c0d0;
+  --shadow-color: #81a1c1;
+  --difficulty-easy: #3b4252;
+  --difficulty-medium: #434c5e;
+  --difficulty-hard: #88c0d0;
+  --difficulty-hard-text: #2e3440;
+}
+
+/* 11. GRUVBOX WARM (EYE CARE) */
+[data-theme="gruvbox"] {
+  --bg-primary: #282828;
+  --bg-secondary: #3c3836;
+  --bg-tertiary: #504945;
+  --text-primary: #ebdbb2;
+  --text-secondary: #fe8019;
+  --border-color: #fe8019;
+  --shadow-color: #fabd2f;
+  --difficulty-easy: #3c3836;
+  --difficulty-medium: #504945;
+  --difficulty-hard: #fe8019;
+  --difficulty-hard-text: #282828;
+}
+
+/* 12. CATPPUCCIN MOCHA (EYE CARE) */
+[data-theme="catppuccin"] {
+  --bg-primary: #1e1e2e;
+  --bg-secondary: #313244;
+  --bg-tertiary: #45475a;
+  --text-primary: #cdd6f4;
+  --text-secondary: #cba6f7;
+  --border-color: #cba6f7;
+  --shadow-color: #89b4fa;
+  --difficulty-easy: #313244;
+  --difficulty-medium: #45475a;
+  --difficulty-hard: #cba6f7;
+  --difficulty-hard-text: #1e1e2e;
 }
 
 /* CSS RESET & BASE STYLES */

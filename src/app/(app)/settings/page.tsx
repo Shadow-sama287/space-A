@@ -24,6 +24,7 @@ export default async function SettingsPage() {
   const enabledSheets: string[] = profile?.enabled_sheets || ['striver_sde', 'striver_a2z'];
   const defaultSheet: string = profile?.default_sheet || 'striver_sde';
   const dailyGoal: number = profile?.daily_goal || 10;
+  const currentTheme: string = profile?.theme || 'monochrome';
 
   // Fetch problems & user progress for calculation
   const { data: allProblems } = await supabase
@@ -71,6 +72,7 @@ export default async function SettingsPage() {
         enabledSheets={enabledSheets}
         defaultSheet={defaultSheet}
         dailyGoal={dailyGoal}
+        currentTheme={currentTheme}
         sheetProgressList={sheetProgressList}
       />
     </div>
