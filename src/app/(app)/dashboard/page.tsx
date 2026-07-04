@@ -211,7 +211,12 @@ export default async function DashboardPage() {
         <div>
           {/* 7-DAY FORECAST */}
           <div className="card">
-            <h3 className="card-title">7-Day Review Forecast</h3>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.25rem' }}>
+              <h3 className="card-title" style={{ margin: 0 }}>7-Day Review Forecast</h3>
+              <Link href="/timeline" style={{ fontSize: '0.7rem', fontWeight: 900, fontFamily: 'monospace', textTransform: 'uppercase', textDecoration: 'underline' }}>
+                FULL TIMELINE ➔
+              </Link>
+            </div>
             <p className="mb-2" style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', textTransform: 'uppercase' }}>
               Number of reviews scheduled for the upcoming week
             </p>
