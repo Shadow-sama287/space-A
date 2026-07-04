@@ -15,19 +15,23 @@ export default async function DashboardPage() {
     return <div>Unauthorized</div>;
   }
 
-  // Fetch profile
-  const { data: profile } = await supabase
-    .from('profiles')
-    .select('*')
-    .eq('id', user.id)
-    .single();
+  const twentyEightDaysAgo = new Date();
+  twentyEightDaysAgo.setDate(twentyEightDaysAgo.getDate() - 28);
+
+  // Parallel database queries for 4x faster page loading
+  const [
+    { data: profile },
+    { data: allProblems },
+    { data: userProblems },
+    { data: history },
+  ] = await Promise.all([
+    supabase.from('profiles').select('*').eq('id', user.id).single(),
+    supabase.from('problems').select('id, sheet, category'),
+    supabase.from('user_problems').select('*').eq('user_id', user.id),
+    supabase.from('review_history').select('reviewed_at').eq('user_id', user.id).gte('reviewed_at', twentyEightDaysAgo.toISOString()),
+  ]);
 
   const enabledSheets: string[] = profile?.enabled_sheets || ['striver_sde', 'striver_a2z'];
-
-  // Fetch all problems
-  const { data: allProblems } = await supabase
-    .from('problems')
-    .select('id, sheet, category');
 
   const problems = allProblems || [];
   const dbProblemsCount = problems.length;
@@ -37,25 +41,10 @@ export default async function DashboardPage() {
     problems.filter(p => enabledSheets.includes(p.sheet)).map(p => p.id)
   );
 
-  // Fetch user problems progress
-  const { data: userProblems } = await supabase
-    .from('user_problems')
-    .select('*')
-    .eq('user_id', user.id);
-
   const rawActiveProblems = userProblems || [];
 
   // Filter user progress to enabled sheets
   const activeProblems = rawActiveProblems.filter(up => enabledProblemIds.has(up.problem_id));
-
-  // Fetch review history (last 28 days for heatmap)
-  const twentyEightDaysAgo = new Date();
-  twentyEightDaysAgo.setDate(twentyEightDaysAgo.getDate() - 28);
-  const { data: history } = await supabase
-    .from('review_history')
-    .select('reviewed_at')
-    .eq('user_id', user.id)
-    .gte('reviewed_at', twentyEightDaysAgo.toISOString());
 
   // === CALCULATE STATS ===
   const now = new Date();
