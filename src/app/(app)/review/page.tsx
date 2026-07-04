@@ -14,8 +14,17 @@ export default async function ReviewPage() {
     return <div>Unauthorized</div>;
   }
 
+  // Fetch profile to get enabled sheets
+  const { data: profile } = await supabase
+    .from('profiles')
+    .select('enabled_sheets')
+    .eq('id', user.id)
+    .single();
+
+  const enabledSheets: string[] = profile?.enabled_sheets || ['striver_sde', 'striver_a2z'];
+
   // Fetch problems due today or earlier
-  const { data: dueData, error } = await supabase
+  const { data: dueData } = await supabase
     .from('user_problems')
     .select(`
       id,
@@ -27,6 +36,7 @@ export default async function ReviewPage() {
       status,
       problems (
         id,
+        sheet,
         title,
         category,
         difficulty,
@@ -37,11 +47,11 @@ export default async function ReviewPage() {
     .eq('user_id', user.id)
     .lte('next_review_date', new Date().toISOString());
 
-  // Map database response to a flat type structure
+  // Map database response to a flat type structure, filtering by enabled sheets
   const dueProblems = (dueData || [])
     .map((item: any) => {
       const p = item.problems;
-      if (!p) return null;
+      if (!p || !enabledSheets.includes(p.sheet)) return null;
       return {
         id: p.id,
         user_problem_id: item.id,

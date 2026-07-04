@@ -1,5 +1,6 @@
 import { createClient } from '@/lib/supabase/server';
 import Link from 'next/link';
+import TopicProgressWidget from '@/components/TopicProgressWidget';
 
 export const dynamic = 'force-dynamic';
 
@@ -14,23 +15,38 @@ export default async function DashboardPage() {
     return <div>Unauthorized</div>;
   }
 
-  // Fetch profile (streak)
+  // Fetch profile
   const { data: profile } = await supabase
     .from('profiles')
     .select('*')
     .eq('id', user.id)
     .single();
 
-  // Fetch all problems (for sheet stats)
-  const { data: problems } = await supabase
+  const enabledSheets: string[] = profile?.enabled_sheets || ['striver_sde', 'striver_a2z'];
+
+  // Fetch all problems
+  const { data: allProblems } = await supabase
     .from('problems')
-    .select('id', { count: 'exact' });
+    .select('id, sheet, category');
+
+  const problems = allProblems || [];
+  const dbProblemsCount = problems.length;
+
+  // Filter problems to enabled sheets only for Dashboard metrics
+  const enabledProblemIds = new Set(
+    problems.filter(p => enabledSheets.includes(p.sheet)).map(p => p.id)
+  );
 
   // Fetch user problems progress
   const { data: userProblems } = await supabase
     .from('user_problems')
     .select('*')
     .eq('user_id', user.id);
+
+  const rawActiveProblems = userProblems || [];
+
+  // Filter user progress to enabled sheets
+  const activeProblems = rawActiveProblems.filter(up => enabledProblemIds.has(up.problem_id));
 
   // Fetch review history (last 28 days for heatmap)
   const twentyEightDaysAgo = new Date();
@@ -42,19 +58,35 @@ export default async function DashboardPage() {
     .gte('reviewed_at', twentyEightDaysAgo.toISOString());
 
   // === CALCULATE STATS ===
-  const totalProblemsCount = 80; // Hardcoded fallback or use actual problems length
-  const dbProblemsCount = problems?.length || 0;
-  const activeProblems = userProblems || [];
-  
-  // Due Problems Count
   const now = new Date();
   const dueProblemsCount = activeProblems.filter(up => {
     return new Date(up.next_review_date) <= now;
   }).length;
 
-  // Mastered count (ease factor >= 4.0 or status = 'mastered')
   const masteredCount = activeProblems.filter(up => up.status === 'mastered').length;
   const reviewingCount = activeProblems.length - masteredCount;
+
+  // === SHEET PROGRESS STATS ===
+  const sheetProgressList = [
+    {
+      sheetId: 'striver_sde',
+      label: 'Striver SDE Sheet',
+      totalCount: problems.filter(p => p.sheet === 'striver_sde').length || 191,
+      solvedCount: rawActiveProblems.filter(up => {
+        const p = problems.find(prob => prob.id === up.problem_id);
+        return p?.sheet === 'striver_sde';
+      }).length,
+    },
+    {
+      sheetId: 'striver_a2z',
+      label: "Striver's A2Z Sheet",
+      totalCount: problems.filter(p => p.sheet === 'striver_a2z').length || 474,
+      solvedCount: rawActiveProblems.filter(up => {
+        const p = problems.find(prob => prob.id === up.problem_id);
+        return p?.sheet === 'striver_a2z';
+      }).length,
+    },
+  ];
 
   // === 7-DAY FORECAST ===
   const forecast = Array.from({ length: 7 }).map((_, i) => {
@@ -68,15 +100,12 @@ export default async function DashboardPage() {
     const count = activeProblems.filter(up => {
       const reviewDate = new Date(up.next_review_date);
       if (i === 0) {
-        // Today includes everything scheduled for today or past due
         return reviewDate < nextDate;
       } else {
-        // Future days check within the 24 hour window
         return reviewDate >= targetDate && reviewDate < nextDate;
       }
     }).length;
 
-    // Formatting label (e.g. "Thu 02")
     const label = targetDate.toLocaleDateString('en-US', { weekday: 'short', day: '2-digit' });
     return { label, count };
   });
@@ -92,7 +121,7 @@ export default async function DashboardPage() {
 
   const heatmapDays = Array.from({ length: 28 }).map((_, i) => {
     const d = new Date();
-    d.setDate(d.getDate() - (27 - i)); // From 27 days ago to today
+    d.setDate(d.getDate() - (27 - i));
     const dateStr = d.toDateString();
     const hasReviewed = historyDates.has(dateStr);
     return {
@@ -101,28 +130,6 @@ export default async function DashboardPage() {
       label: d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' }),
     };
   });
-
-  // === TOPIC/CATEGORY PROGRESS ===
-  // Fetch detailed categories count
-  const { data: categoryProblems } = await supabase
-    .from('problems')
-    .select('id, category');
-
-  const categoryStats: { [key: string]: { total: number; solved: number } } = {};
-  if (categoryProblems) {
-    categoryProblems.forEach(p => {
-      if (!categoryStats[p.category]) {
-        categoryStats[p.category] = { total: 0, solved: 0 };
-      }
-      categoryStats[p.category].total += 1;
-      
-      // Check if user has solved it (is in activeProblems list)
-      const isSolved = activeProblems.some(up => up.problem_id === p.id);
-      if (isSolved) {
-        categoryStats[p.category].solved += 1;
-      }
-    });
-  }
 
   return (
     <div>
@@ -137,7 +144,7 @@ export default async function DashboardPage() {
 
       {/* NO PROBLEMS SEEDED WARNING */}
       {dbProblemsCount === 0 && (
-        <div className="card" style={{ backgroundColor: 'var(--bg-secondary)', borderStyle: 'dashed' }}>
+        <div className="card" style={{ backgroundColor: 'var(--bg-secondary)', borderStyle: 'dashed', marginBottom: '2rem' }}>
           <h3 className="card-title">Setup Required</h3>
           <p className="mb-2">Your database contains no problems. Please navigate to the Explorer tab and seed the database first.</p>
           <Link href="/problems" className="btn btn-black">
@@ -145,6 +152,18 @@ export default async function DashboardPage() {
           </Link>
         </div>
       )}
+
+      {/* ACTIVE SHEETS SUMMARY BANNER */}
+      <div className="card mb-4" style={{ padding: '0.85rem 1.25rem', backgroundColor: 'var(--bg-secondary)', borderLeft: '6px solid #000' }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '0.5rem' }}>
+          <div style={{ fontFamily: 'monospace', fontSize: '0.85rem', fontWeight: 'bold' }}>
+            ACTIVE SHEETS: {enabledSheets.length > 0 ? enabledSheets.map(s => s === 'striver_sde' ? 'STRIVER SDE (191)' : 'STRIVER A2Z (474)').join(' | ') : 'NONE ENABLED'}
+          </div>
+          <Link href="/settings" className="btn btn-sm btn-black" style={{ textTransform: 'uppercase', fontSize: '0.75rem', textDecoration: 'none' }}>
+            MANAGE SHEETS
+          </Link>
+        </div>
+      </div>
 
       {/* TOP STATS GRIDS */}
       <div className="grid-3 mb-4">
@@ -190,9 +209,9 @@ export default async function DashboardPage() {
           </div>
           <div className="stat-box" style={{ gridColumn: 'span 2' }}>
             <div className="stat-value" style={{ fontSize: '1.5rem' }}>
-              {activeProblems.length} <span style={{ fontSize: '0.9rem', color: 'var(--text-secondary)' }}>/ {dbProblemsCount}</span>
+              {activeProblems.length} <span style={{ fontSize: '0.9rem', color: 'var(--text-secondary)' }}>/ {enabledProblemIds.size}</span>
             </div>
-            <div className="stat-label" style={{ fontSize: '0.65rem' }}>Total Sheets Solved</div>
+            <div className="stat-label" style={{ fontSize: '0.65rem' }}>Active Sheet Solved</div>
           </div>
         </div>
       </div>
@@ -250,40 +269,13 @@ export default async function DashboardPage() {
           </div>
         </div>
 
-        {/* RIGHT COLUMN: PROGRESS BY TOPIC */}
+        {/* RIGHT COLUMN: PROGRESS BY TOPIC WIDGET */}
         <div>
-          <div className="card">
-            <h3 className="card-title">Topic Progress</h3>
-            <p className="mb-3" style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', textTransform: 'uppercase' }}>
-              Completion status across Striver categories
-            </p>
-            
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-              {Object.keys(categoryStats).map(cat => {
-                const stats = categoryStats[cat];
-                const pct = Math.round((stats.solved / stats.total) * 100);
-                return (
-                  <div key={cat} style={{ fontSize: '0.8rem' }}>
-                    <div className="flex-between mb-1" style={{ fontWeight: 'bold', textTransform: 'uppercase' }}>
-                      <span>{cat}</span>
-                      <span>{stats.solved}/{stats.total} ({pct}%)</span>
-                    </div>
-                    <div className="progress-bar-container" style={{ height: '12px' }}>
-                      <div 
-                        className="progress-bar-fill" 
-                        style={{ width: `${pct}%` }}
-                      />
-                    </div>
-                  </div>
-                );
-              })}
-              {Object.keys(categoryStats).length === 0 && (
-                <div className="text-center" style={{ color: 'var(--text-secondary)', fontSize: '0.85rem' }}>
-                  No active progress. Start solving from the explorer!
-                </div>
-              )}
-            </div>
-          </div>
+          <TopicProgressWidget
+            categoryProblems={problems}
+            activeProblems={activeProblems}
+            enabledSheets={enabledSheets}
+          />
         </div>
       </div>
     </div>

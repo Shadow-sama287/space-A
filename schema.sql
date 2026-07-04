@@ -7,6 +7,9 @@ CREATE TABLE IF NOT EXISTS public.profiles (
     email TEXT NOT NULL,
     streak INTEGER DEFAULT 0,
     last_active_date DATE,
+    enabled_sheets TEXT[] DEFAULT ARRAY['striver_sde', 'striver_a2z']::TEXT[],
+    default_sheet TEXT DEFAULT 'striver_sde',
+    daily_goal INTEGER DEFAULT 10,
     created_at TIMESTAMPTZ DEFAULT NOW()
 );
 

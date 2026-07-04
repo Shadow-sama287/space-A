@@ -77,7 +77,7 @@ export default function FeedbackDrawer() {
           e.currentTarget.style.color = '#ffffff';
         }}
       >
-        💬 FEEDBACK
+        FEEDBACK
       </button>
 
       {/* BACKDROP BLUR & DRAWER PANEL */}
@@ -192,7 +192,7 @@ export default function FeedbackDrawer() {
                           transition: 'all 0.1s ease',
                         }}
                       >
-                        {t === 'Issue' ? '🚨 ISSUE' : t === 'Idea' ? '💡 IDEA' : '💬 OTHER'}
+                        {t.toUpperCase()}
                       </button>
                     );
                   })}

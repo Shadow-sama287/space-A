@@ -18,11 +18,8 @@ export async function POST() {
 
     const allProblems = [...striverProblems, ...striverA2ZProblems];
 
-    // Clear existing problems for striver_sde and striver_a2z
-    await supabase
-      .from('problems')
-      .delete()
-      .in('sheet', ['striver_sde', 'striver_a2z']);
+    // Safe upsert problems into database without deleting existing rows
+    // This preserves problem UUIDs and prevents cascading deletions on user_problems
 
     // Seed/upsert problems into database
     const { data, error } = await supabase

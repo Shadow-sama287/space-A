@@ -11,6 +11,15 @@ export default async function ProblemsPage() {
     data: { user },
   } = await supabase.auth.getUser();
 
+  // Fetch profile to get enabled sheets
+  const { data: profile } = await supabase
+    .from('profiles')
+    .select('enabled_sheets')
+    .eq('id', user?.id || '')
+    .single();
+
+  const enabledSheets: string[] = profile?.enabled_sheets || ['striver_sde', 'striver_a2z'];
+
   // 2. Fetch problems
   const { data: problems } = await supabase
     .from('problems')
@@ -30,11 +39,12 @@ export default async function ProblemsPage() {
         Problem Explorer
       </h1>
       <p className="mb-3" style={{ fontSize: '0.9rem', color: 'var(--text-secondary)' }}>
-        Explore the sheets, solve problems randomly, or trigger a direct spaced repetition review.
+        Explore sheets, solve problems randomly, or trigger a direct spaced repetition review.
       </p>
       <ProblemsClient
         problems={problems || []}
         userProgress={userProgress || []}
+        enabledSheets={enabledSheets}
       />
     </div>
   );

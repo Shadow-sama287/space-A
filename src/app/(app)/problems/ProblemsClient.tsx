@@ -27,9 +27,10 @@ interface UserProblem {
 interface ProblemsClientProps {
   problems: Problem[];
   userProgress: UserProblem[];
+  enabledSheets?: string[];
 }
 
-export default function ProblemsClient({ problems, userProgress }: ProblemsClientProps) {
+export default function ProblemsClient({ problems, userProgress, enabledSheets = ['striver_sde', 'striver_a2z'] }: ProblemsClientProps) {
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
 
@@ -37,8 +38,9 @@ export default function ProblemsClient({ problems, userProgress }: ProblemsClien
   const [seeding, setSeeding] = useState(false);
   const [seedResult, setSeedResult] = useState<string | null>(null);
 
-  // Filter states
-  const [sheetFilter, setSheetFilter] = useState('striver_sde');
+  // Default to first enabled sheet if available
+  const initialSheet = enabledSheets.length > 0 ? enabledSheets[0] : 'striver_sde';
+  const [sheetFilter, setSheetFilter] = useState(initialSheet);
   const [searchQuery, setSearchQuery] = useState('');
   const [categoryFilter, setCategoryFilter] = useState('');
   const [statusFilter, setStatusFilter] = useState('');
@@ -61,8 +63,8 @@ export default function ProblemsClient({ problems, userProgress }: ProblemsClien
 
   // Available sheets
   const availableSheets = [
-    { id: 'striver_sde', label: 'Striver SDE Sheet (191 Problems)' },
-    { id: 'striver_a2z', label: "Striver's A2Z Sheet (474 Problems)" },
+    { id: 'striver_sde', label: `Striver SDE Sheet (191)${!enabledSheets.includes('striver_sde') ? ' - [DISABLED]' : ''}` },
+    { id: 'striver_a2z', label: `Striver's A2Z Sheet (474)${!enabledSheets.includes('striver_a2z') ? ' - [DISABLED]' : ''}` },
     { id: 'neetcode_150', label: 'NeetCode 150 (Future)' },
     { id: 'neetcode_100', label: 'NeetCode 100 (Future)' },
   ];
