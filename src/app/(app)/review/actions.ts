@@ -74,6 +74,7 @@ export async function submitReview(problemId: string, rating: number) {
 
   if (profile) {
     let newStreak = profile.streak || 0;
+    const currentMax = (profile as any).max_streak || 0;
     const lastActive = profile.last_active_date;
 
     if (!lastActive) {
@@ -90,10 +91,13 @@ export async function submitReview(problemId: string, rating: number) {
       }
     }
 
+    const newMax = Math.max(currentMax, newStreak);
+
     await supabase
       .from('profiles')
       .update({
         streak: newStreak,
+        max_streak: newMax,
         last_active_date: todayStr,
       })
       .eq('id', user.id);

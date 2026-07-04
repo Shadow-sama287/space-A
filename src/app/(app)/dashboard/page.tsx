@@ -1,6 +1,7 @@
 import { createClient } from '@/lib/supabase/server';
 import Link from 'next/link';
 import TopicProgressWidget from '@/components/TopicProgressWidget';
+import Streak3DCanvas from '@/components/Streak3DCanvas';
 
 export const dynamic = 'force-dynamic';
 
@@ -32,6 +33,21 @@ export default async function DashboardPage() {
   ]);
 
   const enabledSheets: string[] = profile?.enabled_sheets || ['striver_sde', 'striver_a2z'];
+
+  // Streak Expiration Evaluation
+  const todayStr = new Date().toISOString().split('T')[0];
+  const yesterday = new Date();
+  yesterday.setDate(yesterday.getDate() - 1);
+  const yesterdayStr = yesterday.toISOString().split('T')[0];
+
+  let effectiveStreak = profile?.streak || 0;
+  const lastActive = profile?.last_active_date;
+
+  if (lastActive && lastActive < yesterdayStr) {
+    // User missed a day! Streak is reset -> SHATTERED CUBE
+    effectiveStreak = 0;
+    supabase.from('profiles').update({ streak: 0 }).eq('id', user.id).then(() => {});
+  }
 
   const problems = allProblems || [];
   const dbProblemsCount = problems.length;
@@ -157,14 +173,14 @@ export default async function DashboardPage() {
       {/* TOP STATS GRIDS */}
       <div className="grid-3 mb-4">
         {/* DUE COUNT */}
-        <div className="card text-center" style={{ display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
-          <div>
+        <div className="card text-center" style={{ display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center', gap: '1rem', padding: '1.25rem' }}>
+          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
             <div className="stat-value">{dueProblemsCount}</div>
             <div className="stat-label">Due Reviews Today</div>
           </div>
-          <div className="mt-2">
+          <div style={{ width: '100%' }}>
             {dueProblemsCount > 0 ? (
-              <Link href="/review" className="btn btn-black" style={{ width: '100%', textTransform: 'uppercase' }}>
+              <Link href="/review" className="btn btn-black" style={{ width: '100%', textTransform: 'uppercase', textDecoration: 'none' }}>
                 Start Review Session
               </Link>
             ) : (
@@ -176,10 +192,17 @@ export default async function DashboardPage() {
         </div>
 
         {/* STREAK */}
-        <div className="card text-center">
-          <div className="stat-value">{profile?.streak || 0}d</div>
-          <div className="stat-label">Daily Solve Streak</div>
-          <p className="mt-2" style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', textTransform: 'uppercase' }}>
+        <div className="card text-center" style={{ display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center', gap: '0.4rem', padding: '1rem' }}>
+          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
+            <div className="stat-value">{effectiveStreak}d</div>
+            <div className="stat-label">Daily Solve Streak</div>
+          </div>
+
+          <div style={{ margin: '0.2rem 0' }}>
+            <Streak3DCanvas streak={effectiveStreak} lastActiveDate={profile?.last_active_date} />
+          </div>
+
+          <p style={{ fontSize: '0.7rem', color: 'var(--text-secondary)', textTransform: 'uppercase' }}>
             {profile?.last_active_date 
               ? `Last active: ${new Date(profile.last_active_date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}`
               : 'Start your streak today!'}
@@ -187,16 +210,18 @@ export default async function DashboardPage() {
         </div>
 
         {/* SOLVING SUMMARY */}
-        <div className="card text-center" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px', padding: '1rem' }}>
-          <div className="stat-box">
-            <div className="stat-value" style={{ fontSize: '1.5rem' }}>{reviewingCount}</div>
-            <div className="stat-label" style={{ fontSize: '0.65rem' }}>Reviewing</div>
+        <div className="card text-center" style={{ display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center', gap: '8px', padding: '1rem' }}>
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px', width: '100%' }}>
+            <div className="stat-box" style={{ display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center', padding: '0.6rem' }}>
+              <div className="stat-value" style={{ fontSize: '1.5rem' }}>{reviewingCount}</div>
+              <div className="stat-label" style={{ fontSize: '0.65rem' }}>Reviewing</div>
+            </div>
+            <div className="stat-box" style={{ display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center', padding: '0.6rem' }}>
+              <div className="stat-value" style={{ fontSize: '1.5rem' }}>{masteredCount}</div>
+              <div className="stat-label" style={{ fontSize: '0.65rem' }}>Mastered</div>
+            </div>
           </div>
-          <div className="stat-box">
-            <div className="stat-value" style={{ fontSize: '1.5rem' }}>{masteredCount}</div>
-            <div className="stat-label" style={{ fontSize: '0.65rem' }}>Mastered</div>
-          </div>
-          <div className="stat-box" style={{ gridColumn: 'span 2' }}>
+          <div className="stat-box" style={{ width: '100%', display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center', padding: '0.6rem' }}>
             <div className="stat-value" style={{ fontSize: '1.5rem' }}>
               {activeProblems.length} <span style={{ fontSize: '0.9rem', color: 'var(--text-secondary)' }}>/ {enabledProblemIds.size}</span>
             </div>

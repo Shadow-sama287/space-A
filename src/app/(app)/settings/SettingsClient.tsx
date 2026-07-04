@@ -13,10 +13,15 @@ interface SheetProgress {
   solvedCount: number;
 }
 
+import { calculateAchievements } from '@/lib/achievements';
+
 interface SettingsClientProps {
   userEmail: string;
   joinedDate: string;
   streak: number;
+  maxStreak: number;
+  solvedCount: number;
+  masteredCount: number;
   enabledSheets: string[];
   defaultSheet: string;
   dailyGoal: number;
@@ -24,7 +29,7 @@ interface SettingsClientProps {
   sheetProgressList: SheetProgress[];
 }
 
-type CategoryTab = 'sheets' | 'preferences' | 'themes' | 'account' | 'developer';
+type CategoryTab = 'sheets' | 'preferences' | 'themes' | 'achievements' | 'account' | 'developer';
 
 const THEMES = [
   {
@@ -141,6 +146,9 @@ export default function SettingsClient({
   userEmail,
   joinedDate,
   streak,
+  maxStreak,
+  solvedCount,
+  masteredCount,
   enabledSheets: initialEnabledSheets,
   defaultSheet: initialDefaultSheet,
   dailyGoal: initialDailyGoal,
@@ -149,6 +157,9 @@ export default function SettingsClient({
 }: SettingsClientProps) {
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
+
+  const achievements = calculateAchievements({ solvedCount, masteredCount, streak, maxStreak });
+  const unlockedCount = achievements.filter(a => a.isUnlocked).length;
 
   // Navigation & Search State
   const [activeTab, setActiveTab] = useState<CategoryTab>('sheets');
@@ -400,6 +411,38 @@ export default function SettingsClient({
                 <path d="M12 2a10 10 0 0 0 0 20z" fill="currentColor"/>
               </svg>
               COLOR THEMES
+            </button>
+
+            {/* TAB 4: ACHIEVEMENTS (WIP) */}
+            <button
+              onClick={() => setActiveTab('achievements')}
+              style={{
+                textAlign: 'left',
+                padding: '0.65rem 0.85rem',
+                fontFamily: 'monospace',
+                fontSize: '0.8rem',
+                fontWeight: 900,
+                textTransform: 'uppercase',
+                cursor: 'pointer',
+                backgroundColor: activeTab === 'achievements' ? 'var(--text-primary)' : 'transparent',
+                color: activeTab === 'achievements' ? 'var(--bg-primary)' : 'var(--text-primary)',
+                border: activeTab === 'achievements' ? '2px solid var(--border-color)' : '2px solid transparent',
+                boxShadow: activeTab === 'achievements' ? '2px 2px 0px 0px var(--shadow-color)' : 'none',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '0.6rem',
+                transition: 'all 0.1s ease',
+              }}
+            >
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+                <path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6"/>
+                <path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18"/>
+                <path d="M4 22h16"/>
+                <path d="M10 14.66V17c0 .55-.47.98-.97 1.21C7.85 18.75 7 20.24 7 22"/>
+                <path d="M14 14.66V17c0 .55.47.98.97 1.21C16.15 18.75 17 20.24 17 22"/>
+                <path d="M18 2H6v7a6 6 0 0 0 12 0V2z"/>
+              </svg>
+              ACHIEVEMENTS (WIP)
             </button>
 
             {/* TAB 4: ACCOUNT */}
@@ -702,6 +745,83 @@ export default function SettingsClient({
                   </div>
                 )}
 
+              </div>
+            </div>
+          )}
+
+          {/* CATEGORY 4: ACHIEVEMENTS (WIP) */}
+          {(activeTab === 'achievements' || searchQuery) && (
+            <div className="card">
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '2px solid var(--border-color)', paddingBottom: '0.5rem', marginBottom: '1.25rem' }}>
+                <h3 className="card-title" style={{ margin: 0, fontSize: '1rem' }}>
+                  ACHIEVEMENTS & BADGES (WIP)
+                </h3>
+                <span style={{ fontSize: '0.75rem', fontFamily: 'monospace', fontWeight: 900 }}>
+                  {unlockedCount} / {achievements.length} UNLOCKED
+                </span>
+              </div>
+
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(260px, 1fr))', gap: '1rem' }}>
+                {achievements.map((ach) => {
+                  if (!matchesSearch(ach.name, ach.desc)) return null;
+
+                  const pct = Math.min(Math.round((ach.current / ach.target) * 100), 100);
+
+                  return (
+                    <div
+                      key={ach.id}
+                      style={{
+                        border: ach.isUnlocked ? '2px solid var(--border-color)' : '2px dashed var(--border-color)',
+                        padding: '1rem',
+                        backgroundColor: ach.isUnlocked ? 'var(--bg-primary)' : 'var(--bg-secondary)',
+                        boxShadow: ach.isUnlocked ? '3px 3px 0px 0px var(--shadow-color)' : 'none',
+                        opacity: ach.isUnlocked ? 1 : 0.75,
+                        display: 'flex',
+                        flexDirection: 'column',
+                        justifyContent: 'space-between',
+                        gap: '0.75rem',
+                      }}
+                    >
+                      <div>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.3rem' }}>
+                          <span style={{ fontSize: '0.65rem', fontFamily: 'monospace', fontWeight: 900, color: 'var(--text-secondary)' }}>
+                            {ach.badgeCode}
+                          </span>
+                          <span
+                            style={{
+                              fontSize: '0.65rem',
+                              fontFamily: 'monospace',
+                              fontWeight: 900,
+                              padding: '0.15rem 0.4rem',
+                              border: '1px solid var(--border-color)',
+                              backgroundColor: ach.isUnlocked ? 'var(--text-primary)' : 'transparent',
+                              color: ach.isUnlocked ? 'var(--bg-primary)' : 'var(--text-primary)',
+                            }}
+                          >
+                            {ach.isUnlocked ? '[ UNLOCKED ]' : '[ LOCKED ]'}
+                          </span>
+                        </div>
+
+                        <div style={{ fontWeight: 900, fontSize: '0.85rem', fontFamily: 'monospace', textTransform: 'uppercase' }}>
+                          {ach.name}
+                        </div>
+                        <div style={{ fontSize: '0.7rem', fontFamily: 'monospace', color: 'var(--text-secondary)', marginTop: '4px' }}>
+                          {ach.desc}
+                        </div>
+                      </div>
+
+                      <div>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.65rem', fontFamily: 'monospace', fontWeight: 'bold', marginBottom: '3px' }}>
+                          <span>PROGRESS</span>
+                          <span>{ach.current} / {ach.target} ({pct}%)</span>
+                        </div>
+                        <div className="progress-bar-container" style={{ height: '6px' }}>
+                          <div className="progress-bar-fill" style={{ width: `${pct}%` }} />
+                        </div>
+                      </div>
+                    </div>
+                  );
+                })}
               </div>
             </div>
           )}

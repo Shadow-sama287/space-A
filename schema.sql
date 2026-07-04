@@ -6,6 +6,7 @@ CREATE TABLE IF NOT EXISTS public.profiles (
     id UUID PRIMARY KEY REFERENCES auth.users(id) ON DELETE CASCADE,
     email TEXT NOT NULL,
     streak INTEGER DEFAULT 0,
+    max_streak INTEGER DEFAULT 0,
     last_active_date DATE,
     enabled_sheets TEXT[] DEFAULT ARRAY['striver_sde', 'striver_a2z']::TEXT[],
     default_sheet TEXT DEFAULT 'striver_sde',

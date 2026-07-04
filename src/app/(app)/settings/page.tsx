@@ -25,6 +25,7 @@ export default async function SettingsPage() {
   const defaultSheet: string = profile?.default_sheet || 'striver_sde';
   const dailyGoal: number = profile?.daily_goal || 10;
   const currentTheme: string = profile?.theme || 'monochrome';
+  const maxStreak: number = profile?.max_streak || profile?.streak || 0;
 
   // Fetch problems & user progress for calculation
   const { data: allProblems } = await supabase
@@ -33,11 +34,14 @@ export default async function SettingsPage() {
 
   const { data: userProblems } = await supabase
     .from('user_problems')
-    .select('problem_id')
+    .select('problem_id, status')
     .eq('user_id', user.id);
 
   const problems = allProblems || [];
   const activeProblems = userProblems || [];
+
+  const solvedCount = activeProblems.length;
+  const masteredCount = activeProblems.filter(up => up.status === 'mastered').length;
 
   const sheetProgressList = [
     {
@@ -69,6 +73,9 @@ export default async function SettingsPage() {
         userEmail={user.email || profile?.email || 'User'}
         joinedDate={profile?.created_at || new Date().toISOString()}
         streak={profile?.streak || 0}
+        maxStreak={maxStreak}
+        solvedCount={solvedCount}
+        masteredCount={masteredCount}
         enabledSheets={enabledSheets}
         defaultSheet={defaultSheet}
         dailyGoal={dailyGoal}
