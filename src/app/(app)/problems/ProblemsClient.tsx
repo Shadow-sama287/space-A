@@ -1,8 +1,9 @@
 'use client';
 
-import { useState, useTransition } from 'react';
+import { useState, useEffect, useTransition } from 'react';
 import { useRouter } from 'next/navigation';
 import { submitReview } from '../review/actions';
+import CPWalkthroughModal from '@/components/CPWalkthroughModal';
 
 interface Problem {
   id: string;
@@ -10,6 +11,7 @@ interface Problem {
   title: string;
   category: string;
   difficulty: string;
+  rating?: number | null;
   leetcode_url: string;
   ninja_url: string | null;
 }
@@ -30,7 +32,7 @@ interface ProblemsClientProps {
   enabledSheets?: string[];
 }
 
-export default function ProblemsClient({ problems, userProgress, enabledSheets = ['striver_sde', 'striver_a2z'] }: ProblemsClientProps) {
+export default function ProblemsClient({ problems, userProgress, enabledSheets = ['striver_sde', 'striver_a2z', 'tle_31'] }: ProblemsClientProps) {
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
 
@@ -43,7 +45,30 @@ export default function ProblemsClient({ problems, userProgress, enabledSheets =
   const [sheetFilter, setSheetFilter] = useState(initialSheet);
   const [searchQuery, setSearchQuery] = useState('');
   const [categoryFilter, setCategoryFilter] = useState('');
+  const [ratingFilter, setRatingFilter] = useState<string>('all');
   const [statusFilter, setStatusFilter] = useState('');
+
+  // CP Walkthrough Modal state
+  const [isCPModalOpen, setIsCPModalOpen] = useState(false);
+
+  // Back to Top scroll listener
+  const [showScrollTop, setShowScrollTop] = useState(false);
+
+  useEffect(() => {
+    const handleScroll = () => {
+      if (window.scrollY > 300) {
+        setShowScrollTop(true);
+      } else {
+        setShowScrollTop(false);
+      }
+    };
+    window.addEventListener('scroll', handleScroll);
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
+
+  const scrollToTop = () => {
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
 
   // Modal state
   const [reviewProblem, setReviewProblem] = useState<Problem | null>(null);
@@ -65,8 +90,8 @@ export default function ProblemsClient({ problems, userProgress, enabledSheets =
   const availableSheets = [
     { id: 'striver_sde', label: `Striver SDE Sheet (191)${!enabledSheets.includes('striver_sde') ? ' - [DISABLED]' : ''}` },
     { id: 'striver_a2z', label: `Striver's A2Z Sheet (474)${!enabledSheets.includes('striver_a2z') ? ' - [DISABLED]' : ''}` },
+    { id: 'tle_31', label: `TLE Eliminators CP Sheet (372)${!enabledSheets.includes('tle_31') ? ' - [DISABLED]' : ''}` },
     { id: 'neetcode_150', label: 'NeetCode 150 (Future)' },
-    { id: 'neetcode_100', label: 'NeetCode 100 (Future)' },
   ];
 
   // Run database seeding
@@ -119,10 +144,16 @@ export default function ProblemsClient({ problems, userProgress, enabledSheets =
     // 2. Search query
     if (searchQuery && !p.title.toLowerCase().includes(searchQuery.toLowerCase())) return false;
 
-    // 3. Category Filter
+    // 3. Rating Filter (for TLE 31 CP sheet)
+    if (sheetFilter === 'tle_31' && ratingFilter !== 'all') {
+      const targetRating = parseInt(ratingFilter, 10);
+      if (p.rating !== targetRating && p.category !== `${targetRating} Rating`) return false;
+    }
+
+    // 4. Category Filter
     if (categoryFilter && p.category !== categoryFilter) return false;
 
-    // 4. Status Filter
+    // 5. Status Filter
     if (statusFilter) {
       const prog = progressMap.get(p.id);
       const status = prog ? prog.status : 'unreviewed';
@@ -136,13 +167,16 @@ export default function ProblemsClient({ problems, userProgress, enabledSheets =
 
   return (
     <div>
+      {/* CP WALKTHROUGH MODAL */}
+      <CPWalkthroughModal isOpen={isCPModalOpen} onClose={() => setIsCPModalOpen(false)} />
+
       {/* SEED DATABASE CORNER BANNER */}
       {problems.length === 0 && (
         <div className="card" style={{ backgroundColor: 'var(--bg-secondary)', marginBottom: '2rem' }}>
           <h2 className="card-title">Database is empty</h2>
-          <p className="mb-2">Your Supabase database has no problems loaded. Click below to seed the database with Striver SDE & A2Z sheet problems.</p>
+          <p className="mb-2">Your Supabase database has no problems loaded. Click below to seed the database with Striver SDE, A2Z & TLE 31 sheet problems.</p>
           <button onClick={handleSeed} disabled={seeding} className="btn btn-black">
-            {seeding ? 'SEEDING DATABASE...' : 'SEED ALL SHEETS (SDE & A2Z)'}
+            {seeding ? 'SEEDING DATABASE...' : 'SEED ALL SHEETS (SDE, A2Z & TLE 31)'}
           </button>
           {seedResult && <div className="mt-2" style={{ fontWeight: 'bold' }}>{seedResult}</div>}
         </div>
@@ -155,16 +189,29 @@ export default function ProblemsClient({ problems, userProgress, enabledSheets =
             <div style={{ fontSize: '0.85rem', fontWeight: 'bold' }}>
               TOTAL LOADED PROBLEMS: {problems.length}
             </div>
-            <button 
-              onClick={handleSeed} 
-              disabled={seeding} 
-              className="btn btn-sm"
-              style={{ fontSize: '0.75rem', padding: '0.25rem 0.6rem' }}
-            >
-              {seeding ? 'RE-SEEDING...' : 'RE-SEED / RELOAD ALL SHEETS'}
-            </button>
+
+            <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
+              {sheetFilter === 'tle_31' && (
+                <button
+                  onClick={() => setIsCPModalOpen(true)}
+                  className="btn btn-black btn-sm"
+                  style={{ fontSize: '0.75rem', padding: '0.35rem 0.75rem', fontFamily: 'monospace' }}
+                >
+                  CP WALKTHROUGH & ROADMAP
+                </button>
+              )}
+              <button 
+                onClick={handleSeed} 
+                disabled={seeding} 
+                className="btn btn-sm"
+                style={{ fontSize: '0.75rem', padding: '0.25rem 0.6rem' }}
+              >
+                {seeding ? 'RE-SEEDING...' : 'RE-SEED / RELOAD ALL SHEETS'}
+              </button>
+            </div>
           </div>
           {seedResult && <div className="mb-3" style={{ fontWeight: 'bold', fontSize: '0.85rem' }}>{seedResult}</div>}
+
           <div className="grid-3" style={{ gap: '1rem' }}>
             {/* Sheet Selector */}
             <div>
@@ -176,14 +223,13 @@ export default function ProblemsClient({ problems, userProgress, enabledSheets =
                 onChange={(e) => {
                   setSheetFilter(e.target.value);
                   setCategoryFilter('');
+                  setRatingFilter('all');
                 }}
                 className="input"
                 style={{ height: '42px', padding: '0.4rem' }}
               >
                 {availableSheets.map(s => (
-                  <option key={s.id} value={s.id} disabled={!['striver_sde', 'striver_a2z'].includes(s.id)}>
-                    {s.label}
-                  </option>
+                  <option key={s.id} value={s.id}>{s.label}</option>
                 ))}
               </select>
             </div>
@@ -203,41 +249,25 @@ export default function ProblemsClient({ problems, userProgress, enabledSheets =
               />
             </div>
 
-            {/* Category Dropdown */}
-            <div>
-              <label style={{ display: 'block', fontSize: '0.75rem', fontWeight: 'bold', textTransform: 'uppercase', marginBottom: '0.25rem' }}>
-                Category
-              </label>
-              <select
-                value={categoryFilter}
-                onChange={(e) => setCategoryFilter(e.target.value)}
-                className="input"
-                style={{ height: '42px', padding: '0.4rem' }}
-              >
-                <option value="">ALL CATEGORIES</option>
-                {categories.map(cat => (
-                  <option key={cat} value={cat}>{cat.toUpperCase()}</option>
-                ))}
-              </select>
-            </div>
-
-            {/* Status Dropdown */}
-            <div>
-              <label style={{ display: 'block', fontSize: '0.75rem', fontWeight: 'bold', textTransform: 'uppercase', marginBottom: '0.25rem' }}>
-                Status
-              </label>
-              <select
-                value={statusFilter}
-                onChange={(e) => setStatusFilter(e.target.value)}
-                className="input"
-                style={{ height: '42px', padding: '0.4rem' }}
-              >
-                <option value="">ALL STATUSES</option>
-                <option value="unreviewed">UNREVIEWED</option>
-                <option value="reviewing">REVIEWING</option>
-                <option value="mastered">MASTERED</option>
-              </select>
-            </div>
+            {/* Category Dropdown (Hidden when TLE CP Sheet is active) */}
+            {sheetFilter !== 'tle_31' && (
+              <div>
+                <label style={{ display: 'block', fontSize: '0.75rem', fontWeight: 'bold', textTransform: 'uppercase', marginBottom: '0.25rem' }}>
+                  Category
+                </label>
+                <select
+                  value={categoryFilter}
+                  onChange={(e) => setCategoryFilter(e.target.value)}
+                  className="input"
+                  style={{ height: '42px', padding: '0.4rem' }}
+                >
+                  <option value="">ALL CATEGORIES</option>
+                  {categories.map(cat => (
+                    <option key={cat} value={cat}>{cat.toUpperCase()}</option>
+                  ))}
+                </select>
+              </div>
+            )}
           </div>
 
           <div className="flex-between mt-2" style={{ fontSize: '0.8rem' }}>
@@ -250,6 +280,37 @@ export default function ProblemsClient({ problems, userProgress, enabledSheets =
             </button>
           </div>
           {seedResult && <div className="mt-1" style={{ fontWeight: 'bold', fontSize: '0.8rem' }}>{seedResult}</div>}
+        </div>
+      )}
+
+      {/* DEDICATED SEPARATE CARD DIVISION FOR CODEFORCES RATING TIER FILTER BAR */}
+      {problems.length > 0 && sheetFilter === 'tle_31' && (
+        <div className="card mb-3" style={{ padding: '1rem' }}>
+          <div style={{ fontSize: '0.7rem', fontWeight: 900, fontFamily: 'monospace', textTransform: 'uppercase', color: 'var(--text-secondary)', marginBottom: '0.5rem' }}>
+            CODEFORCES RATING TIERS (800 - 1900)
+          </div>
+          <div style={{ display: 'flex', gap: '0.35rem', flexWrap: 'wrap' }}>
+            {['all', '800', '900', '1000', '1100', '1200', '1300', '1400', '1500', '1600', '1700', '1800', '1900'].map((r) => (
+              <button
+                key={r}
+                onClick={() => setRatingFilter(r)}
+                style={{
+                  padding: '0.35rem 0.65rem',
+                  fontFamily: 'monospace',
+                  fontSize: '0.75rem',
+                  fontWeight: 900,
+                  textTransform: 'uppercase',
+                  cursor: 'pointer',
+                  backgroundColor: ratingFilter === r ? 'var(--text-primary)' : 'var(--bg-primary)',
+                  color: ratingFilter === r ? 'var(--bg-primary)' : 'var(--text-primary)',
+                  border: '2px solid var(--border-color)',
+                  boxShadow: ratingFilter === r ? '2px 2px 0px 0px var(--shadow-color)' : 'none',
+                }}
+              >
+                {r === 'all' ? 'ALL RATINGS' : `CF ${r}`}
+              </button>
+            ))}
+          </div>
         </div>
       )}
 
@@ -281,7 +342,14 @@ export default function ProblemsClient({ problems, userProgress, enabledSheets =
                       {p.category}
                     </td>
                     <td>
-                      <span style={{ fontSize: '0.95rem' }}>{p.title}</span>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', flexWrap: 'wrap' }}>
+                        <span style={{ fontSize: '0.95rem' }}>{p.title}</span>
+                        {p.rating && (
+                          <span style={{ fontSize: '0.65rem', fontFamily: 'monospace', fontWeight: 900, padding: '0.1rem 0.35rem', border: '1px solid var(--border-color)', backgroundColor: 'var(--bg-secondary)', color: 'var(--text-primary)' }}>
+                            CF {p.rating}
+                          </span>
+                        )}
+                      </div>
                     </td>
                     <td>
                       <span className={`badge-difficulty badge-${p.difficulty.toLowerCase()}`}>
@@ -408,6 +476,30 @@ export default function ProblemsClient({ problems, userProgress, enabledSheets =
             </form>
           </div>
         </div>
+      )}
+
+      {/* STICKY FLOATING BRUTALIST BACK TO TOP BUTTON */}
+      {showScrollTop && (
+        <button
+          onClick={scrollToTop}
+          className="btn btn-black"
+          style={{
+            position: 'fixed',
+            bottom: '24px',
+            right: '24px',
+            zIndex: 9999,
+            padding: '0.65rem 1rem',
+            fontFamily: 'monospace',
+            fontSize: '0.8rem',
+            fontWeight: 900,
+            textTransform: 'uppercase',
+            border: '2px solid var(--border-color)',
+            boxShadow: '4px 4px 0px 0px var(--shadow-color)',
+            cursor: 'pointer',
+          }}
+        >
+          [ ▲ BACK TO TOP ]
+        </button>
       )}
     </div>
   );

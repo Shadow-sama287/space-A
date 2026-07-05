@@ -62,6 +62,15 @@ export default async function SettingsPage() {
         return p?.sheet === 'striver_a2z';
       }).length,
     },
+    {
+      sheetId: 'tle_31',
+      label: "TLE Eliminators 31 CP Sheet (372 Problems)",
+      totalCount: problems.filter(p => p.sheet === 'tle_31').length || 372,
+      solvedCount: activeProblems.filter(up => {
+        const p = problems.find(prob => prob.id === up.problem_id);
+        return p?.sheet === 'tle_31';
+      }).length,
+    },
   ];
 
   return (

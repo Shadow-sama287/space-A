@@ -8,7 +8,7 @@ CREATE TABLE IF NOT EXISTS public.profiles (
     streak INTEGER DEFAULT 0,
     max_streak INTEGER DEFAULT 0,
     last_active_date DATE,
-    enabled_sheets TEXT[] DEFAULT ARRAY['striver_sde', 'striver_a2z']::TEXT[],
+    enabled_sheets TEXT[] DEFAULT ARRAY['striver_sde', 'striver_a2z', 'tle_31']::TEXT[],
     default_sheet TEXT DEFAULT 'striver_sde',
     daily_goal INTEGER DEFAULT 10,
     theme TEXT DEFAULT 'monochrome',
@@ -18,10 +18,11 @@ CREATE TABLE IF NOT EXISTS public.profiles (
 -- PROBLEMS TABLE
 CREATE TABLE IF NOT EXISTS public.problems (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    sheet VARCHAR NOT NULL, -- e.g., 'striver_sde', 'neetcode_150'
+    sheet VARCHAR NOT NULL, -- e.g., 'striver_sde', 'striver_a2z', 'tle_31'
     title VARCHAR NOT NULL,
-    category VARCHAR NOT NULL, -- e.g., 'Arrays', 'Linked List'
+    category VARCHAR NOT NULL, -- e.g., 'Arrays', '800 Rating', '1200 Rating'
     difficulty VARCHAR NOT NULL, -- 'Easy', 'Medium', 'Hard'
+    rating INTEGER, -- Codeforces rating e.g. 800, 1200, 1900
     leetcode_url TEXT,
     ninja_url TEXT,
     created_at TIMESTAMPTZ DEFAULT NOW(),
