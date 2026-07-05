@@ -39,7 +39,9 @@ CREATE TABLE IF NOT EXISTS public.user_problems (
     repetitions INTEGER DEFAULT 0,
     next_review_date TIMESTAMPTZ DEFAULT NOW(),
     last_reviewed_at TIMESTAMPTZ,
-    status VARCHAR DEFAULT 'reviewing', -- 'reviewing', 'mastered'
+    status VARCHAR DEFAULT 'reviewing', -- 'reviewing', 'mastered', 'cooling'
+    cooling_queue_tier TEXT, -- 'primary' (max 3), 'secondary' (max 10)
+    cooling_until TIMESTAMPTZ,
     created_at TIMESTAMPTZ DEFAULT NOW(),
     UNIQUE(user_id, problem_id)
 );

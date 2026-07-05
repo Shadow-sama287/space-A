@@ -2,6 +2,7 @@ import { createClient } from '@/lib/supabase/server';
 import Link from 'next/link';
 import TopicProgressWidget from '@/components/TopicProgressWidget';
 import Streak3DCanvas from '@/components/Streak3DCanvas';
+import CoolOffDashboardCard from '@/components/CoolOffDashboardCard';
 
 export const dynamic = 'force-dynamic';
 
@@ -27,7 +28,7 @@ export default async function DashboardPage() {
     { data: history },
   ] = await Promise.all([
     supabase.from('profiles').select('*').eq('id', user.id).single(),
-    supabase.from('problems').select('id, sheet, category'),
+    supabase.from('problems').select('id, sheet, category, title'),
     supabase.from('user_problems').select('*').eq('user_id', user.id),
     supabase.from('review_history').select('reviewed_at').eq('user_id', user.id).gte('reviewed_at', twentyEightDaysAgo.toISOString()),
   ]);
@@ -158,18 +159,6 @@ export default async function DashboardPage() {
         </div>
       )}
 
-      {/* ACTIVE SHEETS SUMMARY BANNER */}
-      <div className="card mb-4" style={{ padding: '0.85rem 1.25rem', backgroundColor: 'var(--bg-secondary)', borderLeft: '6px solid #000' }}>
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '0.5rem' }}>
-          <div style={{ fontFamily: 'monospace', fontSize: '0.85rem', fontWeight: 'bold' }}>
-            ACTIVE SHEETS: {enabledSheets.length > 0 ? enabledSheets.map(s => s === 'striver_sde' ? 'STRIVER SDE (191)' : 'STRIVER A2Z (474)').join(' | ') : 'NONE ENABLED'}
-          </div>
-          <Link href="/settings" className="btn btn-sm btn-black" style={{ textTransform: 'uppercase', fontSize: '0.75rem', textDecoration: 'none' }}>
-            MANAGE SHEETS
-          </Link>
-        </div>
-      </div>
-
       {/* TOP STATS GRIDS */}
       <div className="grid-3 mb-4">
         {/* DUE COUNT */}
@@ -202,9 +191,9 @@ export default async function DashboardPage() {
             <Streak3DCanvas streak={effectiveStreak} lastActiveDate={profile?.last_active_date} />
           </div>
 
-          <p style={{ fontSize: '0.7rem', color: 'var(--text-secondary)', textTransform: 'uppercase' }}>
+          <p suppressHydrationWarning style={{ fontSize: '0.7rem', color: 'var(--text-secondary)', textTransform: 'uppercase' }}>
             {profile?.last_active_date 
-              ? `Last active: ${new Date(profile.last_active_date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}`
+              ? `Last active: ${profile.last_active_date.split('T')[0]}`
               : 'Start your streak today!'}
           </p>
         </div>
@@ -227,6 +216,24 @@ export default async function DashboardPage() {
             </div>
             <div className="stat-label" style={{ fontSize: '0.65rem' }}>Active Sheet Solved</div>
           </div>
+        </div>
+      </div>
+
+      {/* MENTAL RECOVERY & COOL-OFF CORNER */}
+      <CoolOffDashboardCard
+        items={(userProblems || []).filter(up => up.status === 'cooling')}
+        allProblemsMap={new Map((problems || []).map(p => [p.id, p.category ? `${p.title} (${p.category})` : p.title]))}
+      />
+
+      {/* ACTIVE SHEETS SUMMARY BANNER */}
+      <div className="card mb-4" style={{ padding: '0.85rem 1.25rem', backgroundColor: 'var(--bg-secondary)', borderLeft: '6px solid #000' }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '0.5rem' }}>
+          <div style={{ fontFamily: 'monospace', fontSize: '0.85rem', fontWeight: 'bold' }}>
+            ACTIVE SHEETS: {enabledSheets.length > 0 ? enabledSheets.map(s => s === 'striver_sde' ? 'STRIVER SDE (191)' : s === 'striver_a2z' ? 'STRIVER A2Z (474)' : 'TLE CP SHEET (372)').join(' | ') : 'NONE ENABLED'}
+          </div>
+          <Link href="/settings" className="btn btn-sm btn-black" style={{ textTransform: 'uppercase', fontSize: '0.75rem', textDecoration: 'none' }}>
+            MANAGE SHEETS
+          </Link>
         </div>
       </div>
 

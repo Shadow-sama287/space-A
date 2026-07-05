@@ -45,6 +45,7 @@ export default async function ReviewPage() {
       )
     `)
     .eq('user_id', user.id)
+    .neq('status', 'cooling')
     .lte('next_review_date', new Date().toISOString());
 
   // Map database response to a flat type structure, filtering by enabled sheets

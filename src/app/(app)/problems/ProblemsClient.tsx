@@ -4,6 +4,7 @@ import { useState, useEffect, useTransition } from 'react';
 import { useRouter } from 'next/navigation';
 import { submitReview } from '../review/actions';
 import CPWalkthroughModal from '@/components/CPWalkthroughModal';
+import { coolOffProblemAction, resumeProblemAction } from '@/app/actions/cool-off-actions';
 
 interface Problem {
   id: string;
@@ -74,6 +75,41 @@ export default function ProblemsClient({ problems, userProgress, enabledSheets =
   const [reviewProblem, setReviewProblem] = useState<Problem | null>(null);
   const [reviewRating, setReviewRating] = useState<number | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
+
+  // Cool Off Handlers
+  async function handleCoolOffProblem(problemId: string) {
+    setIsSubmitting(true);
+    try {
+      const res = await coolOffProblemAction(problemId);
+      if (res.success) {
+        startTransition(() => {
+          router.refresh();
+        });
+      } else {
+        alert(res.error);
+      }
+    } catch (err: any) {
+      alert(`Cool-off failed: ${err.message}`);
+    } finally {
+      setIsSubmitting(false);
+    }
+  }
+
+  async function handleResumeProblem(problemId: string) {
+    setIsSubmitting(true);
+    try {
+      const res = await resumeProblemAction(problemId);
+      if (res.success) {
+        startTransition(() => {
+          router.refresh();
+        });
+      }
+    } catch (err: any) {
+      alert(`Resume failed: ${err.message}`);
+    } finally {
+      setIsSubmitting(false);
+    }
+  }
 
   // Get progress mapping
   const progressMap = new Map<string, UserProblem>();
@@ -360,6 +396,7 @@ export default function ProblemsClient({ problems, userProgress, enabledSheets =
                       {status === 'unreviewed' && '[ ] UNREVIEWED'}
                       {status === 'reviewing' && `[*] D:${prog?.interval_days}d (EF:${prog?.ease_factor})`}
                       {status === 'mastered' && `[M] MASTERED`}
+                      {status === 'cooling' && `[🧊] SNOOZED (${(prog as any)?.cooling_queue_tier === 'primary' ? 'PRIMARY 3D' : 'WAITING QUEUE'})`}
                     </td>
                     <td>
                       <div style={{ display: 'flex', gap: '8px', justifyContent: 'center' }}>

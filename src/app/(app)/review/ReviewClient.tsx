@@ -5,6 +5,8 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { submitReview } from './actions';
 
+import { coolOffProblemAction } from '@/app/actions/cool-off-actions';
+
 interface DueProblem {
   id: string;
   user_problem_id: string;
@@ -50,6 +52,27 @@ export default function ReviewClient({ initialDueProblems }: ReviewClientProps) 
       });
     } catch (err: any) {
       alert(`Failed to save review: ${err.message}`);
+    } finally {
+      setIsSubmitting(false);
+    }
+  }
+
+  async function handleCoolOff() {
+    if (!currentProblem) return;
+    setIsSubmitting(true);
+    try {
+      const res = await coolOffProblemAction(currentProblem.id);
+      if (res.success) {
+        setShowGrading(false);
+        setCurrentIndex(prev => prev + 1);
+        startTransition(() => {
+          router.refresh();
+        });
+      } else {
+        alert(res.error);
+      }
+    } catch (err: any) {
+      alert(`Cool-off failed: ${err.message}`);
     } finally {
       setIsSubmitting(false);
     }
@@ -179,13 +202,39 @@ export default function ReviewClient({ initialDueProblems }: ReviewClientProps) 
                 </button>
               </div>
 
-              <button
-                onClick={() => setShowGrading(false)}
-                className="btn btn-outline mt-2"
-                style={{ width: '100%', fontSize: '0.75rem', textTransform: 'uppercase', border: 'none' }}
-              >
-                [Hide Grading Options]
-              </button>
+              <div style={{ display: 'flex', gap: '0.5rem', marginTop: '0.75rem' }}>
+                <button
+                  disabled={isSubmitting}
+                  onClick={handleCoolOff}
+                  title="Snooze this question for 3 days to recover with a fresh mind and break frustration"
+                  className="btn btn-outline"
+                  style={{
+                    flex: 1,
+                    fontSize: '0.75rem',
+                    textTransform: 'uppercase',
+                    border: '2px solid var(--border-color)',
+                    backgroundColor: 'var(--bg-secondary)',
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    gap: '0.4rem',
+                  }}
+                >
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="square">
+                    <circle cx="12" cy="12" r="9"/>
+                    <polyline points="12 6 12 12 15 15"/>
+                    <path d="M12 2v2M12 20v2M2 12h2M20 12h2"/>
+                  </svg>
+                  [ SNOOZE ]
+                </button>
+                <button
+                  onClick={() => setShowGrading(false)}
+                  className="btn btn-outline"
+                  style={{ flex: 1, fontSize: '0.75rem', textTransform: 'uppercase', border: 'none' }}
+                >
+                  [Hide Options]
+                </button>
+              </div>
             </div>
           )}
         </div>
