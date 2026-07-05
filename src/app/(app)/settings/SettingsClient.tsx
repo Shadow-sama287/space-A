@@ -745,6 +745,30 @@ export default function SettingsClient({
                   </div>
                 )}
 
+                {/* ROW 3: REPLAY ONBOARDING TOUR */}
+                {matchesSearch('Replay Onboarding Tour', 'Re-trigger interactive game onboarding tour') && (
+                  <div style={{ border: '2px solid var(--border-color)', padding: '1rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '1rem' }}>
+                    <div style={{ flex: 1 }}>
+                      <div style={{ fontWeight: 900, fontSize: '0.85rem', fontFamily: 'monospace', textTransform: 'uppercase' }}>
+                        Interactive Onboarding Tour
+                      </div>
+                      <div style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', marginTop: '2px', fontFamily: 'monospace' }}>
+                        Replay the step-by-step game guide explaining 3D cores, SM-2 scheduling, CP roadmap, and Snooze systems.
+                      </div>
+                    </div>
+
+                    <button
+                      onClick={() => {
+                        window.dispatchEvent(new Event('open_space_a_onboarding'));
+                      }}
+                      className="btn btn-black btn-sm"
+                      style={{ fontSize: '0.75rem', padding: '0.4rem 0.8rem', fontFamily: 'monospace' }}
+                    >
+                      🎮 REPLAY ONBOARDING TOUR
+                    </button>
+                  </div>
+                )}
+
               </div>
             </div>
           )}

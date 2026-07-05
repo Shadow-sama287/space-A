@@ -3,6 +3,7 @@ import { logout } from '../auth-actions';
 import FeedbackDrawer from '@/components/FeedbackDrawer';
 import NavigationProgressBar from '@/components/NavigationProgressBar';
 import ThemeProvider from '@/components/ThemeProvider';
+import OnboardingTour from '@/components/OnboardingTour';
 
 export default function AppLayout({
   children,
@@ -13,6 +14,7 @@ export default function AppLayout({
     <div>
       <ThemeProvider />
       <NavigationProgressBar />
+      <OnboardingTour />
       <header className="nav-header">
         <div className="nav-container">
           <Link href="/dashboard" className="nav-logo">
