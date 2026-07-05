@@ -16,7 +16,7 @@ export default function AppLayout({
       <header className="nav-header">
         <div className="nav-container">
           <Link href="/dashboard" className="nav-logo">
-            SPACE A
+            space A
           </Link>
           <nav>
             <ul className="nav-links">

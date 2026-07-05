@@ -344,12 +344,12 @@ body {
 .nav-logo {
   font-size: 1.5rem;
   font-weight: 900;
-  text-transform: uppercase;
+  text-transform: none;
   text-decoration: none;
   color: var(--text-primary);
   border: var(--border-width) solid var(--border-color);
-  padding: 0.25rem 0.5rem;
-  box-shadow: 3px 3px 0px var(--shadow-color);
+  padding: 0.2rem 0.6rem;
+  box-shadow: 3px 3px 0px 0px var(--shadow-color);
 }
 
 .nav-links {
