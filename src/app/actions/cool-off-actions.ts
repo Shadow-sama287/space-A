@@ -67,6 +67,7 @@ export async function coolOffProblemAction(problemId: string) {
       status: 'cooling',
       cooling_queue_tier: assignedTier,
       cooling_until: coolingUntil,
+      next_review_date: coolingUntil || new Date(2099, 11, 31).toISOString(),
     },
     { onConflict: 'user_id,problem_id' }
   );

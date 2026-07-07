@@ -24,6 +24,7 @@ export default async function ProblemsPage() {
   const { data: problems } = await supabase
     .from('problems')
     .select('*')
+    .range(0, 5000)
     .order('category', { ascending: true })
     .order('title', { ascending: true });
 

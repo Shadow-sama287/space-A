@@ -15,12 +15,26 @@ export default async function TimelinePage() {
   }
 
   // Parallel database queries
-  const [{ data: profile }, { data: allProblems }, { data: userProblems }] =
+  const [{ data: profile }, { data: userProblemsData }] =
     await Promise.all([
       supabase.from('profiles').select('enabled_sheets').eq('id', user.id).single(),
-      supabase.from('problems').select('*').order('title', { ascending: true }),
-      supabase.from('user_problems').select('*').eq('user_id', user.id),
+      supabase.from('user_problems').select('*, problems(*)').eq('user_id', user.id),
     ]);
+
+  const userProblems: any[] = [];
+  const allProblems: any[] = [];
+  const seenProblems = new Set();
+
+  (userProblemsData || []).forEach((item: any) => {
+    const p = item.problems;
+    delete item.problems; // Remove nested object to match flat structure expected
+    userProblems.push(item);
+    
+    if (p && !seenProblems.has(p.id)) {
+      allProblems.push(p);
+      seenProblems.add(p.id);
+    }
+  });
 
   const enabledSheets: string[] = profile?.enabled_sheets || ['striver_sde', 'striver_a2z'];
 

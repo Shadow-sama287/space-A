@@ -48,3 +48,6 @@ Thumbs.db
 *.swo
 .vscode/
 .idea/
+
+# files
+test_range.js

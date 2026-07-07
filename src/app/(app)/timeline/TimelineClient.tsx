@@ -333,7 +333,13 @@ export default function TimelineClient({
                         </span>
 
                         <span style={{ fontSize: '0.7rem', fontFamily: 'monospace', fontWeight: 900 }}>
-                          STAGE {progress.repetitions} ({progress.interval_days}d)
+                          {progress.status === 'cooling' ? (
+                            <span style={{ backgroundColor: 'var(--text-secondary)', color: 'var(--bg-primary)', padding: '2px 4px' }}>
+                              IN COOL-OFF
+                            </span>
+                          ) : (
+                            `STAGE ${progress.repetitions} (${progress.interval_days}d)`
+                          )}
                         </span>
                       </div>
                     </div>

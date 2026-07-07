@@ -3,6 +3,9 @@ import Link from 'next/link';
 import TopicProgressWidget from '@/components/TopicProgressWidget';
 import Streak3DCanvas from '@/components/Streak3DCanvas';
 import CoolOffDashboardCard from '@/components/CoolOffDashboardCard';
+import { striverProblems } from '@/data/striverSheet';
+import { striverA2ZProblems } from '@/data/striverA2ZSheet';
+import { tle31Problems } from '@/data/tle31Sheet';
 
 export const dynamic = 'force-dynamic';
 
@@ -23,14 +26,14 @@ export default async function DashboardPage() {
   // Parallel database queries for 4x faster page loading
   const [
     { data: profile },
-    { data: allProblems },
-    { data: userProblems },
+    { data: userProblemsData },
     { data: history },
+    { count: dbProblemsCount }
   ] = await Promise.all([
     supabase.from('profiles').select('*').eq('id', user.id).single(),
-    supabase.from('problems').select('id, sheet, category, title'),
-    supabase.from('user_problems').select('*').eq('user_id', user.id),
+    supabase.from('user_problems').select('*, problems(*)').eq('user_id', user.id),
     supabase.from('review_history').select('reviewed_at').eq('user_id', user.id).gte('reviewed_at', twentyEightDaysAgo.toISOString()),
+    supabase.from('problems').select('*', { count: 'exact', head: true })
   ]);
 
   const enabledSheets: string[] = profile?.enabled_sheets || ['striver_sde', 'striver_a2z'];
@@ -50,49 +53,35 @@ export default async function DashboardPage() {
     supabase.from('profiles').update({ streak: 0 }).eq('id', user.id).then(() => {});
   }
 
-  const problems = allProblems || [];
-  const dbProblemsCount = problems.length;
-
-  // Filter problems to enabled sheets only for Dashboard metrics
-  const enabledProblemIds = new Set(
-    problems.filter(p => enabledSheets.includes(p.sheet)).map(p => p.id)
-  );
-
-  const rawActiveProblems = userProblems || [];
-
-  // Filter user progress to enabled sheets
-  const activeProblems = rawActiveProblems.filter(up => enabledProblemIds.has(up.problem_id));
+  // Filter user progress to enabled sheets using the joined problem data
+  const rawActiveProblems = userProblemsData || [];
+  const activeProblems = rawActiveProblems.filter((up: any) => up.problems && enabledSheets.includes(up.problems.sheet));
 
   // === CALCULATE STATS ===
   const now = new Date();
-  const dueProblemsCount = activeProblems.filter(up => {
+  const dueProblemsCount = activeProblems.filter((up: any) => {
     return new Date(up.next_review_date) <= now;
   }).length;
 
-  const masteredCount = activeProblems.filter(up => up.status === 'mastered').length;
+  const masteredCount = activeProblems.filter((up: any) => up.status === 'mastered').length;
   const reviewingCount = activeProblems.length - masteredCount;
 
   // === SHEET PROGRESS STATS ===
-  const sheetProgressList = [
-    {
-      sheetId: 'striver_sde',
-      label: 'Striver SDE Sheet',
-      totalCount: problems.filter(p => p.sheet === 'striver_sde').length || 191,
-      solvedCount: rawActiveProblems.filter(up => {
-        const p = problems.find(prob => prob.id === up.problem_id);
-        return p?.sheet === 'striver_sde';
-      }).length,
-    },
-    {
-      sheetId: 'striver_a2z',
-      label: "Striver's A2Z Sheet",
-      totalCount: problems.filter(p => p.sheet === 'striver_a2z').length || 474,
-      solvedCount: rawActiveProblems.filter(up => {
-        const p = problems.find(prob => prob.id === up.problem_id);
-        return p?.sheet === 'striver_a2z';
-      }).length,
-    },
-  ];
+  const SHEET_TOTALS: Record<string, { label: string, total: number }> = {
+    'striver_sde': { label: 'Striver SDE Sheet', total: 191 },
+    'striver_a2z': { label: "Striver's A2Z Sheet", total: 474 },
+    'tle_31': { label: "TLE Eliminators CP", total: 372 },
+  };
+
+  const sheetProgressList = enabledSheets.map(sheetId => {
+    const info = SHEET_TOTALS[sheetId] || { label: sheetId.toUpperCase(), total: 0 };
+    return {
+      sheetId,
+      label: info.label,
+      totalCount: info.total,
+      solvedCount: rawActiveProblems.filter((up: any) => up.problems && up.problems.sheet === sheetId).length,
+    };
+  });
 
   // === 7-DAY FORECAST ===
   const forecast = Array.from({ length: 7 }).map((_, i) => {
@@ -136,6 +125,29 @@ export default async function DashboardPage() {
       label: d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' }),
     };
   });
+
+  // === COMPUTE CATEGORY STATS ===
+  const categoryStatsMap = new Map<string, { category: string, total: number, solved: number, sheet: string }>();
+
+  const allStaticProblems = [...striverProblems, ...striverA2ZProblems, ...tle31Problems];
+  allStaticProblems.forEach(p => {
+    const key = `${p.sheet}::${p.category}`;
+    if (!categoryStatsMap.has(key)) {
+      categoryStatsMap.set(key, { category: p.category, total: 0, solved: 0, sheet: p.sheet });
+    }
+    categoryStatsMap.get(key)!.total += 1;
+  });
+
+  rawActiveProblems.forEach((up: any) => {
+    if (up.problems) {
+      const key = `${up.problems.sheet}::${up.problems.category}`;
+      if (categoryStatsMap.has(key)) {
+        categoryStatsMap.get(key)!.solved += 1;
+      }
+    }
+  });
+
+  const categoryStats = Array.from(categoryStatsMap.values());
 
   return (
     <div>
@@ -212,7 +224,7 @@ export default async function DashboardPage() {
           </div>
           <div className="stat-box" style={{ width: '100%', display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center', padding: '0.6rem' }}>
             <div className="stat-value" style={{ fontSize: '1.5rem' }}>
-              {activeProblems.length} <span style={{ fontSize: '0.9rem', color: 'var(--text-secondary)' }}>/ {enabledProblemIds.size}</span>
+              {activeProblems.length} <span style={{ fontSize: '0.9rem', color: 'var(--text-secondary)' }}>/ {enabledSheets.reduce((acc, sheet) => acc + (SHEET_TOTALS[sheet]?.total || 0), 0)}</span>
             </div>
             <div className="stat-label" style={{ fontSize: '0.65rem' }}>Active Sheet Solved</div>
           </div>
@@ -221,8 +233,8 @@ export default async function DashboardPage() {
 
       {/* MENTAL RECOVERY & COOL-OFF CORNER */}
       <CoolOffDashboardCard
-        items={(userProblems || []).filter(up => up.status === 'cooling')}
-        allProblemsMap={new Map((problems || []).map(p => [p.id, p.category ? `${p.title} (${p.category})` : p.title]))}
+        items={rawActiveProblems.filter((up: any) => up.status === 'cooling')}
+        allProblemsMap={new Map(rawActiveProblems.filter((up: any) => up.problems).map((up: any) => [up.problem_id, up.problems.category ? `${up.problems.title} (${up.problems.category})` : up.problems.title]))}
       />
 
       {/* ACTIVE SHEETS SUMMARY BANNER */}
@@ -298,8 +310,7 @@ export default async function DashboardPage() {
         {/* RIGHT COLUMN: PROGRESS BY TOPIC WIDGET */}
         <div>
           <TopicProgressWidget
-            categoryProblems={problems}
-            activeProblems={activeProblems}
+            categoryStats={categoryStats}
             enabledSheets={enabledSheets}
           />
         </div>

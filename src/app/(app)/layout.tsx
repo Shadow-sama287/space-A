@@ -1,3 +1,4 @@
+import { createClient } from '@/lib/supabase/server';
 import Link from 'next/link';
 import { logout } from '../auth-actions';
 import FeedbackDrawer from '@/components/FeedbackDrawer';
@@ -5,14 +6,25 @@ import NavigationProgressBar from '@/components/NavigationProgressBar';
 import ThemeProvider from '@/components/ThemeProvider';
 import OnboardingTour from '@/components/OnboardingTour';
 
-export default function AppLayout({
+export default async function AppLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
+  const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+  
+  let initialTheme = 'monochrome';
+  if (user) {
+    const { data: profile } = await supabase.from('profiles').select('theme').eq('id', user.id).single();
+    if (profile?.theme) {
+      initialTheme = profile.theme;
+    }
+  }
+
   return (
     <div>
-      <ThemeProvider />
+      <ThemeProvider initialTheme={initialTheme} />
       <NavigationProgressBar />
       <OnboardingTour />
       <header className="nav-header">

@@ -2,53 +2,43 @@
 
 import { useState } from 'react';
 
-interface CategoryProblem {
-  id: string;
+interface CategoryStat {
   category: string;
   sheet: string;
-}
-
-interface UserProblem {
-  problem_id: string;
+  total: number;
+  solved: number;
 }
 
 interface TopicProgressWidgetProps {
-  categoryProblems: CategoryProblem[];
-  activeProblems: UserProblem[];
+  categoryStats: CategoryStat[];
   enabledSheets: string[];
 }
 
 export default function TopicProgressWidget({
-  categoryProblems,
-  activeProblems,
+  categoryStats,
   enabledSheets,
 }: TopicProgressWidgetProps) {
   const [selectedSheet, setSelectedSheet] = useState<string>('all');
 
-  const solvedSet = new Set(activeProblems.map(up => up.problem_id));
-
-  // Filter problems based on sheet selection and enabled sheets
-  const filteredProblems = categoryProblems.filter(p => {
-    // Only consider enabled sheets if 'all' is selected
+  // Filter stats based on sheet selection and enabled sheets
+  const filteredStats = categoryStats.filter(s => {
     if (selectedSheet === 'all') {
-      return enabledSheets.includes(p.sheet);
+      return enabledSheets.includes(s.sheet);
     }
-    return p.sheet === selectedSheet;
+    return s.sheet === selectedSheet;
   });
 
-  // Calculate statistics per category
-  const categoryStats: { [key: string]: { total: number; solved: number; sheet: string } } = {};
-  filteredProblems.forEach(p => {
-    if (!categoryStats[p.category]) {
-      categoryStats[p.category] = { total: 0, solved: 0, sheet: p.sheet };
+  // Aggregate statistics per category (handles same category across different sheets)
+  const aggregatedStats: { [key: string]: { total: number; solved: number; sheet: string } } = {};
+  filteredStats.forEach(s => {
+    if (!aggregatedStats[s.category]) {
+      aggregatedStats[s.category] = { total: 0, solved: 0, sheet: s.sheet };
     }
-    categoryStats[p.category].total += 1;
-    if (solvedSet.has(p.id)) {
-      categoryStats[p.category].solved += 1;
-    }
+    aggregatedStats[s.category].total += s.total;
+    aggregatedStats[s.category].solved += s.solved;
   });
 
-  const categoryKeys = Object.keys(categoryStats);
+  const categoryKeys = Object.keys(aggregatedStats);
 
   return (
     <div className="card">
@@ -77,7 +67,7 @@ export default function TopicProgressWidget({
       {/* TOPICS SCROLLABLE CONTAINER */}
       <div style={{ display: 'flex', flexDirection: 'column', gap: '0.85rem', maxHeight: '480px', overflowY: 'auto', paddingRight: '0.3rem' }}>
         {categoryKeys.map(cat => {
-          const stats = categoryStats[cat];
+          const stats = aggregatedStats[cat];
           const pct = Math.round((stats.solved / stats.total) * 100);
           return (
             <div key={cat} style={{ fontSize: '0.75rem', fontFamily: 'monospace' }}>
