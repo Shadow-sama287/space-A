@@ -60,11 +60,11 @@ export default async function DashboardPage() {
   // === CALCULATE STATS ===
   const now = new Date();
   const dueProblemsCount = activeProblems.filter((up: any) => {
-    return new Date(up.next_review_date) <= now;
+    return up.status !== 'cooling' && new Date(up.next_review_date) <= now;
   }).length;
 
   const masteredCount = activeProblems.filter((up: any) => up.status === 'mastered').length;
-  const reviewingCount = activeProblems.length - masteredCount;
+  const reviewingCount = activeProblems.filter((up: any) => up.status === 'reviewing').length;
 
   // === SHEET PROGRESS STATS ===
   const SHEET_TOTALS: Record<string, { label: string, total: number }> = {
