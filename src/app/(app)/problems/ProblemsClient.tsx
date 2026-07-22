@@ -191,8 +191,8 @@ export default function ProblemsClient({ problems, userProgress, enabledSheets =
   const filteredProblems = problems.filter(p => {
     // 1. Sheet Filter
     if (['blind_75', 'neetcode_150', 'neetcode_250', 'neetcode_all'].includes(sheetFilter)) {
-      const matchesMainSheet = p.sheet === 'neetcode_all' || p.sheet === sheetFilter;
-      const matchesSubSheet = p.sub_sheets && p.sub_sheets.includes(sheetFilter);
+      const matchesMainSheet = p.sheet === sheetFilter;
+      const matchesSubSheet = Array.isArray(p.sub_sheets) && p.sub_sheets.includes(sheetFilter);
       if (!matchesMainSheet && !matchesSubSheet) return false;
     } else if (p.sheet !== sheetFilter) {
       return false;
@@ -224,7 +224,7 @@ export default function ProblemsClient({ problems, userProgress, enabledSheets =
 
   const totalSheetProblemsCount = problems.filter(p => {
     if (['blind_75', 'neetcode_150', 'neetcode_250', 'neetcode_all'].includes(sheetFilter)) {
-      return p.sheet === 'neetcode_all' || p.sheet === sheetFilter || (p.sub_sheets && p.sub_sheets.includes(sheetFilter));
+      return p.sheet === sheetFilter || (Array.isArray(p.sub_sheets) && p.sub_sheets.includes(sheetFilter));
     }
     return p.sheet === sheetFilter;
   }).length;
