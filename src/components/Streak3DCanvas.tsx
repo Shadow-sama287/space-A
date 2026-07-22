@@ -220,8 +220,28 @@ export default function Streak3DCanvas({ streak, lastActiveDate }: Streak3DCanva
     canvas.addEventListener('mouseenter', handleMouseEnter);
     canvas.addEventListener('mouseleave', handleMouseLeave);
 
+    let isVisible = true;
+
+    // IntersectionObserver to pause rendering when offscreen
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach((entry) => {
+        isVisible = entry.isIntersecting;
+      });
+    }, { threshold: 0.1 });
+    observer.observe(canvas);
+
+    const handleVisibilityChange = () => {
+      isVisible = !document.hidden;
+    };
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+
     // Render Loop
     const render = () => {
+      if (!isVisible) {
+        animationFrameId = requestAnimationFrame(render);
+        return;
+      }
+
       ctx.clearRect(0, 0, canvas.width, canvas.height);
 
       const computedColor = getComputedStyle(document.documentElement)
@@ -318,6 +338,8 @@ export default function Streak3DCanvas({ streak, lastActiveDate }: Streak3DCanva
 
     return () => {
       cancelAnimationFrame(animationFrameId);
+      observer.disconnect();
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
       canvas.removeEventListener('mousemove', handleMouseMove);
       canvas.removeEventListener('mouseenter', handleMouseEnter);
       canvas.removeEventListener('mouseleave', handleMouseLeave);

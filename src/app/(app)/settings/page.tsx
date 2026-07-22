@@ -1,5 +1,6 @@
 import { createClient } from '@/lib/supabase/server';
 import SettingsClient from './SettingsClient';
+import { fetchAllUserProblems } from '@/lib/supabase/queries';
 
 export const dynamic = 'force-dynamic';
 
@@ -28,10 +29,7 @@ export default async function SettingsPage() {
   const maxStreak: number = profile?.max_streak || profile?.streak || 0;
 
   // Fetch user progress for calculation using joined problem data
-  const { data: userProblemsData } = await supabase
-    .from('user_problems')
-    .select('problem_id, status, problems(sheet)')
-    .eq('user_id', user.id);
+  const userProblemsData = await fetchAllUserProblems(supabase, user.id);
 
   const activeProblems = userProblemsData || [];
 
@@ -42,15 +40,25 @@ export default async function SettingsPage() {
     'striver_sde': { label: 'Striver SDE Sheet (191 Problems)', total: 191 },
     'striver_a2z': { label: "Striver's A2Z Sheet (474 Problems)", total: 474 },
     'tle_31': { label: "TLE Eliminators CP (372 Problems)", total: 372 },
+    'neetcode_all': { label: "NeetCode All Practice (973 Problems)", total: 973 },
+    'neetcode_250': { label: "NeetCode 250 (250 Problems)", total: 250 },
+    'neetcode_150': { label: "NeetCode 150 (150 Problems)", total: 150 },
+    'blind_75': { label: "Blind 75 (75 Problems)", total: 75 },
   };
 
-  const sheetProgressList = ['striver_sde', 'striver_a2z', 'tle_31'].map(sheetId => {
+  const sheetProgressList = ['striver_sde', 'striver_a2z', 'tle_31', 'neetcode_all', 'neetcode_250', 'neetcode_150', 'blind_75'].map(sheetId => {
     const info = SHEET_TOTALS[sheetId];
     return {
       sheetId,
       label: info.label,
       totalCount: info.total,
-      solvedCount: activeProblems.filter((up: any) => up.problems?.sheet === sheetId).length,
+      solvedCount: activeProblems.filter((up: any) => {
+        if (!up.problems) return false;
+        if (['blind_75', 'neetcode_150', 'neetcode_250', 'neetcode_all'].includes(sheetId)) {
+          return up.problems.sheet === 'neetcode_all' || up.problems.sheet === sheetId || (up.problems.sub_sheets && up.problems.sub_sheets.includes(sheetId));
+        }
+        return up.problems.sheet === sheetId;
+      }).length,
     };
   });
 

@@ -18,9 +18,10 @@ CREATE TABLE IF NOT EXISTS public.profiles (
 -- PROBLEMS TABLE
 CREATE TABLE IF NOT EXISTS public.problems (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    sheet VARCHAR NOT NULL, -- e.g., 'striver_sde', 'striver_a2z', 'tle_31'
+    sheet VARCHAR NOT NULL, -- e.g., 'striver_sde', 'striver_a2z', 'tle_31', 'neetcode_all'
+    sub_sheets TEXT[] DEFAULT ARRAY[]::TEXT[], -- e.g., ARRAY['blind_75', 'neetcode_150', 'neetcode_250', 'neetcode_all']
     title VARCHAR NOT NULL,
-    category VARCHAR NOT NULL, -- e.g., 'Arrays', '800 Rating', '1200 Rating'
+    category VARCHAR NOT NULL, -- e.g., 'Arrays & Hashing', '800 Rating', '1200 Rating'
     difficulty VARCHAR NOT NULL, -- 'Easy', 'Medium', 'Hard'
     rating INTEGER, -- Codeforces rating e.g. 800, 1200, 1900
     leetcode_url TEXT,
@@ -28,6 +29,10 @@ CREATE TABLE IF NOT EXISTS public.problems (
     created_at TIMESTAMPTZ DEFAULT NOW(),
     UNIQUE(sheet, title)
 );
+
+CREATE INDEX IF NOT EXISTS idx_problems_sheet ON public.problems(sheet);
+CREATE INDEX IF NOT EXISTS idx_problems_sub_sheets ON public.problems USING GIN (sub_sheets);
+
 
 -- USER_PROBLEMS TABLE (User progress on a problem)
 CREATE TABLE IF NOT EXISTS public.user_problems (
@@ -77,19 +82,20 @@ CREATE POLICY "Anyone can view problems"
     ON public.problems FOR SELECT
     USING (true);
 
-CREATE POLICY "Authenticated users can insert problems"
+-- Restrict INSERT, UPDATE, DELETE on public.problems to service_role / admins only
+CREATE POLICY "Only service role can insert problems"
     ON public.problems FOR INSERT
-    TO authenticated
+    TO service_role
     WITH CHECK (true);
 
-CREATE POLICY "Authenticated users can update problems"
+CREATE POLICY "Only service role can update problems"
     ON public.problems FOR UPDATE
-    TO authenticated
+    TO service_role
     USING (true);
 
-CREATE POLICY "Authenticated users can delete problems"
+CREATE POLICY "Only service role can delete problems"
     ON public.problems FOR DELETE
-    TO authenticated
+    TO service_role
     USING (true);
 
 -- POLICIES FOR USER_PROBLEMS

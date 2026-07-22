@@ -41,7 +41,9 @@ export default function ReviewClient({ initialDueProblems }: ReviewClientProps) 
     setIsSubmitting(true);
 
     try {
-      await submitReview(currentProblem.id, rating);
+      const d = new Date();
+      const localDateStr = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+      await submitReview(currentProblem.id, rating, localDateStr);
       
       // Update states
       setShowGrading(false);

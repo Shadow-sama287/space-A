@@ -29,10 +29,10 @@ export default function CoolOffDashboardCard({ items, allProblemsMap }: CoolOffD
 
   if (items.length === 0) return null;
 
-  const nowISO = new Date().toISOString();
-  const readyItems = items.filter(
+  const nowISO = mounted ? new Date().toISOString() : '';
+  const readyItems = mounted ? items.filter(
     item => item.cooling_queue_tier === 'primary' && item.cooling_until && item.cooling_until <= nowISO
-  );
+  ) : [];
   const primaryCount = items.filter(item => item.cooling_queue_tier === 'primary').length;
   const secondaryCount = items.filter(item => item.cooling_queue_tier === 'secondary').length;
 

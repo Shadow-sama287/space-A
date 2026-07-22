@@ -61,7 +61,8 @@ export async function resetSheetProgressAction(sheetId: string) {
   const { data: sheetProblems } = await supabase
     .from('problems')
     .select('id')
-    .eq('sheet', sheetId);
+    .eq('sheet', sheetId)
+    .range(0, 5000);
 
   if (sheetProblems && sheetProblems.length > 0) {
     const problemIds = sheetProblems.map(p => p.id);

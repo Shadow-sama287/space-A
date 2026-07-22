@@ -1,5 +1,6 @@
 import { createClient } from '@/lib/supabase/server';
 import ProblemsClient from './ProblemsClient';
+import { fetchAllProblems, fetchAllUserProblems } from '@/lib/supabase/queries';
 
 export const dynamic = 'force-dynamic';
 
@@ -20,19 +21,11 @@ export default async function ProblemsPage() {
 
   const enabledSheets: string[] = profile?.enabled_sheets || ['striver_sde', 'striver_a2z'];
 
-  // 2. Fetch problems
-  const { data: problems } = await supabase
-    .from('problems')
-    .select('*')
-    .range(0, 5000)
-    .order('category', { ascending: true })
-    .order('title', { ascending: true });
+  // 2. Fetch all problems (handles PostgREST 1000 limit)
+  const problems = await fetchAllProblems(supabase);
 
-  // 3. Fetch user progress
-  const { data: userProgress } = await supabase
-    .from('user_problems')
-    .select('*')
-    .eq('user_id', user?.id || '');
+  // 3. Fetch user progress (handles PostgREST 1000 limit)
+  const userProgress = user?.id ? await fetchAllUserProblems(supabase, user.id) : [];
 
   return (
     <div>

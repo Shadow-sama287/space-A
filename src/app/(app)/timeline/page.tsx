@@ -1,5 +1,6 @@
 import { createClient } from '@/lib/supabase/server';
 import TimelineClient from './TimelineClient';
+import { fetchAllUserProblems } from '@/lib/supabase/queries';
 
 export const dynamic = 'force-dynamic';
 
@@ -15,10 +16,10 @@ export default async function TimelinePage() {
   }
 
   // Parallel database queries
-  const [{ data: profile }, { data: userProblemsData }] =
+  const [{ data: profile }, userProblemsData] =
     await Promise.all([
       supabase.from('profiles').select('enabled_sheets').eq('id', user.id).single(),
-      supabase.from('user_problems').select('*, problems(*)').eq('user_id', user.id),
+      fetchAllUserProblems(supabase, user.id),
     ]);
 
   const userProblems: any[] = [];

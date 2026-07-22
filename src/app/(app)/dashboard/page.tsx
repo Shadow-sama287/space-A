@@ -6,6 +6,7 @@ import CoolOffDashboardCard from '@/components/CoolOffDashboardCard';
 import { striverProblems } from '@/data/striverSheet';
 import { striverA2ZProblems } from '@/data/striverA2ZSheet';
 import { tle31Problems } from '@/data/tle31Sheet';
+import { fetchAllUserProblems } from '@/lib/supabase/queries';
 
 export const dynamic = 'force-dynamic';
 
@@ -26,31 +27,33 @@ export default async function DashboardPage() {
   // Parallel database queries for 4x faster page loading
   const [
     { data: profile },
-    { data: userProblemsData },
+    userProblemsData,
     { data: history },
     { count: dbProblemsCount }
   ] = await Promise.all([
     supabase.from('profiles').select('*').eq('id', user.id).single(),
-    supabase.from('user_problems').select('*, problems(*)').eq('user_id', user.id),
-    supabase.from('review_history').select('reviewed_at').eq('user_id', user.id).gte('reviewed_at', twentyEightDaysAgo.toISOString()),
+    fetchAllUserProblems(supabase, user.id),
+    supabase.from('review_history').select('reviewed_at').eq('user_id', user.id).gte('reviewed_at', twentyEightDaysAgo.toISOString()).range(0, 5000),
     supabase.from('problems').select('*', { count: 'exact', head: true })
   ]);
 
   const enabledSheets: string[] = profile?.enabled_sheets || ['striver_sde', 'striver_a2z'];
 
-  // Streak Expiration Evaluation
-  const todayStr = new Date().toISOString().split('T')[0];
-  const yesterday = new Date();
-  yesterday.setDate(yesterday.getDate() - 1);
-  const yesterdayStr = yesterday.toISOString().split('T')[0];
-
+  // Streak Expiration Evaluation (Timezone-safe)
   let effectiveStreak = profile?.streak || 0;
   const lastActive = profile?.last_active_date;
 
-  if (lastActive && lastActive < yesterdayStr) {
-    // User missed a day! Streak is reset -> SHATTERED CUBE
-    effectiveStreak = 0;
-    supabase.from('profiles').update({ streak: 0 }).eq('id', user.id).then(() => {});
+  if (lastActive) {
+    const todayLocal = new Date();
+    const lastActiveDateObj = new Date(lastActive);
+    const diffInTime = todayLocal.getTime() - lastActiveDateObj.getTime();
+    const diffInDays = diffInTime / (1000 * 3600 * 24);
+
+    // If more than 48 hours have passed without activity, reset streak
+    if (diffInDays > 2.0) {
+      effectiveStreak = 0;
+      supabase.from('profiles').update({ streak: 0 }).eq('id', user.id).then(() => {});
+    }
   }
 
   // Filter user progress to enabled sheets using the joined problem data
@@ -71,6 +74,10 @@ export default async function DashboardPage() {
     'striver_sde': { label: 'Striver SDE Sheet', total: 191 },
     'striver_a2z': { label: "Striver's A2Z Sheet", total: 474 },
     'tle_31': { label: "TLE Eliminators CP", total: 372 },
+    'neetcode_all': { label: "NeetCode All Practice", total: 973 },
+    'neetcode_250': { label: "NeetCode 250", total: 250 },
+    'neetcode_150': { label: "NeetCode 150", total: 150 },
+    'blind_75': { label: "Blind 75", total: 75 },
   };
 
   const sheetProgressList = enabledSheets.map(sheetId => {
@@ -79,7 +86,13 @@ export default async function DashboardPage() {
       sheetId,
       label: info.label,
       totalCount: info.total,
-      solvedCount: rawActiveProblems.filter((up: any) => up.problems && up.problems.sheet === sheetId).length,
+      solvedCount: rawActiveProblems.filter((up: any) => {
+        if (!up.problems) return false;
+        if (['blind_75', 'neetcode_150', 'neetcode_250', 'neetcode_all'].includes(sheetId)) {
+          return up.problems.sheet === 'neetcode_all' || up.problems.sheet === sheetId || (up.problems.sub_sheets && up.problems.sub_sheets.includes(sheetId));
+        }
+        return up.problems.sheet === sheetId;
+      }).length,
     };
   });
 
@@ -241,7 +254,7 @@ export default async function DashboardPage() {
       <div className="card mb-4" style={{ padding: '0.85rem 1.25rem', backgroundColor: 'var(--bg-secondary)', borderLeft: '6px solid #000' }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '0.5rem' }}>
           <div style={{ fontFamily: 'monospace', fontSize: '0.85rem', fontWeight: 'bold' }}>
-            ACTIVE SHEETS: {enabledSheets.length > 0 ? enabledSheets.map(s => s === 'striver_sde' ? 'STRIVER SDE (191)' : s === 'striver_a2z' ? 'STRIVER A2Z (474)' : 'TLE CP SHEET (372)').join(' | ') : 'NONE ENABLED'}
+            ACTIVE SHEETS: {enabledSheets.length > 0 ? enabledSheets.map(s => (SHEET_TOTALS[s]?.label || s.toUpperCase())).join(' | ') : 'NONE ENABLED'}
           </div>
           <Link href="/settings" className="btn btn-sm btn-black" style={{ textTransform: 'uppercase', fontSize: '0.75rem', textDecoration: 'none' }}>
             MANAGE SHEETS

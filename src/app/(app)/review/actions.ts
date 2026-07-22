@@ -4,7 +4,7 @@ import { createClient } from '@/lib/supabase/server';
 import { calculateSM2 } from '@/lib/sm2';
 import { revalidatePath } from 'next/cache';
 
-export async function submitReview(problemId: string, rating: number) {
+export async function submitReview(problemId: string, rating: number, clientLocalDate?: string) {
   const supabase = await createClient();
 
   const {
@@ -64,29 +64,36 @@ export async function submitReview(problemId: string, rating: number) {
     interval_days: intervalDays,
   });
 
-  // 5. Update Streak
-  const todayStr = new Date().toISOString().split('T')[0];
+  // 5. Update Streak (Timezone-aware)
+  const localDateStr = clientLocalDate || (() => {
+    const d = new Date();
+    const year = d.getFullYear();
+    const month = String(d.getMonth() + 1).padStart(2, '0');
+    const day = String(d.getDate()).padStart(2, '0');
+    return `${year}-${month}-${day}`;
+  })();
+
   const { data: profile } = await supabase
     .from('profiles')
-    .select('streak, last_active_date')
+    .select('streak, last_active_date, max_streak')
     .eq('id', user.id)
     .single();
 
   if (profile) {
     let newStreak = profile.streak || 0;
-    const currentMax = (profile as any).max_streak || 0;
+    const currentMax = profile.max_streak || 0;
     const lastActive = profile.last_active_date;
 
     if (!lastActive) {
       newStreak = 1;
-    } else {
-      const yesterday = new Date();
-      yesterday.setDate(yesterday.getDate() - 1);
-      const yesterdayStr = yesterday.toISOString().split('T')[0];
+    } else if (lastActive !== localDateStr) {
+      const todayDate = new Date(localDateStr);
+      const lastActiveDate = new Date(lastActive);
+      const diffDays = Math.round((todayDate.getTime() - lastActiveDate.getTime()) / (1000 * 3600 * 24));
 
-      if (lastActive === yesterdayStr) {
+      if (diffDays === 1) {
         newStreak += 1;
-      } else if (lastActive !== todayStr) {
+      } else if (diffDays > 1) {
         newStreak = 1;
       }
     }
@@ -98,7 +105,7 @@ export async function submitReview(problemId: string, rating: number) {
       .update({
         streak: newStreak,
         max_streak: newMax,
-        last_active_date: todayStr,
+        last_active_date: localDateStr,
       })
       .eq('id', user.id);
   }

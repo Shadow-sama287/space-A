@@ -61,6 +61,11 @@ export default function TopicProgressWidget({
           <option value="all">ALL ENABLED SHEETS</option>
           {enabledSheets.includes('striver_sde') && <option value="striver_sde">STRIVER SDE SHEET (191)</option>}
           {enabledSheets.includes('striver_a2z') && <option value="striver_a2z">STRIVER A2Z SHEET (474)</option>}
+          {enabledSheets.includes('tle_31') && <option value="tle_31">TLE ELIMINATORS CP (372)</option>}
+          {enabledSheets.includes('neetcode_all') && <option value="neetcode_all">NEETCODE ALL PRACTICE (973)</option>}
+          {enabledSheets.includes('neetcode_250') && <option value="neetcode_250">NEETCODE 250</option>}
+          {enabledSheets.includes('neetcode_150') && <option value="neetcode_150">NEETCODE 150</option>}
+          {enabledSheets.includes('blind_75') && <option value="blind_75">BLIND 75</option>}
         </select>
       </div>
 

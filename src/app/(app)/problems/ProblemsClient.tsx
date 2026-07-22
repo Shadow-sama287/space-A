@@ -9,6 +9,7 @@ import { coolOffProblemAction, resumeProblemAction } from '@/app/actions/cool-of
 interface Problem {
   id: string;
   sheet: string;
+  sub_sheets?: string[];
   title: string;
   category: string;
   difficulty: string;
@@ -33,7 +34,7 @@ interface ProblemsClientProps {
   enabledSheets?: string[];
 }
 
-export default function ProblemsClient({ problems, userProgress, enabledSheets = ['striver_sde', 'striver_a2z', 'tle_31'] }: ProblemsClientProps) {
+export default function ProblemsClient({ problems, userProgress, enabledSheets = ['striver_sde', 'striver_a2z', 'tle_31', 'neetcode_all', 'neetcode_250', 'neetcode_150', 'blind_75'] }: ProblemsClientProps) {
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
 
@@ -119,7 +120,16 @@ export default function ProblemsClient({ problems, userProgress, enabledSheets =
 
   // Dynamic categories per selected sheet
   const categories = Array.from(
-    new Set(problems.filter(p => p.sheet === sheetFilter).map(p => p.category))
+    new Set(
+      problems
+        .filter(p => {
+          if (['blind_75', 'neetcode_150', 'neetcode_250', 'neetcode_all'].includes(sheetFilter)) {
+            return p.sheet === 'neetcode_all' || p.sheet === sheetFilter || (p.sub_sheets && p.sub_sheets.includes(sheetFilter));
+          }
+          return p.sheet === sheetFilter;
+        })
+        .map(p => p.category)
+    )
   );
 
   // Available sheets
@@ -127,7 +137,10 @@ export default function ProblemsClient({ problems, userProgress, enabledSheets =
     { id: 'striver_sde', label: `Striver SDE Sheet (191)${!enabledSheets.includes('striver_sde') ? ' - [DISABLED]' : ''}` },
     { id: 'striver_a2z', label: `Striver's A2Z Sheet (474)${!enabledSheets.includes('striver_a2z') ? ' - [DISABLED]' : ''}` },
     { id: 'tle_31', label: `TLE Eliminators CP Sheet (372)${!enabledSheets.includes('tle_31') ? ' - [DISABLED]' : ''}` },
-    { id: 'neetcode_150', label: 'NeetCode 150 (Future)' },
+    { id: 'neetcode_all', label: `NeetCode All Practice (973)${!enabledSheets.includes('neetcode_all') ? ' - [DISABLED]' : ''}` },
+    { id: 'neetcode_250', label: `NeetCode 250${!enabledSheets.includes('neetcode_250') ? ' - [DISABLED]' : ''}` },
+    { id: 'neetcode_150', label: `NeetCode 150${!enabledSheets.includes('neetcode_150') ? ' - [DISABLED]' : ''}` },
+    { id: 'blind_75', label: `Blind 75${!enabledSheets.includes('blind_75') ? ' - [DISABLED]' : ''}` },
   ];
 
   // Run database seeding
@@ -138,7 +151,7 @@ export default function ProblemsClient({ problems, userProgress, enabledSheets =
       const res = await fetch('/api/seed', { method: 'POST' });
       const data = await res.json();
       if (data.success) {
-        setSeedResult(`SUCCESS: Preseeded ${data.count} problems across all sheets!`);
+        setSeedResult(`SUCCESS: ${data.message || `Preseeded ${data.count} problems across all sheets!`}`);
         startTransition(() => {
           router.refresh();
         });
@@ -159,7 +172,9 @@ export default function ProblemsClient({ problems, userProgress, enabledSheets =
 
     setIsSubmitting(true);
     try {
-      await submitReview(reviewProblem.id, reviewRating);
+      const d = new Date();
+      const localDateStr = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+      await submitReview(reviewProblem.id, reviewRating, localDateStr);
       setReviewProblem(null);
       setReviewRating(null);
       startTransition(() => {
@@ -175,7 +190,13 @@ export default function ProblemsClient({ problems, userProgress, enabledSheets =
   // Filter logic
   const filteredProblems = problems.filter(p => {
     // 1. Sheet Filter
-    if (p.sheet !== sheetFilter) return false;
+    if (['blind_75', 'neetcode_150', 'neetcode_250', 'neetcode_all'].includes(sheetFilter)) {
+      const matchesMainSheet = p.sheet === 'neetcode_all' || p.sheet === sheetFilter;
+      const matchesSubSheet = p.sub_sheets && p.sub_sheets.includes(sheetFilter);
+      if (!matchesMainSheet && !matchesSubSheet) return false;
+    } else if (p.sheet !== sheetFilter) {
+      return false;
+    }
 
     // 2. Search query
     if (searchQuery && !p.title.toLowerCase().includes(searchQuery.toLowerCase())) return false;
@@ -200,6 +221,13 @@ export default function ProblemsClient({ problems, userProgress, enabledSheets =
 
     return true;
   });
+
+  const totalSheetProblemsCount = problems.filter(p => {
+    if (['blind_75', 'neetcode_150', 'neetcode_250', 'neetcode_all'].includes(sheetFilter)) {
+      return p.sheet === 'neetcode_all' || p.sheet === sheetFilter || (p.sub_sheets && p.sub_sheets.includes(sheetFilter));
+    }
+    return p.sheet === sheetFilter;
+  }).length;
 
   return (
     <div>
@@ -308,7 +336,7 @@ export default function ProblemsClient({ problems, userProgress, enabledSheets =
 
           <div className="flex-between mt-2" style={{ fontSize: '0.8rem' }}>
             <div>
-              SHOWING <strong>{filteredProblems.length}</strong> OF <strong>{problems.filter(p => p.sheet === sheetFilter).length}</strong> PROBLEMS
+              SHOWING <strong>{filteredProblems.length}</strong> OF <strong>{totalSheetProblemsCount}</strong> PROBLEMS
             </div>
             {/* Seed Trigger Option for Resetting/Seeding */}
             <button onClick={handleSeed} disabled={seeding} className="btn btn-outline btn-small" style={{ border: '1px solid var(--border-color)', boxShadow: 'none' }}>
