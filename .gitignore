@@ -15,7 +15,7 @@ CLAUDE.md
 .gemini/
 
 # Scratch & Debug Files
-scratch*
+/scratch*
 *.log
 *.log*
 npm-debug.log*
