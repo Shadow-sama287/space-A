@@ -6,6 +6,7 @@ import { useRouter } from 'next/navigation';
 import { submitReview } from './actions';
 
 import { coolOffProblemAction } from '@/app/actions/cool-off-actions';
+import ActiveRecallWidget from '@/components/ActiveRecallWidget';
 
 interface DueProblem {
   id: string;
@@ -154,6 +155,15 @@ export default function ReviewClient({ initialDueProblems }: ReviewClientProps) 
             </a>
           </div>
 
+          {/* ACTIVE RECALL & TLDRAW SCRATCHPAD WIDGET */}
+          {currentProblem && (
+            <ActiveRecallWidget
+              problemId={currentProblem.id}
+              problemTitle={currentProblem.title}
+            />
+          )}
+
+          <div style={{ marginTop: '1.25rem' }}>
           {/* GRADING LOGIC */}
           {!showGrading ? (
             <button
@@ -239,6 +249,7 @@ export default function ReviewClient({ initialDueProblems }: ReviewClientProps) 
               </div>
             </div>
           )}
+          </div>
         </div>
       </div>
     </div>

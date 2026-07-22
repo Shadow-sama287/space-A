@@ -5,6 +5,8 @@ import { useRouter } from 'next/navigation';
 import { submitReview } from '../review/actions';
 import CPWalkthroughModal from '@/components/CPWalkthroughModal';
 import { coolOffProblemAction, resumeProblemAction } from '@/app/actions/cool-off-actions';
+import ActiveRecallWidget from '@/components/ActiveRecallWidget';
+import ScratchpadModal from '@/components/ScratchpadModal';
 
 interface Problem {
   id: string;
@@ -74,6 +76,7 @@ export default function ProblemsClient({ problems, userProgress, enabledSheets =
 
   // Modal state
   const [reviewProblem, setReviewProblem] = useState<Problem | null>(null);
+  const [scratchpadProblem, setScratchpadProblem] = useState<Problem | null>(null);
   const [reviewRating, setReviewRating] = useState<number | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -424,7 +427,7 @@ export default function ProblemsClient({ problems, userProgress, enabledSheets =
                       {status === 'unreviewed' && '[ ] UNREVIEWED'}
                       {status === 'reviewing' && `[*] D:${prog?.interval_days}d (EF:${prog?.ease_factor})`}
                       {status === 'mastered' && `[M] MASTERED`}
-                      {status === 'cooling' && `[🧊] SNOOZED (${(prog as any)?.cooling_queue_tier === 'primary' ? 'PRIMARY 3D' : 'WAITING QUEUE'})`}
+                      {status === 'cooling' && `[SNOOZED] (${(prog as any)?.cooling_queue_tier === 'primary' ? 'PRIMARY 3D' : 'WAITING QUEUE'})`}
                     </td>
                     <td>
                       <div style={{ display: 'flex', gap: '8px', justifyContent: 'center' }}>
@@ -438,6 +441,16 @@ export default function ProblemsClient({ problems, userProgress, enabledSheets =
                         >
                           SOLVE ↗
                         </a>
+
+                        {/* Scratchpad Canvas Modal Trigger */}
+                        <button
+                          onClick={() => setScratchpadProblem(p)}
+                          className="btn btn-small"
+                          style={{ boxShadow: 'none', backgroundColor: 'var(--bg-secondary)', border: '2px solid var(--border-color)' }}
+                          title="Open tldraw Canvas Scratchpad"
+                        >
+                          DRAW
+                        </button>
 
                         {/* Review Modal Trigger */}
                         <button
@@ -490,7 +503,13 @@ export default function ProblemsClient({ problems, userProgress, enabledSheets =
               DIFFICULTY: <span style={{ fontWeight: 'bold' }}>{reviewProblem.difficulty.toUpperCase()}</span>
             </div>
 
-            <form onSubmit={handleReviewSubmit}>
+            {/* ACTIVE RECALL WIDGET */}
+            <ActiveRecallWidget
+              problemId={reviewProblem.id}
+              problemTitle={reviewProblem.title}
+            />
+
+            <form onSubmit={handleReviewSubmit} style={{ marginTop: '1rem' }}>
               <label style={{ display: 'block', fontSize: '0.85rem', fontWeight: 'bold', textTransform: 'uppercase', marginBottom: '0.5rem' }}>
                 How well did you recall/solve this problem?
               </label>
@@ -542,6 +561,15 @@ export default function ProblemsClient({ problems, userProgress, enabledSheets =
           </div>
         </div>
       )}
+
+      {/* FLOATING TLDRAW SCRATCHPAD MODAL */}
+      <ScratchpadModal
+        isOpen={!!scratchpadProblem}
+        problemId={scratchpadProblem?.id || ''}
+        problemTitle={scratchpadProblem?.title || ''}
+        onClose={() => setScratchpadProblem(null)}
+        onSave={() => setScratchpadProblem(null)}
+      />
 
       {/* STICKY FLOATING BRUTALIST BACK TO TOP BUTTON */}
       {showScrollTop && (
