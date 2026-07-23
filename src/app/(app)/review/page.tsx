@@ -1,5 +1,6 @@
 import { createClient } from '@/lib/supabase/server';
 import ReviewClient from './ReviewClient';
+import { getProblemSubSheets } from '@/lib/neetcodeHelpers';
 
 export const dynamic = 'force-dynamic';
 
@@ -58,7 +59,10 @@ export default async function ReviewPage() {
   const dueProblems = (dueData || [])
     .map((item: any) => {
       const p = item.problems;
-      if (!p || !enabledSheets.includes(p.sheet)) return null;
+      if (!p) return null;
+      const subSheets = getProblemSubSheets(p);
+      const isEnabled = enabledSheets.includes(p.sheet) || enabledSheets.some(s => subSheets.includes(s));
+      if (!isEnabled) return null;
       return {
         id: p.id,
         user_problem_id: item.id,

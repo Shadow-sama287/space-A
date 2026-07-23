@@ -9,80 +9,33 @@ export interface NeetCodeProblem {
 }
 
 export const neetcodeProblems: NeetCodeProblem[] = [
-  // === ARRAYS & HASHING (175) ===
+  // === ARRAYS & HASHING (9) ===
   { sheet: 'neetcode_all', sub_sheets: ['blind_75', 'neetcode_150', 'neetcode_250', 'neetcode_all'], title: 'Contains Duplicate', category: 'Arrays & Hashing', difficulty: 'Easy', leetcode_url: 'https://leetcode.com/problems/contains-duplicate/' },
   { sheet: 'neetcode_all', sub_sheets: ['blind_75', 'neetcode_150', 'neetcode_250', 'neetcode_all'], title: 'Valid Anagram', category: 'Arrays & Hashing', difficulty: 'Easy', leetcode_url: 'https://leetcode.com/problems/valid-anagram/' },
   { sheet: 'neetcode_all', sub_sheets: ['blind_75', 'neetcode_150', 'neetcode_250', 'neetcode_all'], title: 'Two Sum', category: 'Arrays & Hashing', difficulty: 'Easy', leetcode_url: 'https://leetcode.com/problems/two-sum/' },
   { sheet: 'neetcode_all', sub_sheets: ['blind_75', 'neetcode_150', 'neetcode_250', 'neetcode_all'], title: 'Group Anagrams', category: 'Arrays & Hashing', difficulty: 'Medium', leetcode_url: 'https://leetcode.com/problems/group-anagrams/' },
   { sheet: 'neetcode_all', sub_sheets: ['blind_75', 'neetcode_150', 'neetcode_250', 'neetcode_all'], title: 'Top K Frequent Elements', category: 'Arrays & Hashing', difficulty: 'Medium', leetcode_url: 'https://leetcode.com/problems/top-k-frequent-elements/' },
+  { sheet: 'neetcode_all', sub_sheets: ['blind_75', 'neetcode_150', 'neetcode_250', 'neetcode_all'], title: 'Encode and Decode Strings', category: 'Arrays & Hashing', difficulty: 'Medium', leetcode_url: 'https://leetcode.com/problems/encode-and-decode-strings/' },
   { sheet: 'neetcode_all', sub_sheets: ['blind_75', 'neetcode_150', 'neetcode_250', 'neetcode_all'], title: 'Product of Array Except Self', category: 'Arrays & Hashing', difficulty: 'Medium', leetcode_url: 'https://leetcode.com/problems/product-of-array-except-self/' },
   { sheet: 'neetcode_all', sub_sheets: ['neetcode_150', 'neetcode_250', 'neetcode_all'], title: 'Valid Sudoku', category: 'Arrays & Hashing', difficulty: 'Medium', leetcode_url: 'https://leetcode.com/problems/valid-sudoku/' },
-  { sheet: 'neetcode_all', sub_sheets: ['blind_75', 'neetcode_150', 'neetcode_250', 'neetcode_all'], title: 'Encode and Decode Strings', category: 'Arrays & Hashing', difficulty: 'Medium', leetcode_url: 'https://leetcode.com/problems/encode-and-decode-strings/' },
   { sheet: 'neetcode_all', sub_sheets: ['blind_75', 'neetcode_150', 'neetcode_250', 'neetcode_all'], title: 'Longest Consecutive Sequence', category: 'Arrays & Hashing', difficulty: 'Medium', leetcode_url: 'https://leetcode.com/problems/longest-consecutive-sequence/' },
-  { sheet: 'neetcode_all', sub_sheets: ['neetcode_250', 'neetcode_all'], title: 'Concatenation of Array', category: 'Arrays & Hashing', difficulty: 'Easy', leetcode_url: 'https://leetcode.com/problems/concatenation-of-array/' },
-  { sheet: 'neetcode_all', sub_sheets: ['neetcode_250', 'neetcode_all'], title: 'Replace Elements with Greatest Element on Right Side', category: 'Arrays & Hashing', difficulty: 'Easy', leetcode_url: 'https://leetcode.com/problems/replace-elements-with-greatest-element-on-right-side/' },
-  { sheet: 'neetcode_all', sub_sheets: ['neetcode_250', 'neetcode_all'], title: 'Is Subsequence', category: 'Arrays & Hashing', difficulty: 'Easy', leetcode_url: 'https://leetcode.com/problems/is-subsequence/' },
-  { sheet: 'neetcode_all', sub_sheets: ['neetcode_250', 'neetcode_all'], title: 'Length of Last Word', category: 'Arrays & Hashing', difficulty: 'Easy', leetcode_url: 'https://leetcode.com/problems/length-of-last-word/' },
-  { sheet: 'neetcode_all', sub_sheets: ['neetcode_250', 'neetcode_all'], title: 'Pascal\'s Triangle', category: 'Arrays & Hashing', difficulty: 'Easy', leetcode_url: 'https://leetcode.com/problems/pascals-triangle/' },
-  { sheet: 'neetcode_all', sub_sheets: ['neetcode_250', 'neetcode_all'], title: 'Remove Element', category: 'Arrays & Hashing', difficulty: 'Easy', leetcode_url: 'https://leetcode.com/problems/remove-element/' },
-  { sheet: 'neetcode_all', sub_sheets: ['neetcode_250', 'neetcode_all'], title: 'Unique Email Addresses', category: 'Arrays & Hashing', difficulty: 'Easy', leetcode_url: 'https://leetcode.com/problems/unique-email-addresses/' },
-  { sheet: 'neetcode_all', sub_sheets: ['neetcode_250', 'neetcode_all'], title: 'Isomorphic Strings', category: 'Arrays & Hashing', difficulty: 'Easy', leetcode_url: 'https://leetcode.com/problems/isomorphic-strings/' },
-  { sheet: 'neetcode_all', sub_sheets: ['neetcode_250', 'neetcode_all'], title: 'Can Place Flowers', category: 'Arrays & Hashing', difficulty: 'Easy', leetcode_url: 'https://leetcode.com/problems/can-place-flowers/' },
-  { sheet: 'neetcode_all', sub_sheets: ['neetcode_250', 'neetcode_all'], title: 'Majority Element', category: 'Arrays & Hashing', difficulty: 'Easy', leetcode_url: 'https://leetcode.com/problems/majority-element/' },
-  { sheet: 'neetcode_all', sub_sheets: ['neetcode_250', 'neetcode_all'], title: 'Next Greater Element I', category: 'Arrays & Hashing', difficulty: 'Easy', leetcode_url: 'https://leetcode.com/problems/next-greater-element-i/' },
-  { sheet: 'neetcode_all', sub_sheets: ['neetcode_250', 'neetcode_all'], title: 'Find Pivot Index', category: 'Arrays & Hashing', difficulty: 'Easy', leetcode_url: 'https://leetcode.com/problems/find-pivot-index/' },
-  { sheet: 'neetcode_all', sub_sheets: ['neetcode_250', 'neetcode_all'], title: 'Range Sum Query - Immutable', category: 'Arrays & Hashing', difficulty: 'Easy', leetcode_url: 'https://leetcode.com/problems/range-sum-query-immutable/' },
-  { sheet: 'neetcode_all', sub_sheets: ['neetcode_250', 'neetcode_all'], title: 'Find All Numbers Disappeared in an Array', category: 'Arrays & Hashing', difficulty: 'Easy', leetcode_url: 'https://leetcode.com/problems/find-all-numbers-disappeared-in-an-array/' },
-  { sheet: 'neetcode_all', sub_sheets: ['neetcode_250', 'neetcode_all'], title: 'Maximum Number of Balloons', category: 'Arrays & Hashing', difficulty: 'Easy', leetcode_url: 'https://leetcode.com/problems/maximum-number-of-balloons/' },
-  { sheet: 'neetcode_all', sub_sheets: ['neetcode_250', 'neetcode_all'], title: 'Word Pattern', category: 'Arrays & Hashing', difficulty: 'Easy', leetcode_url: 'https://leetcode.com/problems/word-pattern/' },
-  { sheet: 'neetcode_all', sub_sheets: ['neetcode_250', 'neetcode_all'], title: 'Design HashSet', category: 'Arrays & Hashing', difficulty: 'Easy', leetcode_url: 'https://leetcode.com/problems/design-hashset/' },
-  { sheet: 'neetcode_all', sub_sheets: ['neetcode_250', 'neetcode_all'], title: 'Design HashMap', category: 'Arrays & Hashing', difficulty: 'Easy', leetcode_url: 'https://leetcode.com/problems/design-hashmap/' },
-  { sheet: 'neetcode_all', sub_sheets: ['neetcode_250', 'neetcode_all'], title: 'Sort an Array', category: 'Arrays & Hashing', difficulty: 'Medium', leetcode_url: 'https://leetcode.com/problems/sort-an-array/' },
-  { sheet: 'neetcode_all', sub_sheets: ['neetcode_250', 'neetcode_all'], title: 'Subarray Sum Equals K', category: 'Arrays & Hashing', difficulty: 'Medium', leetcode_url: 'https://leetcode.com/problems/subarray-sum-equals-k/' },
-  { sheet: 'neetcode_all', sub_sheets: ['neetcode_250', 'neetcode_all'], title: 'First Missing Positive', category: 'Arrays & Hashing', difficulty: 'Hard', leetcode_url: 'https://leetcode.com/problems/first-missing-positive/' },
-  { sheet: 'neetcode_all', sub_sheets: ['neetcode_all'], title: 'Best Time to Buy and Sell Stock II', category: 'Arrays & Hashing', difficulty: 'Medium', leetcode_url: 'https://leetcode.com/problems/best-time-to-buy-and-sell-stock-ii/' },
-  { sheet: 'neetcode_all', sub_sheets: ['neetcode_all'], title: 'Check If It Is a Straight Line', category: 'Arrays & Hashing', difficulty: 'Easy', leetcode_url: 'https://leetcode.com/problems/check-if-it-is-a-straight-line/' },
-  { sheet: 'neetcode_all', sub_sheets: ['neetcode_all'], title: 'Find Words That Can Be Formed by Characters', category: 'Arrays & Hashing', difficulty: 'Easy', leetcode_url: 'https://leetcode.com/problems/find-words-that-can-be-formed-by-characters/' },
-  { sheet: 'neetcode_all', sub_sheets: ['neetcode_all'], title: 'Largest Number', category: 'Arrays & Hashing', difficulty: 'Medium', leetcode_url: 'https://leetcode.com/problems/largest-number/' },
-  { sheet: 'neetcode_all', sub_sheets: ['neetcode_all'], title: 'Grid Game', category: 'Arrays & Hashing', difficulty: 'Medium', leetcode_url: 'https://leetcode.com/problems/grid-game/' },
-  { sheet: 'neetcode_all', sub_sheets: ['neetcode_all'], title: 'Find All Anagrams in a String', category: 'Arrays & Hashing', difficulty: 'Medium', leetcode_url: 'https://leetcode.com/problems/find-all-anagrams-in-a-string/' },
-  { sheet: 'neetcode_all', sub_sheets: ['neetcode_all'], title: 'Continuous Subarray Sum', category: 'Arrays & Hashing', difficulty: 'Medium', leetcode_url: 'https://leetcode.com/problems/continuous-subarray-sum/' },
-  { sheet: 'neetcode_all', sub_sheets: ['neetcode_all'], title: 'Push Dominoes', category: 'Arrays & Hashing', difficulty: 'Medium', leetcode_url: 'https://leetcode.com/problems/push-dominoes/' },
-  { sheet: 'neetcode_all', sub_sheets: ['neetcode_all'], title: 'Insert Delete GetRandom O(1)', category: 'Arrays & Hashing', difficulty: 'Medium', leetcode_url: 'https://leetcode.com/problems/insert-delete-getrandom-o1/' },
-  { sheet: 'neetcode_all', sub_sheets: ['neetcode_all'], title: 'Design Underground System', category: 'Arrays & Hashing', difficulty: 'Medium', leetcode_url: 'https://leetcode.com/problems/design-underground-system/' },
 
-  // === TWO POINTERS (43) ===
+  // === TWO POINTERS (5) ===
   { sheet: 'neetcode_all', sub_sheets: ['blind_75', 'neetcode_150', 'neetcode_250', 'neetcode_all'], title: 'Valid Palindrome', category: 'Two Pointers', difficulty: 'Easy', leetcode_url: 'https://leetcode.com/problems/valid-palindrome/' },
   { sheet: 'neetcode_all', sub_sheets: ['neetcode_150', 'neetcode_250', 'neetcode_all'], title: 'Two Sum II - Input Array Is Sorted', category: 'Two Pointers', difficulty: 'Medium', leetcode_url: 'https://leetcode.com/problems/two-sum-ii-input-array-is-sorted/' },
   { sheet: 'neetcode_all', sub_sheets: ['blind_75', 'neetcode_150', 'neetcode_250', 'neetcode_all'], title: '3Sum', category: 'Two Pointers', difficulty: 'Medium', leetcode_url: 'https://leetcode.com/problems/3sum/' },
   { sheet: 'neetcode_all', sub_sheets: ['blind_75', 'neetcode_150', 'neetcode_250', 'neetcode_all'], title: 'Container With Most Water', category: 'Two Pointers', difficulty: 'Medium', leetcode_url: 'https://leetcode.com/problems/container-with-most-water/' },
-  { sheet: 'neetcode_all', sub_sheets: ['blind_75', 'neetcode_150', 'neetcode_250', 'neetcode_all'], title: 'Trapping Rain Water', category: 'Two Pointers', difficulty: 'Hard', leetcode_url: 'https://leetcode.com/problems/trapping-rain-water/' },
-  { sheet: 'neetcode_all', sub_sheets: ['neetcode_250', 'neetcode_all'], title: 'Valid Palindrome II', category: 'Two Pointers', difficulty: 'Easy', leetcode_url: 'https://leetcode.com/problems/valid-palindrome-ii/' },
-  { sheet: 'neetcode_all', sub_sheets: ['neetcode_250', 'neetcode_all'], title: 'Minimum Difference Between Highest and Lowest of K Scores', category: 'Two Pointers', difficulty: 'Easy', leetcode_url: 'https://leetcode.com/problems/minimum-difference-between-highest-and-lowest-of-k-scores/' },
-  { sheet: 'neetcode_all', sub_sheets: ['neetcode_250', 'neetcode_all'], title: 'Merge Strings Alternately', category: 'Two Pointers', difficulty: 'Easy', leetcode_url: 'https://leetcode.com/problems/merge-strings-alternately/' },
-  { sheet: 'neetcode_all', sub_sheets: ['neetcode_250', 'neetcode_all'], title: 'Reverse String', category: 'Two Pointers', difficulty: 'Easy', leetcode_url: 'https://leetcode.com/problems/reverse-string/' },
-  { sheet: 'neetcode_all', sub_sheets: ['neetcode_250', 'neetcode_all'], title: 'Merge Sorted Array', category: 'Two Pointers', difficulty: 'Easy', leetcode_url: 'https://leetcode.com/problems/merge-sorted-array/' },
-  { sheet: 'neetcode_all', sub_sheets: ['neetcode_250', 'neetcode_all'], title: 'Move Zeroes', category: 'Two Pointers', difficulty: 'Easy', leetcode_url: 'https://leetcode.com/problems/move-zeroes/' },
-  { sheet: 'neetcode_all', sub_sheets: ['neetcode_250', 'neetcode_all'], title: 'Remove Duplicates From Sorted Array', category: 'Two Pointers', difficulty: 'Easy', leetcode_url: 'https://leetcode.com/problems/remove-duplicates-from-sorted-array/' },
-  { sheet: 'neetcode_all', sub_sheets: ['neetcode_250', 'neetcode_all'], title: '4Sum', category: 'Two Pointers', difficulty: 'Medium', leetcode_url: 'https://leetcode.com/problems/4sum/' },
-  { sheet: 'neetcode_all', sub_sheets: ['neetcode_250', 'neetcode_all'], title: 'Boats to Save People', category: 'Two Pointers', difficulty: 'Medium', leetcode_url: 'https://leetcode.com/problems/boats-to-save-people/' },
-  { sheet: 'neetcode_all', sub_sheets: ['neetcode_all'], title: 'Rotate Array', category: 'Two Pointers', difficulty: 'Medium', leetcode_url: 'https://leetcode.com/problems/rotate-array/' },
-  { sheet: 'neetcode_all', sub_sheets: ['neetcode_all'], title: '3Sum With Multiplicity', category: 'Two Pointers', difficulty: 'Medium', leetcode_url: 'https://leetcode.com/problems/3sum-with-multiplicity/' },
+  { sheet: 'neetcode_all', sub_sheets: ['neetcode_150', 'neetcode_250', 'neetcode_all'], title: 'Trapping Rain Water', category: 'Two Pointers', difficulty: 'Hard', leetcode_url: 'https://leetcode.com/problems/trapping-rain-water/' },
 
-  // === SLIDING WINDOW (41) ===
+  // === SLIDING WINDOW (6) ===
   { sheet: 'neetcode_all', sub_sheets: ['blind_75', 'neetcode_150', 'neetcode_250', 'neetcode_all'], title: 'Best Time to Buy and Sell Stock', category: 'Sliding Window', difficulty: 'Easy', leetcode_url: 'https://leetcode.com/problems/best-time-to-buy-and-sell-stock/' },
   { sheet: 'neetcode_all', sub_sheets: ['blind_75', 'neetcode_150', 'neetcode_250', 'neetcode_all'], title: 'Longest Substring Without Repeating Characters', category: 'Sliding Window', difficulty: 'Medium', leetcode_url: 'https://leetcode.com/problems/longest-substring-without-repeating-characters/' },
   { sheet: 'neetcode_all', sub_sheets: ['blind_75', 'neetcode_150', 'neetcode_250', 'neetcode_all'], title: 'Longest Repeating Character Replacement', category: 'Sliding Window', difficulty: 'Medium', leetcode_url: 'https://leetcode.com/problems/longest-repeating-character-replacement/' },
   { sheet: 'neetcode_all', sub_sheets: ['neetcode_150', 'neetcode_250', 'neetcode_all'], title: 'Permutation in String', category: 'Sliding Window', difficulty: 'Medium', leetcode_url: 'https://leetcode.com/problems/permutation-in-string/' },
   { sheet: 'neetcode_all', sub_sheets: ['blind_75', 'neetcode_150', 'neetcode_250', 'neetcode_all'], title: 'Minimum Window Substring', category: 'Sliding Window', difficulty: 'Hard', leetcode_url: 'https://leetcode.com/problems/minimum-window-substring/' },
   { sheet: 'neetcode_all', sub_sheets: ['neetcode_150', 'neetcode_250', 'neetcode_all'], title: 'Sliding Window Maximum', category: 'Sliding Window', difficulty: 'Hard', leetcode_url: 'https://leetcode.com/problems/sliding-window-maximum/' },
-  { sheet: 'neetcode_all', sub_sheets: ['neetcode_250', 'neetcode_all'], title: 'Contains Duplicate II', category: 'Sliding Window', difficulty: 'Easy', leetcode_url: 'https://leetcode.com/problems/contains-duplicate-ii/' },
-  { sheet: 'neetcode_all', sub_sheets: ['neetcode_250', 'neetcode_all'], title: 'Number of Sub-arrays of Size K and Average Greater than or Equal to Threshold', category: 'Sliding Window', difficulty: 'Medium', leetcode_url: 'https://leetcode.com/problems/number-of-sub-arrays-of-size-k-and-average-greater-than-or-equal-to-threshold/' },
-  { sheet: 'neetcode_all', sub_sheets: ['neetcode_250', 'neetcode_all'], title: 'Fruit Into Baskets', category: 'Sliding Window', difficulty: 'Medium', leetcode_url: 'https://leetcode.com/problems/fruit-into-baskets/' },
-  { sheet: 'neetcode_all', sub_sheets: ['neetcode_all'], title: 'Minimum Size Subarray Sum', category: 'Sliding Window', difficulty: 'Medium', leetcode_url: 'https://leetcode.com/problems/minimum-size-subarray-sum/' },
-  { sheet: 'neetcode_all', sub_sheets: ['neetcode_all'], title: 'Frequency of the Most Frequent Element', category: 'Sliding Window', difficulty: 'Medium', leetcode_url: 'https://leetcode.com/problems/frequency-of-the-most-frequent-element/' },
 
-  // === STACK (39) ===
+  // === STACK (7) ===
   { sheet: 'neetcode_all', sub_sheets: ['blind_75', 'neetcode_150', 'neetcode_250', 'neetcode_all'], title: 'Valid Parentheses', category: 'Stack', difficulty: 'Easy', leetcode_url: 'https://leetcode.com/problems/valid-parentheses/' },
   { sheet: 'neetcode_all', sub_sheets: ['neetcode_150', 'neetcode_250', 'neetcode_all'], title: 'Min Stack', category: 'Stack', difficulty: 'Medium', leetcode_url: 'https://leetcode.com/problems/min-stack/' },
   { sheet: 'neetcode_all', sub_sheets: ['neetcode_150', 'neetcode_250', 'neetcode_all'], title: 'Evaluate Reverse Polish Notation', category: 'Stack', difficulty: 'Medium', leetcode_url: 'https://leetcode.com/problems/evaluate-reverse-polish-notation/' },
@@ -90,13 +43,8 @@ export const neetcodeProblems: NeetCodeProblem[] = [
   { sheet: 'neetcode_all', sub_sheets: ['neetcode_150', 'neetcode_250', 'neetcode_all'], title: 'Daily Temperatures', category: 'Stack', difficulty: 'Medium', leetcode_url: 'https://leetcode.com/problems/daily-temperatures/' },
   { sheet: 'neetcode_all', sub_sheets: ['neetcode_150', 'neetcode_250', 'neetcode_all'], title: 'Car Fleet', category: 'Stack', difficulty: 'Medium', leetcode_url: 'https://leetcode.com/problems/car-fleet/' },
   { sheet: 'neetcode_all', sub_sheets: ['neetcode_150', 'neetcode_250', 'neetcode_all'], title: 'Largest Rectangle in Histogram', category: 'Stack', difficulty: 'Hard', leetcode_url: 'https://leetcode.com/problems/largest-rectangle-in-histogram/' },
-  { sheet: 'neetcode_all', sub_sheets: ['neetcode_250', 'neetcode_all'], title: 'Baseball Game', category: 'Stack', difficulty: 'Easy', leetcode_url: 'https://leetcode.com/problems/baseball-game/' },
-  { sheet: 'neetcode_all', sub_sheets: ['neetcode_250', 'neetcode_all'], title: 'Implement Queue using Stacks', category: 'Stack', difficulty: 'Easy', leetcode_url: 'https://leetcode.com/problems/implement-queue-using-stacks/' },
-  { sheet: 'neetcode_all', sub_sheets: ['neetcode_250', 'neetcode_all'], title: 'Simplify Path', category: 'Stack', difficulty: 'Medium', leetcode_url: 'https://leetcode.com/problems/simplify-path/' },
-  { sheet: 'neetcode_all', sub_sheets: ['neetcode_all'], title: 'Decode String', category: 'Stack', difficulty: 'Medium', leetcode_url: 'https://leetcode.com/problems/decode-string/' },
-  { sheet: 'neetcode_all', sub_sheets: ['neetcode_all'], title: 'Asteroid Collision', category: 'Stack', difficulty: 'Medium', leetcode_url: 'https://leetcode.com/problems/asteroid-collision/' },
 
-  // === BINARY SEARCH (43) ===
+  // === BINARY SEARCH (7) ===
   { sheet: 'neetcode_all', sub_sheets: ['neetcode_150', 'neetcode_250', 'neetcode_all'], title: 'Binary Search', category: 'Binary Search', difficulty: 'Easy', leetcode_url: 'https://leetcode.com/problems/binary-search/' },
   { sheet: 'neetcode_all', sub_sheets: ['neetcode_150', 'neetcode_250', 'neetcode_all'], title: 'Search a 2D Matrix', category: 'Binary Search', difficulty: 'Medium', leetcode_url: 'https://leetcode.com/problems/search-a-2d-matrix/' },
   { sheet: 'neetcode_all', sub_sheets: ['neetcode_150', 'neetcode_250', 'neetcode_all'], title: 'Koko Eating Bananas', category: 'Binary Search', difficulty: 'Medium', leetcode_url: 'https://leetcode.com/problems/koko-eating-bananas/' },
@@ -104,29 +52,21 @@ export const neetcodeProblems: NeetCodeProblem[] = [
   { sheet: 'neetcode_all', sub_sheets: ['blind_75', 'neetcode_150', 'neetcode_250', 'neetcode_all'], title: 'Search in Rotated Sorted Array', category: 'Binary Search', difficulty: 'Medium', leetcode_url: 'https://leetcode.com/problems/search-in-rotated-sorted-array/' },
   { sheet: 'neetcode_all', sub_sheets: ['neetcode_150', 'neetcode_250', 'neetcode_all'], title: 'Time Based Key-Value Store', category: 'Binary Search', difficulty: 'Medium', leetcode_url: 'https://leetcode.com/problems/time-based-key-value-store/' },
   { sheet: 'neetcode_all', sub_sheets: ['neetcode_150', 'neetcode_250', 'neetcode_all'], title: 'Median of Two Sorted Arrays', category: 'Binary Search', difficulty: 'Hard', leetcode_url: 'https://leetcode.com/problems/median-of-two-sorted-arrays/' },
-  { sheet: 'neetcode_all', sub_sheets: ['neetcode_250', 'neetcode_all'], title: 'Search Insert Position', category: 'Binary Search', difficulty: 'Easy', leetcode_url: 'https://leetcode.com/problems/search-insert-position/' },
-  { sheet: 'neetcode_all', sub_sheets: ['neetcode_250', 'neetcode_all'], title: 'Guess Number Higher or Lower', category: 'Binary Search', difficulty: 'Easy', leetcode_url: 'https://leetcode.com/problems/guess-number-higher-or-lower/' },
-  { sheet: 'neetcode_all', sub_sheets: ['neetcode_250', 'neetcode_all'], title: 'Arranging Coins', category: 'Binary Search', difficulty: 'Easy', leetcode_url: 'https://leetcode.com/problems/arranging-coins/' },
-  { sheet: 'neetcode_all', sub_sheets: ['neetcode_250', 'neetcode_all'], title: 'Squares of a Sorted Array', category: 'Binary Search', difficulty: 'Easy', leetcode_url: 'https://leetcode.com/problems/squares-of-a-sorted-array/' },
-  { sheet: 'neetcode_all', sub_sheets: ['neetcode_all'], title: 'Capacity To Ship Packages Within D Days', category: 'Binary Search', difficulty: 'Medium', leetcode_url: 'https://leetcode.com/problems/capacity-to-ship-packages-within-d-days/' },
-  { sheet: 'neetcode_all', sub_sheets: ['neetcode_all'], title: 'Single Element in a Sorted Array', category: 'Binary Search', difficulty: 'Medium', leetcode_url: 'https://leetcode.com/problems/single-element-in-a-sorted-array/' },
 
-  // === LINKED LIST (40) ===
+  // === LINKED LIST (11) ===
   { sheet: 'neetcode_all', sub_sheets: ['blind_75', 'neetcode_150', 'neetcode_250', 'neetcode_all'], title: 'Reverse Linked List', category: 'Linked List', difficulty: 'Easy', leetcode_url: 'https://leetcode.com/problems/reverse-linked-list/' },
   { sheet: 'neetcode_all', sub_sheets: ['blind_75', 'neetcode_150', 'neetcode_250', 'neetcode_all'], title: 'Merge Two Sorted Lists', category: 'Linked List', difficulty: 'Easy', leetcode_url: 'https://leetcode.com/problems/merge-two-sorted-lists/' },
+  { sheet: 'neetcode_all', sub_sheets: ['blind_75', 'neetcode_150', 'neetcode_250', 'neetcode_all'], title: 'Linked List Cycle', category: 'Linked List', difficulty: 'Easy', leetcode_url: 'https://leetcode.com/problems/linked-list-cycle/' },
   { sheet: 'neetcode_all', sub_sheets: ['blind_75', 'neetcode_150', 'neetcode_250', 'neetcode_all'], title: 'Reorder List', category: 'Linked List', difficulty: 'Medium', leetcode_url: 'https://leetcode.com/problems/reorder-list/' },
   { sheet: 'neetcode_all', sub_sheets: ['blind_75', 'neetcode_150', 'neetcode_250', 'neetcode_all'], title: 'Remove Nth Node From End of List', category: 'Linked List', difficulty: 'Medium', leetcode_url: 'https://leetcode.com/problems/remove-nth-node-from-end-of-list/' },
   { sheet: 'neetcode_all', sub_sheets: ['neetcode_150', 'neetcode_250', 'neetcode_all'], title: 'Copy List with Random Pointer', category: 'Linked List', difficulty: 'Medium', leetcode_url: 'https://leetcode.com/problems/copy-list-with-random-pointer/' },
   { sheet: 'neetcode_all', sub_sheets: ['neetcode_150', 'neetcode_250', 'neetcode_all'], title: 'Add Two Numbers', category: 'Linked List', difficulty: 'Medium', leetcode_url: 'https://leetcode.com/problems/add-two-numbers/' },
-  { sheet: 'neetcode_all', sub_sheets: ['blind_75', 'neetcode_150', 'neetcode_250', 'neetcode_all'], title: 'Linked List Cycle', category: 'Linked List', difficulty: 'Easy', leetcode_url: 'https://leetcode.com/problems/linked-list-cycle/' },
   { sheet: 'neetcode_all', sub_sheets: ['neetcode_150', 'neetcode_250', 'neetcode_all'], title: 'Find the Duplicate Number', category: 'Linked List', difficulty: 'Medium', leetcode_url: 'https://leetcode.com/problems/find-the-duplicate-number/' },
   { sheet: 'neetcode_all', sub_sheets: ['neetcode_150', 'neetcode_250', 'neetcode_all'], title: 'LRU Cache', category: 'Linked List', difficulty: 'Medium', leetcode_url: 'https://leetcode.com/problems/lru-cache/' },
-  { sheet: 'neetcode_all', sub_sheets: ['blind_75', 'neetcode_150', 'neetcode_250', 'neetcode_all'], title: 'Merge k Sorted Lists', category: 'Linked List', difficulty: 'Hard', leetcode_url: 'https://leetcode.com/problems/merge-k-sorted-lists/' },
+  { sheet: 'neetcode_all', sub_sheets: ['blind_75', 'neetcode_150', 'neetcode_250', 'neetcode_all'], title: 'Merge K Sorted Lists', category: 'Linked List', difficulty: 'Hard', leetcode_url: 'https://leetcode.com/problems/merge-k-sorted-lists/' },
   { sheet: 'neetcode_all', sub_sheets: ['neetcode_150', 'neetcode_250', 'neetcode_all'], title: 'Reverse Nodes in k-Group', category: 'Linked List', difficulty: 'Hard', leetcode_url: 'https://leetcode.com/problems/reverse-nodes-in-k-group/' },
-  { sheet: 'neetcode_all', sub_sheets: ['neetcode_250', 'neetcode_all'], title: 'Palindrome Linked List', category: 'Linked List', difficulty: 'Easy', leetcode_url: 'https://leetcode.com/problems/palindrome-linked-list/' },
-  { sheet: 'neetcode_all', sub_sheets: ['neetcode_250', 'neetcode_all'], title: 'Remove Linked List Elements', category: 'Linked List', difficulty: 'Easy', leetcode_url: 'https://leetcode.com/problems/remove-linked-list-elements/' },
 
-  // === TREES (93) ===
+  // === TREES (15) ===
   { sheet: 'neetcode_all', sub_sheets: ['blind_75', 'neetcode_150', 'neetcode_250', 'neetcode_all'], title: 'Invert Binary Tree', category: 'Trees', difficulty: 'Easy', leetcode_url: 'https://leetcode.com/problems/invert-binary-tree/' },
   { sheet: 'neetcode_all', sub_sheets: ['blind_75', 'neetcode_150', 'neetcode_250', 'neetcode_all'], title: 'Maximum Depth of Binary Tree', category: 'Trees', difficulty: 'Easy', leetcode_url: 'https://leetcode.com/problems/maximum-depth-of-binary-tree/' },
   { sheet: 'neetcode_all', sub_sheets: ['neetcode_150', 'neetcode_250', 'neetcode_all'], title: 'Diameter of Binary Tree', category: 'Trees', difficulty: 'Easy', leetcode_url: 'https://leetcode.com/problems/diameter-of-binary-tree/' },
@@ -143,7 +83,7 @@ export const neetcodeProblems: NeetCodeProblem[] = [
   { sheet: 'neetcode_all', sub_sheets: ['blind_75', 'neetcode_150', 'neetcode_250', 'neetcode_all'], title: 'Binary Tree Maximum Path Sum', category: 'Trees', difficulty: 'Hard', leetcode_url: 'https://leetcode.com/problems/binary-tree-maximum-path-sum/' },
   { sheet: 'neetcode_all', sub_sheets: ['blind_75', 'neetcode_150', 'neetcode_250', 'neetcode_all'], title: 'Serialize and Deserialize Binary Tree', category: 'Trees', difficulty: 'Hard', leetcode_url: 'https://leetcode.com/problems/serialize-and-deserialize-binary-tree/' },
 
-  // === HEAP / PRIORITY QUEUE (33) ===
+  // === HEAP / PRIORITY QUEUE (7) ===
   { sheet: 'neetcode_all', sub_sheets: ['neetcode_150', 'neetcode_250', 'neetcode_all'], title: 'Kth Largest Element in a Stream', category: 'Heap / Priority Queue', difficulty: 'Easy', leetcode_url: 'https://leetcode.com/problems/kth-largest-element-in-a-stream/' },
   { sheet: 'neetcode_all', sub_sheets: ['neetcode_150', 'neetcode_250', 'neetcode_all'], title: 'Last Stone Weight', category: 'Heap / Priority Queue', difficulty: 'Easy', leetcode_url: 'https://leetcode.com/problems/last-stone-weight/' },
   { sheet: 'neetcode_all', sub_sheets: ['neetcode_150', 'neetcode_250', 'neetcode_all'], title: 'K Closest Points to Origin', category: 'Heap / Priority Queue', difficulty: 'Medium', leetcode_url: 'https://leetcode.com/problems/k-closest-points-to-origin/' },
@@ -152,44 +92,46 @@ export const neetcodeProblems: NeetCodeProblem[] = [
   { sheet: 'neetcode_all', sub_sheets: ['neetcode_150', 'neetcode_250', 'neetcode_all'], title: 'Design Twitter', category: 'Heap / Priority Queue', difficulty: 'Medium', leetcode_url: 'https://leetcode.com/problems/design-twitter/' },
   { sheet: 'neetcode_all', sub_sheets: ['blind_75', 'neetcode_150', 'neetcode_250', 'neetcode_all'], title: 'Find Median from Data Stream', category: 'Heap / Priority Queue', difficulty: 'Hard', leetcode_url: 'https://leetcode.com/problems/find-median-from-data-stream/' },
 
-  // === BACKTRACKING (36) ===
-  { sheet: 'neetcode_all', sub_sheets: ['blind_75', 'neetcode_150', 'neetcode_250', 'neetcode_all'], title: 'Subsets', category: 'Backtracking', difficulty: 'Medium', leetcode_url: 'https://leetcode.com/problems/subsets/' },
+  // === BACKTRACKING (9) ===
+  { sheet: 'neetcode_all', sub_sheets: ['neetcode_150', 'neetcode_250', 'neetcode_all'], title: 'Subsets', category: 'Backtracking', difficulty: 'Medium', leetcode_url: 'https://leetcode.com/problems/subsets/' },
   { sheet: 'neetcode_all', sub_sheets: ['blind_75', 'neetcode_150', 'neetcode_250', 'neetcode_all'], title: 'Combination Sum', category: 'Backtracking', difficulty: 'Medium', leetcode_url: 'https://leetcode.com/problems/combination-sum/' },
+  { sheet: 'neetcode_all', sub_sheets: ['neetcode_150', 'neetcode_250', 'neetcode_all'], title: 'Combination Sum II', category: 'Backtracking', difficulty: 'Medium', leetcode_url: 'https://leetcode.com/problems/combination-sum-ii/' },
   { sheet: 'neetcode_all', sub_sheets: ['neetcode_150', 'neetcode_250', 'neetcode_all'], title: 'Permutations', category: 'Backtracking', difficulty: 'Medium', leetcode_url: 'https://leetcode.com/problems/permutations/' },
   { sheet: 'neetcode_all', sub_sheets: ['neetcode_150', 'neetcode_250', 'neetcode_all'], title: 'Subsets II', category: 'Backtracking', difficulty: 'Medium', leetcode_url: 'https://leetcode.com/problems/subsets-ii/' },
-  { sheet: 'neetcode_all', sub_sheets: ['neetcode_150', 'neetcode_250', 'neetcode_all'], title: 'Combination Sum II', category: 'Backtracking', difficulty: 'Medium', leetcode_url: 'https://leetcode.com/problems/combination-sum-ii/' },
   { sheet: 'neetcode_all', sub_sheets: ['blind_75', 'neetcode_150', 'neetcode_250', 'neetcode_all'], title: 'Word Search', category: 'Backtracking', difficulty: 'Medium', leetcode_url: 'https://leetcode.com/problems/word-search/' },
   { sheet: 'neetcode_all', sub_sheets: ['neetcode_150', 'neetcode_250', 'neetcode_all'], title: 'Palindrome Partitioning', category: 'Backtracking', difficulty: 'Medium', leetcode_url: 'https://leetcode.com/problems/palindrome-partitioning/' },
   { sheet: 'neetcode_all', sub_sheets: ['neetcode_150', 'neetcode_250', 'neetcode_all'], title: 'Letter Combinations of a Phone Number', category: 'Backtracking', difficulty: 'Medium', leetcode_url: 'https://leetcode.com/problems/letter-combinations-of-a-phone-number/' },
   { sheet: 'neetcode_all', sub_sheets: ['neetcode_150', 'neetcode_250', 'neetcode_all'], title: 'N-Queens', category: 'Backtracking', difficulty: 'Hard', leetcode_url: 'https://leetcode.com/problems/n-queens/' },
 
-  // === TRIES (12) ===
+  // === TRIES (3) ===
   { sheet: 'neetcode_all', sub_sheets: ['blind_75', 'neetcode_150', 'neetcode_250', 'neetcode_all'], title: 'Implement Trie (Prefix Tree)', category: 'Tries', difficulty: 'Medium', leetcode_url: 'https://leetcode.com/problems/implement-trie-prefix-tree/' },
   { sheet: 'neetcode_all', sub_sheets: ['blind_75', 'neetcode_150', 'neetcode_250', 'neetcode_all'], title: 'Design Add and Search Words Data Structure', category: 'Tries', difficulty: 'Medium', leetcode_url: 'https://leetcode.com/problems/design-add-and-search-words-data-structure/' },
   { sheet: 'neetcode_all', sub_sheets: ['blind_75', 'neetcode_150', 'neetcode_250', 'neetcode_all'], title: 'Word Search II', category: 'Tries', difficulty: 'Hard', leetcode_url: 'https://leetcode.com/problems/word-search-ii/' },
 
-  // === GRAPHS (71) ===
+  // === GRAPHS (13) ===
   { sheet: 'neetcode_all', sub_sheets: ['blind_75', 'neetcode_150', 'neetcode_250', 'neetcode_all'], title: 'Number of Islands', category: 'Graphs', difficulty: 'Medium', leetcode_url: 'https://leetcode.com/problems/number-of-islands/' },
-  { sheet: 'neetcode_all', sub_sheets: ['blind_75', 'neetcode_150', 'neetcode_250', 'neetcode_all'], title: 'Clone Graph', category: 'Graphs', difficulty: 'Medium', leetcode_url: 'https://leetcode.com/problems/clone-graph/' },
   { sheet: 'neetcode_all', sub_sheets: ['neetcode_150', 'neetcode_250', 'neetcode_all'], title: 'Max Area of Island', category: 'Graphs', difficulty: 'Medium', leetcode_url: 'https://leetcode.com/problems/max-area-of-island/' },
+  { sheet: 'neetcode_all', sub_sheets: ['blind_75', 'neetcode_150', 'neetcode_250', 'neetcode_all'], title: 'Clone Graph', category: 'Graphs', difficulty: 'Medium', leetcode_url: 'https://leetcode.com/problems/clone-graph/' },
+  { sheet: 'neetcode_all', sub_sheets: ['neetcode_150', 'neetcode_250', 'neetcode_all'], title: 'Walls and Gates', category: 'Graphs', difficulty: 'Medium', leetcode_url: 'https://leetcode.com/problems/walls-and-gates/' },
+  { sheet: 'neetcode_all', sub_sheets: ['neetcode_150', 'neetcode_250', 'neetcode_all'], title: 'Rotting Oranges', category: 'Graphs', difficulty: 'Medium', leetcode_url: 'https://leetcode.com/problems/rotting-oranges/' },
   { sheet: 'neetcode_all', sub_sheets: ['blind_75', 'neetcode_150', 'neetcode_250', 'neetcode_all'], title: 'Pacific Atlantic Water Flow', category: 'Graphs', difficulty: 'Medium', leetcode_url: 'https://leetcode.com/problems/pacific-atlantic-water-flow/' },
   { sheet: 'neetcode_all', sub_sheets: ['neetcode_150', 'neetcode_250', 'neetcode_all'], title: 'Surrounded Regions', category: 'Graphs', difficulty: 'Medium', leetcode_url: 'https://leetcode.com/problems/surrounded-regions/' },
-  { sheet: 'neetcode_all', sub_sheets: ['neetcode_150', 'neetcode_250', 'neetcode_all'], title: 'Rotting Oranges', category: 'Graphs', difficulty: 'Medium', leetcode_url: 'https://leetcode.com/problems/rotting-oranges/' },
-  { sheet: 'neetcode_all', sub_sheets: ['neetcode_150', 'neetcode_250', 'neetcode_all'], title: 'Walls and Gates', category: 'Graphs', difficulty: 'Medium', leetcode_url: 'https://leetcode.com/problems/walls-and-gates/' },
   { sheet: 'neetcode_all', sub_sheets: ['blind_75', 'neetcode_150', 'neetcode_250', 'neetcode_all'], title: 'Course Schedule', category: 'Graphs', difficulty: 'Medium', leetcode_url: 'https://leetcode.com/problems/course-schedule/' },
   { sheet: 'neetcode_all', sub_sheets: ['neetcode_150', 'neetcode_250', 'neetcode_all'], title: 'Course Schedule II', category: 'Graphs', difficulty: 'Medium', leetcode_url: 'https://leetcode.com/problems/course-schedule-ii/' },
   { sheet: 'neetcode_all', sub_sheets: ['blind_75', 'neetcode_150', 'neetcode_250', 'neetcode_all'], title: 'Graph Valid Tree', category: 'Graphs', difficulty: 'Medium', leetcode_url: 'https://leetcode.com/problems/graph-valid-tree/' },
   { sheet: 'neetcode_all', sub_sheets: ['blind_75', 'neetcode_150', 'neetcode_250', 'neetcode_all'], title: 'Number of Connected Components in an Undirected Graph', category: 'Graphs', difficulty: 'Medium', leetcode_url: 'https://leetcode.com/problems/number-of-connected-components-in-an-undirected-graph/' },
   { sheet: 'neetcode_all', sub_sheets: ['neetcode_150', 'neetcode_250', 'neetcode_all'], title: 'Redundant Connection', category: 'Graphs', difficulty: 'Medium', leetcode_url: 'https://leetcode.com/problems/redundant-connection/' },
-  { sheet: 'neetcode_all', sub_sheets: ['blind_75', 'neetcode_150', 'neetcode_250', 'neetcode_all'], title: 'Word Ladder', category: 'Graphs', difficulty: 'Hard', leetcode_url: 'https://leetcode.com/problems/word-ladder/' },
+  { sheet: 'neetcode_all', sub_sheets: ['neetcode_150', 'neetcode_250', 'neetcode_all'], title: 'Word Ladder', category: 'Graphs', difficulty: 'Hard', leetcode_url: 'https://leetcode.com/problems/word-ladder/' },
 
-  // === ADVANCED GRAPHS (30) ===
-  { sheet: 'neetcode_all', sub_sheets: ['blind_75', 'neetcode_150', 'neetcode_250', 'neetcode_all'], title: 'Alien Dictionary', category: 'Advanced Graphs', difficulty: 'Hard', leetcode_url: 'https://leetcode.com/problems/alien-dictionary/' },
-  { sheet: 'neetcode_all', sub_sheets: ['neetcode_150', 'neetcode_250', 'neetcode_all'], title: 'Min Cost to Connect All Points', category: 'Advanced Graphs', difficulty: 'Medium', leetcode_url: 'https://leetcode.com/problems/min-cost-to-connect-all-points/' },
+  // === ADVANCED GRAPHS (6) ===
   { sheet: 'neetcode_all', sub_sheets: ['neetcode_150', 'neetcode_250', 'neetcode_all'], title: 'Network Delay Time', category: 'Advanced Graphs', difficulty: 'Medium', leetcode_url: 'https://leetcode.com/problems/network-delay-time/' },
+  { sheet: 'neetcode_all', sub_sheets: ['neetcode_150', 'neetcode_250', 'neetcode_all'], title: 'Reconstruct Itinerary', category: 'Advanced Graphs', difficulty: 'Hard', leetcode_url: 'https://leetcode.com/problems/reconstruct-itinerary/' },
+  { sheet: 'neetcode_all', sub_sheets: ['neetcode_150', 'neetcode_250', 'neetcode_all'], title: 'Min Cost to Connect All Points', category: 'Advanced Graphs', difficulty: 'Medium', leetcode_url: 'https://leetcode.com/problems/min-cost-to-connect-all-points/' },
   { sheet: 'neetcode_all', sub_sheets: ['neetcode_150', 'neetcode_250', 'neetcode_all'], title: 'Swim in Rising Water', category: 'Advanced Graphs', difficulty: 'Hard', leetcode_url: 'https://leetcode.com/problems/swim-in-rising-water/' },
+  { sheet: 'neetcode_all', sub_sheets: ['blind_75', 'neetcode_150', 'neetcode_250', 'neetcode_all'], title: 'Alien Dictionary', category: 'Advanced Graphs', difficulty: 'Hard', leetcode_url: 'https://leetcode.com/problems/alien-dictionary/' },
+  { sheet: 'neetcode_all', sub_sheets: ['neetcode_150', 'neetcode_250', 'neetcode_all'], title: 'Cheapest Flights Within K Stops', category: 'Advanced Graphs', difficulty: 'Medium', leetcode_url: 'https://leetcode.com/problems/cheapest-flights-within-k-stops/' },
 
-  // === 1-D DYNAMIC PROGRAMMING (55) ===
+  // === 1-D DYNAMIC PROGRAMMING (12) ===
   { sheet: 'neetcode_all', sub_sheets: ['blind_75', 'neetcode_150', 'neetcode_250', 'neetcode_all'], title: 'Climbing Stairs', category: '1-D Dynamic Programming', difficulty: 'Easy', leetcode_url: 'https://leetcode.com/problems/climbing-stairs/' },
   { sheet: 'neetcode_all', sub_sheets: ['neetcode_150', 'neetcode_250', 'neetcode_all'], title: 'Min Cost Climbing Stairs', category: '1-D Dynamic Programming', difficulty: 'Easy', leetcode_url: 'https://leetcode.com/problems/min-cost-climbing-stairs/' },
   { sheet: 'neetcode_all', sub_sheets: ['blind_75', 'neetcode_150', 'neetcode_250', 'neetcode_all'], title: 'House Robber', category: '1-D Dynamic Programming', difficulty: 'Medium', leetcode_url: 'https://leetcode.com/problems/house-robber/' },
@@ -202,9 +144,8 @@ export const neetcodeProblems: NeetCodeProblem[] = [
   { sheet: 'neetcode_all', sub_sheets: ['blind_75', 'neetcode_150', 'neetcode_250', 'neetcode_all'], title: 'Word Break', category: '1-D Dynamic Programming', difficulty: 'Medium', leetcode_url: 'https://leetcode.com/problems/word-break/' },
   { sheet: 'neetcode_all', sub_sheets: ['blind_75', 'neetcode_150', 'neetcode_250', 'neetcode_all'], title: 'Longest Increasing Subsequence', category: '1-D Dynamic Programming', difficulty: 'Medium', leetcode_url: 'https://leetcode.com/problems/longest-increasing-subsequence/' },
   { sheet: 'neetcode_all', sub_sheets: ['neetcode_150', 'neetcode_250', 'neetcode_all'], title: 'Partition Equal Subset Sum', category: '1-D Dynamic Programming', difficulty: 'Medium', leetcode_url: 'https://leetcode.com/problems/partition-equal-subset-sum/' },
-  { sheet: 'neetcode_all', sub_sheets: ['blind_75', 'neetcode_150', 'neetcode_250', 'neetcode_all'], title: 'Combination Sum IV', category: '1-D Dynamic Programming', difficulty: 'Medium', leetcode_url: 'https://leetcode.com/problems/combination-sum-iv/' },
 
-  // === 2-D DYNAMIC PROGRAMMING (50) ===
+  // === 2-D DYNAMIC PROGRAMMING (11) ===
   { sheet: 'neetcode_all', sub_sheets: ['blind_75', 'neetcode_150', 'neetcode_250', 'neetcode_all'], title: 'Unique Paths', category: '2-D Dynamic Programming', difficulty: 'Medium', leetcode_url: 'https://leetcode.com/problems/unique-paths/' },
   { sheet: 'neetcode_all', sub_sheets: ['blind_75', 'neetcode_150', 'neetcode_250', 'neetcode_all'], title: 'Longest Common Subsequence', category: '2-D Dynamic Programming', difficulty: 'Medium', leetcode_url: 'https://leetcode.com/problems/longest-common-subsequence/' },
   { sheet: 'neetcode_all', sub_sheets: ['neetcode_150', 'neetcode_250', 'neetcode_all'], title: 'Best Time to Buy and Sell Stock with Cooldown', category: '2-D Dynamic Programming', difficulty: 'Medium', leetcode_url: 'https://leetcode.com/problems/best-time-to-buy-and-sell-stock-with-cooldown/' },
@@ -217,7 +158,7 @@ export const neetcodeProblems: NeetCodeProblem[] = [
   { sheet: 'neetcode_all', sub_sheets: ['neetcode_150', 'neetcode_250', 'neetcode_all'], title: 'Burst Balloons', category: '2-D Dynamic Programming', difficulty: 'Hard', leetcode_url: 'https://leetcode.com/problems/burst-balloons/' },
   { sheet: 'neetcode_all', sub_sheets: ['neetcode_150', 'neetcode_250', 'neetcode_all'], title: 'Regular Expression Matching', category: '2-D Dynamic Programming', difficulty: 'Hard', leetcode_url: 'https://leetcode.com/problems/regular-expression-matching/' },
 
-  // === GREEDY (67) ===
+  // === GREEDY (8) ===
   { sheet: 'neetcode_all', sub_sheets: ['blind_75', 'neetcode_150', 'neetcode_250', 'neetcode_all'], title: 'Maximum Subarray', category: 'Greedy', difficulty: 'Medium', leetcode_url: 'https://leetcode.com/problems/maximum-subarray/' },
   { sheet: 'neetcode_all', sub_sheets: ['blind_75', 'neetcode_150', 'neetcode_250', 'neetcode_all'], title: 'Jump Game', category: 'Greedy', difficulty: 'Medium', leetcode_url: 'https://leetcode.com/problems/jump-game/' },
   { sheet: 'neetcode_all', sub_sheets: ['neetcode_150', 'neetcode_250', 'neetcode_all'], title: 'Jump Game II', category: 'Greedy', difficulty: 'Medium', leetcode_url: 'https://leetcode.com/problems/jump-game-ii/' },
@@ -227,7 +168,7 @@ export const neetcodeProblems: NeetCodeProblem[] = [
   { sheet: 'neetcode_all', sub_sheets: ['blind_75', 'neetcode_150', 'neetcode_250', 'neetcode_all'], title: 'Partition Labels', category: 'Greedy', difficulty: 'Medium', leetcode_url: 'https://leetcode.com/problems/partition-labels/' },
   { sheet: 'neetcode_all', sub_sheets: ['neetcode_150', 'neetcode_250', 'neetcode_all'], title: 'Valid Parenthesis String', category: 'Greedy', difficulty: 'Medium', leetcode_url: 'https://leetcode.com/problems/valid-parenthesis-string/' },
 
-  // === INTERVALS (21) ===
+  // === INTERVALS (6) ===
   { sheet: 'neetcode_all', sub_sheets: ['blind_75', 'neetcode_150', 'neetcode_250', 'neetcode_all'], title: 'Insert Interval', category: 'Intervals', difficulty: 'Medium', leetcode_url: 'https://leetcode.com/problems/insert-interval/' },
   { sheet: 'neetcode_all', sub_sheets: ['blind_75', 'neetcode_150', 'neetcode_250', 'neetcode_all'], title: 'Merge Intervals', category: 'Intervals', difficulty: 'Medium', leetcode_url: 'https://leetcode.com/problems/merge-intervals/' },
   { sheet: 'neetcode_all', sub_sheets: ['blind_75', 'neetcode_150', 'neetcode_250', 'neetcode_all'], title: 'Non-overlapping Intervals', category: 'Intervals', difficulty: 'Medium', leetcode_url: 'https://leetcode.com/problems/non-overlapping-intervals/' },
@@ -235,7 +176,7 @@ export const neetcodeProblems: NeetCodeProblem[] = [
   { sheet: 'neetcode_all', sub_sheets: ['blind_75', 'neetcode_150', 'neetcode_250', 'neetcode_all'], title: 'Meeting Rooms II', category: 'Intervals', difficulty: 'Medium', leetcode_url: 'https://leetcode.com/problems/meeting-rooms-ii/' },
   { sheet: 'neetcode_all', sub_sheets: ['neetcode_150', 'neetcode_250', 'neetcode_all'], title: 'Minimum Interval to Include Each Query', category: 'Intervals', difficulty: 'Hard', leetcode_url: 'https://leetcode.com/problems/minimum-interval-to-include-each-query/' },
 
-  // === MATH & GEOMETRY (63) ===
+  // === MATH & GEOMETRY (8) ===
   { sheet: 'neetcode_all', sub_sheets: ['blind_75', 'neetcode_150', 'neetcode_250', 'neetcode_all'], title: 'Rotate Image', category: 'Math & Geometry', difficulty: 'Medium', leetcode_url: 'https://leetcode.com/problems/rotate-image/' },
   { sheet: 'neetcode_all', sub_sheets: ['blind_75', 'neetcode_150', 'neetcode_250', 'neetcode_all'], title: 'Spiral Matrix', category: 'Math & Geometry', difficulty: 'Medium', leetcode_url: 'https://leetcode.com/problems/spiral-matrix/' },
   { sheet: 'neetcode_all', sub_sheets: ['blind_75', 'neetcode_150', 'neetcode_250', 'neetcode_all'], title: 'Set Matrix Zeroes', category: 'Math & Geometry', difficulty: 'Medium', leetcode_url: 'https://leetcode.com/problems/set-matrix-zeroes/' },
@@ -243,9 +184,10 @@ export const neetcodeProblems: NeetCodeProblem[] = [
   { sheet: 'neetcode_all', sub_sheets: ['neetcode_150', 'neetcode_250', 'neetcode_all'], title: 'Plus One', category: 'Math & Geometry', difficulty: 'Easy', leetcode_url: 'https://leetcode.com/problems/plus-one/' },
   { sheet: 'neetcode_all', sub_sheets: ['neetcode_150', 'neetcode_250', 'neetcode_all'], title: 'Pow(x, n)', category: 'Math & Geometry', difficulty: 'Medium', leetcode_url: 'https://leetcode.com/problems/powx-n/' },
   { sheet: 'neetcode_all', sub_sheets: ['neetcode_150', 'neetcode_250', 'neetcode_all'], title: 'Multiply Strings', category: 'Math & Geometry', difficulty: 'Medium', leetcode_url: 'https://leetcode.com/problems/multiply-strings/' },
+  { sheet: 'neetcode_all', sub_sheets: ['neetcode_150', 'neetcode_250', 'neetcode_all'], title: 'Detect Squares', category: 'Math & Geometry', difficulty: 'Medium', leetcode_url: 'https://leetcode.com/problems/detect-squares/' },
 
-  // === BIT MANIPULATION (31) ===
-  { sheet: 'neetcode_all', sub_sheets: ['blind_75', 'neetcode_150', 'neetcode_250', 'neetcode_all'], title: 'Single Number', category: 'Bit Manipulation', difficulty: 'Easy', leetcode_url: 'https://leetcode.com/problems/single-number/' },
+  // === BIT MANIPULATION (7) ===
+  { sheet: 'neetcode_all', sub_sheets: ['neetcode_150', 'neetcode_250', 'neetcode_all'], title: 'Single Number', category: 'Bit Manipulation', difficulty: 'Easy', leetcode_url: 'https://leetcode.com/problems/single-number/' },
   { sheet: 'neetcode_all', sub_sheets: ['blind_75', 'neetcode_150', 'neetcode_250', 'neetcode_all'], title: 'Number of 1 Bits', category: 'Bit Manipulation', difficulty: 'Easy', leetcode_url: 'https://leetcode.com/problems/number-of-1-bits/' },
   { sheet: 'neetcode_all', sub_sheets: ['blind_75', 'neetcode_150', 'neetcode_250', 'neetcode_all'], title: 'Counting Bits', category: 'Bit Manipulation', difficulty: 'Easy', leetcode_url: 'https://leetcode.com/problems/counting-bits/' },
   { sheet: 'neetcode_all', sub_sheets: ['blind_75', 'neetcode_150', 'neetcode_250', 'neetcode_all'], title: 'Reverse Bits', category: 'Bit Manipulation', difficulty: 'Easy', leetcode_url: 'https://leetcode.com/problems/reverse-bits/' },

@@ -7,6 +7,7 @@ import { striverProblems } from '@/data/striverSheet';
 import { striverA2ZProblems } from '@/data/striverA2ZSheet';
 import { tle31Problems } from '@/data/tle31Sheet';
 import { fetchAllUserProblems } from '@/lib/supabase/queries';
+import { getProblemSubSheets } from '@/lib/neetcodeHelpers';
 
 export const dynamic = 'force-dynamic';
 
@@ -58,7 +59,11 @@ export default async function DashboardPage() {
 
   // Filter user progress to enabled sheets using the joined problem data
   const rawActiveProblems = userProblemsData || [];
-  const activeProblems = rawActiveProblems.filter((up: any) => up.problems && enabledSheets.includes(up.problems.sheet));
+  const activeProblems = rawActiveProblems.filter((up: any) => {
+    if (!up.problems) return false;
+    const subSheets = getProblemSubSheets(up.problems);
+    return enabledSheets.includes(up.problems.sheet) || enabledSheets.some(s => subSheets.includes(s));
+  });
 
   // === CALCULATE STATS ===
   const now = new Date();
@@ -88,10 +93,8 @@ export default async function DashboardPage() {
       totalCount: info.total,
       solvedCount: rawActiveProblems.filter((up: any) => {
         if (!up.problems) return false;
-        if (['blind_75', 'neetcode_150', 'neetcode_250', 'neetcode_all'].includes(sheetId)) {
-          return up.problems.sheet === 'neetcode_all' || up.problems.sheet === sheetId || (up.problems.sub_sheets && up.problems.sub_sheets.includes(sheetId));
-        }
-        return up.problems.sheet === sheetId;
+        const subSheets = getProblemSubSheets(up.problems);
+        return up.problems.sheet === sheetId || subSheets.includes(sheetId);
       }).length,
     };
   });
