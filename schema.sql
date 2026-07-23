@@ -12,6 +12,8 @@ CREATE TABLE IF NOT EXISTS public.profiles (
     default_sheet TEXT DEFAULT 'striver_sde',
     daily_goal INTEGER DEFAULT 10,
     theme TEXT DEFAULT 'monochrome',
+    algorithm TEXT DEFAULT 'sm2',
+    target_retention NUMERIC DEFAULT 0.90,
     created_at TIMESTAMPTZ DEFAULT NOW()
 );
 
@@ -42,6 +44,8 @@ CREATE TABLE IF NOT EXISTS public.user_problems (
     interval_days INTEGER DEFAULT 0,
     ease_factor NUMERIC DEFAULT 2.5,
     repetitions INTEGER DEFAULT 0,
+    stability NUMERIC,
+    difficulty NUMERIC,
     next_review_date TIMESTAMPTZ DEFAULT NOW(),
     last_reviewed_at TIMESTAMPTZ,
     status VARCHAR DEFAULT 'reviewing', -- 'reviewing', 'mastered', 'cooling'
