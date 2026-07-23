@@ -113,7 +113,7 @@ export default function ScratchpadModal({
                   letterSpacing: '1px',
                 }}
               >
-                TLDRAW CANVAS
+                CANVAS
               </span>
               <h3
                 style={{

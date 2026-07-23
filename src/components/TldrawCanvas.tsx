@@ -10,7 +10,10 @@ interface TldrawCanvasProps {
 export default function TldrawCanvas({ problemId }: TldrawCanvasProps) {
   return (
     <div style={{ position: 'relative', width: '100%', height: '100%' }}>
-      <Tldraw persistenceKey={`space_a_scratchpad_${problemId}`} />
+      <Tldraw
+        persistenceKey={`space_a_scratchpad_${problemId}`}
+        licenseKey={process.env.NEXT_PUBLIC_TLDRAW_LICENSE_KEY}
+      />
     </div>
   );
 }
