@@ -9,6 +9,7 @@ import { coolOffProblemAction } from '@/app/actions/cool-off-actions';
 import ActiveRecallWidget from '@/components/ActiveRecallWidget';
 
 import { calculateNextReview, predictAllIntervals } from '@/lib/scheduler';
+import SpacedRepetitionModal from '@/components/SpacedRepetitionModal';
 
 interface DueProblem {
   id: string;
@@ -44,6 +45,8 @@ export default function ReviewClient({
   const [currentIndex, setCurrentIndex] = useState(0);
   const [showGrading, setShowGrading] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
+
+  const [isSRModalOpen, setIsSRModalOpen] = useState(false);
 
   const hasDue = problems.length > 0 && currentIndex < problems.length;
   const currentProblem = hasDue ? problems[currentIndex] : null;
@@ -204,9 +207,34 @@ export default function ReviewClient({
                 <span style={{ fontSize: '0.75rem', fontWeight: 900, textTransform: 'uppercase', fontFamily: 'monospace' }}>
                   Grade Performance:
                 </span>
-                <span style={{ fontSize: '0.65rem', fontFamily: 'monospace', fontWeight: 900, backgroundColor: 'var(--text-primary)', color: 'var(--bg-primary)', padding: '0.15rem 0.4rem', border: '1px solid var(--border-color)' }}>
-                  ENGINE: {algorithm.toUpperCase() === 'FSRS' ? `FSRS-v5 (${Math.round(targetRetention * 100)}%)` : 'SM-2 CLASSIC'}
-                </span>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '0.35rem' }}>
+                  <span style={{ fontSize: '0.65rem', fontFamily: 'monospace', fontWeight: 900, backgroundColor: 'var(--text-primary)', color: 'var(--bg-primary)', padding: '0.15rem 0.4rem', border: '1px solid var(--border-color)' }}>
+                    ENGINE: {algorithm.toUpperCase() === 'FSRS' ? `FSRS-v5 (${Math.round(targetRetention * 100)}%)` : 'SM-2 CLASSIC'}
+                  </span>
+                  <button
+                    type="button"
+                    onClick={() => setIsSRModalOpen(true)}
+                    title="What is Spaced Repetition? Click to open guide"
+                    style={{
+                      display: 'inline-flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      width: '20px',
+                      height: '20px',
+                      borderRadius: '50%',
+                      backgroundColor: 'var(--text-primary)',
+                      color: 'var(--bg-primary)',
+                      border: '1.5px solid var(--border-color)',
+                      fontWeight: 900,
+                      fontSize: '0.7rem',
+                      fontFamily: 'monospace',
+                      cursor: 'pointer',
+                      boxShadow: '1px 1px 0px 0px var(--shadow-color)',
+                    }}
+                  >
+                    ?
+                  </button>
+                </div>
               </div>
               
               <div className="rating-bar">
@@ -286,6 +314,13 @@ export default function ReviewClient({
           </div>
         </div>
       </div>
+
+      {/* SPACED REPETITION EXPLANATORY MODAL */}
+      <SpacedRepetitionModal
+        isOpen={isSRModalOpen}
+        onClose={() => setIsSRModalOpen(false)}
+        defaultTab={algorithm === 'fsrs' ? 'fsrs' : 'sm2'}
+      />
     </div>
   );
 }

@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import { toggleSheetAction, resetSheetProgressAction, updatePreferencesAction } from '@/app/actions/sheet-actions';
 import { logout } from '@/app/auth-actions';
 import BrutalistToggle from '@/components/BrutalistToggle';
+import SpacedRepetitionModal from '@/components/SpacedRepetitionModal';
 
 interface SheetProgress {
   sheetId: string;
@@ -178,6 +179,7 @@ export default function SettingsClient({
   const [targetRetention, setTargetRetention] = useState<number>(initialTargetRetention);
   const [togglingSheet, setTogglingSheet] = useState<string | null>(null);
   const [statusMsg, setStatusMsg] = useState<{ text: string; isError: boolean } | null>(null);
+  const [isSRModalOpen, setIsSRModalOpen] = useState(false);
 
   // Toggle Sheet Handler
   async function handleToggleSheet(sheetId: string, currentEnabled: boolean) {
@@ -720,6 +722,33 @@ export default function SettingsClient({
                           <span style={{ fontSize: '0.65rem', backgroundColor: 'var(--text-primary)', color: 'var(--bg-primary)', padding: '0.15rem 0.4rem', border: '1px solid var(--border-color)' }}>
                             {algorithm === 'fsrs' ? 'FSRS-v5 (ACTIVE)' : 'SM-2 (ACTIVE)'}
                           </span>
+                          
+                          {/* HELP MODAL TRIGGER BUTTON */}
+                          <button
+                            type="button"
+                            onClick={() => setIsSRModalOpen(true)}
+                            title="What is Spaced Repetition? Click to open explanation guide"
+                            style={{
+                              display: 'inline-flex',
+                              alignItems: 'center',
+                              justifyContent: 'center',
+                              width: '24px',
+                              height: '24px',
+                              borderRadius: '50%',
+                              backgroundColor: 'var(--text-primary)',
+                              color: 'var(--bg-primary)',
+                              border: '2px solid var(--border-color)',
+                              fontWeight: 900,
+                              fontSize: '0.8rem',
+                              fontFamily: 'monospace',
+                              cursor: 'pointer',
+                              boxShadow: '2px 2px 0px 0px var(--shadow-color)',
+                              marginLeft: '0.25rem',
+                              transition: 'transform 0.1s ease',
+                            }}
+                          >
+                            ?
+                          </button>
                         </div>
                         <div style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', marginTop: '4px', fontFamily: 'monospace', lineHeight: '1.4' }}>
                           Select your scheduling engine. <strong>SM-2</strong> uses legacy fixed intervals (1987). <strong>FSRS v5</strong> uses machine learning memory stability models to cut redundant reviews by ~25%.
@@ -1008,6 +1037,12 @@ export default function SettingsClient({
 
         </div>
       </div>
+
+      {/* SPACED REPETITION & ALGORITHM EXPLANATORY GUIDE MODAL */}
+      <SpacedRepetitionModal
+        isOpen={isSRModalOpen}
+        onClose={() => setIsSRModalOpen(false)}
+      />
     </div>
   );
 }
