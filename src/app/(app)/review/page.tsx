@@ -14,14 +14,16 @@ export default async function ReviewPage() {
     return <div>Unauthorized</div>;
   }
 
-  // Fetch profile to get enabled sheets
+  // Fetch profile to get enabled sheets and algorithm preferences
   const { data: profile } = await supabase
     .from('profiles')
-    .select('enabled_sheets')
+    .select('enabled_sheets, algorithm, target_retention')
     .eq('id', user.id)
     .single();
 
   const enabledSheets: string[] = profile?.enabled_sheets || ['striver_sde', 'striver_a2z'];
+  const algorithm: 'sm2' | 'fsrs' = (profile?.algorithm as 'sm2' | 'fsrs') || 'sm2';
+  const targetRetention: number = profile?.target_retention !== undefined ? Number(profile.target_retention) : 0.90;
 
   // Fetch problems due today or earlier
   const { data: dueData } = await supabase
@@ -32,6 +34,9 @@ export default async function ReviewPage() {
       interval_days,
       ease_factor,
       repetitions,
+      stability,
+      difficulty,
+      last_reviewed_at,
       next_review_date,
       status,
       problems (
@@ -65,6 +70,9 @@ export default async function ReviewPage() {
         interval_days: item.interval_days,
         ease_factor: parseFloat(item.ease_factor),
         repetitions: item.repetitions,
+        stability: item.stability ? parseFloat(item.stability) : null,
+        difficulty_fsrs: item.difficulty ? parseFloat(item.difficulty) : null,
+        last_reviewed_at: item.last_reviewed_at || null,
       };
     })
     .filter(Boolean);
@@ -77,7 +85,11 @@ export default async function ReviewPage() {
       <p className="mb-3" style={{ fontSize: '0.9rem', color: 'var(--text-secondary)' }}>
         Revise due problems using Anki-style SM-2 rating buttons to schedule future review points.
       </p>
-      <ReviewClient initialDueProblems={dueProblems as any[]} />
+      <ReviewClient
+        initialDueProblems={dueProblems as any[]}
+        algorithm={algorithm}
+        targetRetention={targetRetention}
+      />
     </div>
   );
 }

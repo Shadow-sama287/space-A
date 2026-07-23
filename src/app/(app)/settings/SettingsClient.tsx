@@ -26,6 +26,8 @@ interface SettingsClientProps {
   defaultSheet: string;
   dailyGoal: number;
   currentTheme: string;
+  algorithm?: 'sm2' | 'fsrs';
+  targetRetention?: number;
   sheetProgressList: SheetProgress[];
 }
 
@@ -153,6 +155,8 @@ export default function SettingsClient({
   defaultSheet: initialDefaultSheet,
   dailyGoal: initialDailyGoal,
   currentTheme: initialTheme,
+  algorithm: initialAlgorithm = 'sm2',
+  targetRetention: initialTargetRetention = 0.90,
   sheetProgressList,
 }: SettingsClientProps) {
   const router = useRouter();
@@ -170,6 +174,8 @@ export default function SettingsClient({
   const [defaultSheet, setDefaultSheet] = useState<string>(initialDefaultSheet);
   const [dailyGoal, setDailyGoal] = useState<number>(initialDailyGoal);
   const [activeTheme, setActiveTheme] = useState<string>(initialTheme);
+  const [algorithm, setAlgorithm] = useState<'sm2' | 'fsrs'>(initialAlgorithm);
+  const [targetRetention, setTargetRetention] = useState<number>(initialTargetRetention);
   const [togglingSheet, setTogglingSheet] = useState<string | null>(null);
   const [statusMsg, setStatusMsg] = useState<{ text: string; isError: boolean } | null>(null);
 
@@ -239,17 +245,26 @@ export default function SettingsClient({
   }
 
   // Update Preferences Handler
-  async function handlePreferenceChange(updates: { defaultSheet?: string; dailyGoal?: number }) {
+  async function handlePreferenceChange(updates: {
+    defaultSheet?: string;
+    dailyGoal?: number;
+    algorithm?: 'sm2' | 'fsrs';
+    targetRetention?: number;
+  }) {
     setStatusMsg(null);
     if (updates.defaultSheet !== undefined) setDefaultSheet(updates.defaultSheet);
     if (updates.dailyGoal !== undefined) setDailyGoal(updates.dailyGoal);
+    if (updates.algorithm !== undefined) setAlgorithm(updates.algorithm);
+    if (updates.targetRetention !== undefined) setTargetRetention(updates.targetRetention);
 
     try {
-      await updatePreferencesAction({
+      const res = await updatePreferencesAction({
         defaultSheet: updates.defaultSheet !== undefined ? updates.defaultSheet : defaultSheet,
         dailyGoal: updates.dailyGoal !== undefined ? updates.dailyGoal : dailyGoal,
+        algorithm: updates.algorithm !== undefined ? updates.algorithm : algorithm,
+        targetRetention: updates.targetRetention !== undefined ? updates.targetRetention : targetRetention,
       });
-      setStatusMsg({ text: 'PREFERENCE SAVED!', isError: false });
+      setStatusMsg({ text: res?.warning || 'PREFERENCE SAVED!', isError: false });
       startTransition(() => {
         router.refresh();
       });
@@ -690,10 +705,97 @@ export default function SettingsClient({
           {(activeTab === 'preferences' || searchQuery) && (
             <div className="card">
               <h3 className="card-title mb-3" style={{ borderBottom: '2px solid var(--border-color)', paddingBottom: '0.5rem', fontSize: '1rem' }}>
-                PREFERENCES & SM-2 ENGINE
+                PREFERENCES & SPACED REPETITION ENGINE
               </h3>
 
               <div style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
+                
+                {/* ROW 0: SCHEDULING ALGORITHM SELECTOR */}
+                {matchesSearch('Spaced Repetition Algorithm FSRS SM-2', 'Choose spaced repetition engine SM-2 classic vs FSRS v5 adaptive ML') && (
+                  <div style={{ border: '2px solid var(--border-color)', padding: '1.25rem', backgroundColor: 'var(--bg-secondary)', display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: '1rem' }}>
+                      <div style={{ flex: 1 }}>
+                        <div style={{ fontWeight: 900, fontSize: '0.9rem', fontFamily: 'monospace', textTransform: 'uppercase', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                          ⚡ Spaced Repetition Algorithm
+                          <span style={{ fontSize: '0.65rem', backgroundColor: 'var(--text-primary)', color: 'var(--bg-primary)', padding: '0.15rem 0.4rem', border: '1px solid var(--border-color)' }}>
+                            {algorithm === 'fsrs' ? 'FSRS-v5 (ACTIVE)' : 'SM-2 (ACTIVE)'}
+                          </span>
+                        </div>
+                        <div style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', marginTop: '4px', fontFamily: 'monospace', lineHeight: '1.4' }}>
+                          Select your scheduling engine. <strong>SM-2</strong> uses legacy fixed intervals (1987). <strong>FSRS v5</strong> uses machine learning memory stability models to cut redundant reviews by ~25%.
+                        </div>
+                      </div>
+
+                      {/* ALGORITHM TOGGLE SWITCH */}
+                      <div style={{ display: 'flex', border: '2px solid var(--border-color)', backgroundColor: 'var(--bg-primary)' }}>
+                        <button
+                          type="button"
+                          onClick={() => handlePreferenceChange({ algorithm: 'sm2' })}
+                          style={{
+                            padding: '0.5rem 0.85rem',
+                            fontFamily: 'monospace',
+                            fontSize: '0.75rem',
+                            fontWeight: 900,
+                            cursor: 'pointer',
+                            backgroundColor: algorithm === 'sm2' ? 'var(--text-primary)' : 'transparent',
+                            color: algorithm === 'sm2' ? 'var(--bg-primary)' : 'var(--text-primary)',
+                            border: 'none',
+                            transition: 'all 0.1s ease',
+                          }}
+                        >
+                          SM-2 (CLASSIC)
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => handlePreferenceChange({ algorithm: 'fsrs' })}
+                          style={{
+                            padding: '0.5rem 0.85rem',
+                            fontFamily: 'monospace',
+                            fontSize: '0.75rem',
+                            fontWeight: 900,
+                            cursor: 'pointer',
+                            backgroundColor: algorithm === 'fsrs' ? 'var(--text-primary)' : 'transparent',
+                            color: algorithm === 'fsrs' ? 'var(--bg-primary)' : 'var(--text-primary)',
+                            borderLeft: '2px solid var(--border-color)',
+                            transition: 'all 0.1s ease',
+                          }}
+                        >
+                          FSRS v5 (ADAPTIVE AI)
+                        </button>
+                      </div>
+                    </div>
+
+                    {/* FSRS RETENTION SLIDER (CONDITIONALLY RENDERED FOR FSRS) */}
+                    {algorithm === 'fsrs' && (
+                      <div style={{ borderTop: '2px dashed var(--border-color)', paddingTop: '1rem', marginTop: '0.25rem', display: 'flex', flexDirection: 'column', gap: '0.6rem' }}>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                          <span style={{ fontSize: '0.8rem', fontWeight: 900, fontFamily: 'monospace', textTransform: 'uppercase' }}>
+                            🎯 Desired Target Retention Rate
+                          </span>
+                          <span style={{ fontSize: '0.9rem', fontWeight: 900, fontFamily: 'monospace', backgroundColor: 'var(--text-primary)', color: 'var(--bg-primary)', padding: '0.2rem 0.6rem' }}>
+                            {Math.round(targetRetention * 100)}%
+                          </span>
+                        </div>
+                        
+                        <input
+                          type="range"
+                          min="0.80"
+                          max="0.95"
+                          step="0.01"
+                          value={targetRetention}
+                          onChange={(e) => handlePreferenceChange({ targetRetention: parseFloat(e.target.value) })}
+                          style={{ width: '100%', accentColor: 'var(--text-primary)', cursor: 'pointer', height: '24px' }}
+                        />
+
+                        <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.7rem', fontFamily: 'monospace', color: 'var(--text-secondary)' }}>
+                          <span>80% (Casual Review & Lower Workload)</span>
+                          <span>90% (Standard Balance - Recommended)</span>
+                          <span>95% (Strict Interview Sprint)</span>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                )}
                 
                 {/* ROW 1: DEFAULT SHEET */}
                 {matchesSearch('Default Explorer Sheet', 'Select which DSA sheet loads first when opening Explorer') && (

@@ -8,6 +8,8 @@ import { submitReview } from './actions';
 import { coolOffProblemAction } from '@/app/actions/cool-off-actions';
 import ActiveRecallWidget from '@/components/ActiveRecallWidget';
 
+import { calculateNextReview, predictAllIntervals } from '@/lib/scheduler';
+
 interface DueProblem {
   id: string;
   user_problem_id: string;
@@ -19,13 +21,22 @@ interface DueProblem {
   interval_days: number;
   ease_factor: number;
   repetitions: number;
+  stability?: number | null;
+  difficulty_fsrs?: number | null;
+  last_reviewed_at?: string | null;
 }
 
 interface ReviewClientProps {
   initialDueProblems: DueProblem[];
+  algorithm?: 'sm2' | 'fsrs';
+  targetRetention?: number;
 }
 
-export default function ReviewClient({ initialDueProblems }: ReviewClientProps) {
+export default function ReviewClient({
+  initialDueProblems,
+  algorithm = 'sm2',
+  targetRetention = 0.90,
+}: ReviewClientProps) {
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
 
@@ -36,6 +47,20 @@ export default function ReviewClient({ initialDueProblems }: ReviewClientProps) 
 
   const hasDue = problems.length > 0 && currentIndex < problems.length;
   const currentProblem = hasDue ? problems[currentIndex] : null;
+
+  // Calculate real-time dynamic predicted next intervals for current problem
+  const predictedIntervals = currentProblem
+    ? predictAllIntervals({
+        algorithm,
+        targetRetention,
+        currentInterval: currentProblem.interval_days || 0,
+        currentEF: currentProblem.ease_factor || 2.5,
+        currentReps: currentProblem.repetitions || 0,
+        stability: currentProblem.stability,
+        difficulty: currentProblem.difficulty_fsrs,
+        lastReviewedAt: currentProblem.last_reviewed_at,
+      })
+    : { 0: 1, 1: 3, 2: 7, 3: 14 };
 
   async function handleGrade(rating: number) {
     if (!currentProblem) return;
@@ -175,42 +200,51 @@ export default function ReviewClient({ initialDueProblems }: ReviewClientProps) 
             </button>
           ) : (
             <div>
-              <p style={{ fontSize: '0.8rem', fontWeight: 'bold', textTransform: 'uppercase', marginBottom: '0.5rem', textAlign: 'center' }}>
-                Grade your solving performance:
-              </p>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.5rem' }}>
+                <span style={{ fontSize: '0.75rem', fontWeight: 900, textTransform: 'uppercase', fontFamily: 'monospace' }}>
+                  Grade Performance:
+                </span>
+                <span style={{ fontSize: '0.65rem', fontFamily: 'monospace', fontWeight: 900, backgroundColor: 'var(--text-primary)', color: 'var(--bg-primary)', padding: '0.15rem 0.4rem', border: '1px solid var(--border-color)' }}>
+                  ENGINE: {algorithm.toUpperCase() === 'FSRS' ? `FSRS-v5 (${Math.round(targetRetention * 100)}%)` : 'SM-2 CLASSIC'}
+                </span>
+              </div>
               
               <div className="rating-bar">
                 <button
                   disabled={isSubmitting}
                   onClick={() => handleGrade(0)}
                   className="btn btn-small"
-                  style={{ textTransform: 'uppercase', fontSize: '0.75rem' }}
+                  style={{ textTransform: 'uppercase', fontSize: '0.7rem', display: 'flex', flexDirection: 'column', alignItems: 'center', padding: '0.4rem 0.2rem' }}
                 >
-                  Again (0)
+                  <span style={{ fontWeight: 900 }}>AGAIN</span>
+                  <span style={{ fontSize: '0.65rem', opacity: 0.8 }}>+{predictedIntervals[0]}d</span>
                 </button>
                 <button
                   disabled={isSubmitting}
                   onClick={() => handleGrade(1)}
                   className="btn btn-small"
-                  style={{ textTransform: 'uppercase', fontSize: '0.75rem' }}
+                  style={{ textTransform: 'uppercase', fontSize: '0.7rem', display: 'flex', flexDirection: 'column', alignItems: 'center', padding: '0.4rem 0.2rem' }}
                 >
-                  Hard (1)
+                  <span style={{ fontWeight: 900 }}>HARD</span>
+                  <span style={{ fontSize: '0.65rem', opacity: 0.8 }}>+{predictedIntervals[1]}d</span>
                 </button>
                 <button
                   disabled={isSubmitting}
                   onClick={() => handleGrade(2)}
                   className="btn btn-small"
-                  style={{ textTransform: 'uppercase', fontSize: '0.75rem' }}
+                  style={{ textTransform: 'uppercase', fontSize: '0.7rem', display: 'flex', flexDirection: 'column', alignItems: 'center', padding: '0.4rem 0.2rem' }}
                 >
-                  Good (2)
+                  <span style={{ fontWeight: 900 }}>GOOD</span>
+                  <span style={{ fontSize: '0.65rem', opacity: 0.8 }}>+{predictedIntervals[2]}d</span>
                 </button>
                 <button
                   disabled={isSubmitting}
                   onClick={() => handleGrade(3)}
                   className="btn btn-small btn-black"
-                  style={{ textTransform: 'uppercase', fontSize: '0.75rem' }}
+                  style={{ textTransform: 'uppercase', fontSize: '0.7rem', display: 'flex', flexDirection: 'column', alignItems: 'center', padding: '0.4rem 0.2rem' }}
                 >
-                  Easy (3)
+                  <span style={{ fontWeight: 900 }}>EASY</span>
+                  <span style={{ fontSize: '0.65rem', opacity: 0.9 }}>+{predictedIntervals[3]}d</span>
                 </button>
               </div>
 

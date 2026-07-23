@@ -82,7 +82,13 @@ export async function resetSheetProgressAction(sheetId: string) {
   return { success: true };
 }
 
-export async function updatePreferencesAction(params: { defaultSheet?: string; dailyGoal?: number; theme?: string }) {
+export async function updatePreferencesAction(params: {
+  defaultSheet?: string;
+  dailyGoal?: number;
+  theme?: string;
+  algorithm?: 'sm2' | 'fsrs';
+  targetRetention?: number;
+}) {
   const supabase = await createClient();
 
   const {
@@ -97,6 +103,8 @@ export async function updatePreferencesAction(params: { defaultSheet?: string; d
   if (params.defaultSheet !== undefined) updates.default_sheet = params.defaultSheet;
   if (params.dailyGoal !== undefined) updates.daily_goal = params.dailyGoal;
   if (params.theme !== undefined) updates.theme = params.theme;
+  if (params.algorithm !== undefined) updates.algorithm = params.algorithm;
+  if (params.targetRetention !== undefined) updates.target_retention = params.targetRetention;
 
   const { error } = await supabase
     .from('profiles')
@@ -104,19 +112,29 @@ export async function updatePreferencesAction(params: { defaultSheet?: string; d
     .eq('id', user.id);
 
   if (error) {
-    // If theme column isn't in remote DB yet, retry without theme so defaultSheet/dailyGoal updates still succeed
-    if (params.theme !== undefined && error.message.includes("Could not find the 'theme' column")) {
-      delete updates.theme;
+    // Schema resilience: if new columns aren't added to Supabase DB schema yet, drop failed keys and retry core updates
+    let updatedWithoutFailures = false;
+    if (error.message.includes('column')) {
+      if (params.algorithm !== undefined && error.message.includes('algorithm')) delete updates.algorithm;
+      if (params.targetRetention !== undefined && error.message.includes('target_retention')) delete updates.target_retention;
+      if (params.theme !== undefined && error.message.includes('theme')) delete updates.theme;
+
       if (Object.keys(updates).length > 0) {
         await supabase.from('profiles').update(updates).eq('id', user.id);
+        updatedWithoutFailures = true;
       }
-      return { success: true, warning: 'Theme saved locally (run SQL migration on Supabase to sync across devices).' };
     }
+
+    if (updatedWithoutFailures) {
+      return { success: true, warning: 'Saved settings locally. Ensure Supabase profiles table has algorithm & target_retention columns.' };
+    }
+
     throw new Error(`Failed to update preferences: ${error.message}`);
   }
 
   revalidatePath('/dashboard');
   revalidatePath('/problems');
+  revalidatePath('/review');
   revalidatePath('/settings');
 
   return { success: true };

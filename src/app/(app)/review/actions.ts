@@ -1,7 +1,7 @@
 'use server';
 
 import { createClient } from '@/lib/supabase/server';
-import { calculateSM2 } from '@/lib/sm2';
+import { calculateNextReview } from '@/lib/scheduler';
 import { revalidatePath } from 'next/cache';
 
 export async function submitReview(problemId: string, rating: number, clientLocalDate?: string) {
@@ -11,6 +11,16 @@ export async function submitReview(problemId: string, rating: number, clientLoca
     data: { user },
   } = await supabase.auth.getUser();
   if (!user) throw new Error('Unauthorized');
+
+  // 0. Fetch user profile for algorithm preference
+  const { data: profile } = await supabase
+    .from('profiles')
+    .select('algorithm, target_retention, streak, last_active_date, max_streak')
+    .eq('id', user.id)
+    .maybeSingle();
+
+  const algorithm = profile?.algorithm || 'sm2';
+  const targetRetention = profile?.target_retention || 0.90;
 
   // 1. Fetch current progress if any
   const { data: userProblem } = await supabase
@@ -23,25 +33,32 @@ export async function submitReview(problemId: string, rating: number, clientLoca
   const currentInterval = userProblem?.interval_days || 0;
   const currentEF = userProblem ? parseFloat(userProblem.ease_factor) : 2.5;
   const currentReps = userProblem?.repetitions || 0;
+  const currentStability = userProblem?.stability ? parseFloat(userProblem.stability) : null;
+  const currentDifficulty = userProblem?.difficulty ? parseFloat(userProblem.difficulty) : null;
 
-  // 2. Compute next parameters via SM-2
-  const { intervalDays, easeFactor, repetitions } = calculateSM2(
+  // 2. Compute next parameters via Unified Scheduler (SM-2 or FSRS v5)
+  const {
+    intervalDays,
+    nextReviewDate,
+    easeFactor,
+    repetitions,
+    stability,
+    difficulty,
+    status,
+  } = calculateNextReview({
+    algorithm,
+    targetRetention,
     rating,
     currentInterval,
     currentEF,
-    currentReps
-  );
+    currentReps,
+    stability: currentStability,
+    difficulty: currentDifficulty,
+    lastReviewedAt: userProblem?.last_reviewed_at,
+  });
 
-  const nextReviewDate = new Date();
-  nextReviewDate.setDate(nextReviewDate.getDate() + intervalDays);
-
-  let status = 'reviewing';
-  if (easeFactor >= 4.0 || intervalDays > 120) {
-    status = 'mastered';
-  }
-
-  // 3. Upsert progress
-  const { error: upsertError } = await supabase.from('user_problems').upsert({
+  // 3. Upsert progress (with schema fallback if stability/difficulty columns are missing on remote DB)
+  const upsertPayload: Record<string, any> = {
     id: userProblem?.id, // Keep ID to update existing row
     user_id: user.id,
     problem_id: problemId,
@@ -51,7 +68,20 @@ export async function submitReview(problemId: string, rating: number, clientLoca
     next_review_date: nextReviewDate.toISOString(),
     last_reviewed_at: new Date().toISOString(),
     status,
-  });
+  };
+
+  if (stability !== null) upsertPayload.stability = stability;
+  if (difficulty !== null) upsertPayload.difficulty = difficulty;
+
+  let { error: upsertError } = await supabase.from('user_problems').upsert(upsertPayload);
+
+  // If DB lacks stability/difficulty columns, strip them and retry
+  if (upsertError && upsertError.message.includes('column')) {
+    delete upsertPayload.stability;
+    delete upsertPayload.difficulty;
+    const retry = await supabase.from('user_problems').upsert(upsertPayload);
+    upsertError = retry.error;
+  }
 
   if (upsertError) throw new Error(upsertError.message);
 
@@ -72,12 +102,6 @@ export async function submitReview(problemId: string, rating: number, clientLoca
     const day = String(d.getDate()).padStart(2, '0');
     return `${year}-${month}-${day}`;
   })();
-
-  const { data: profile } = await supabase
-    .from('profiles')
-    .select('streak, last_active_date, max_streak')
-    .eq('id', user.id)
-    .single();
 
   if (profile) {
     let newStreak = profile.streak || 0;
