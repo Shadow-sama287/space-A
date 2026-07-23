@@ -387,21 +387,17 @@ export default function ProblemsClient({ problems, userProgress, enabledSheets =
           <table className="problem-table" style={{ margin: '0px' }}>
             <thead>
               <tr>
-                <th>Topic</th>
+                <th style={{ width: '15%', minWidth: '130px' }}>Topic</th>
                 <th>Problem Title</th>
-                <th style={{ width: '100px' }}>Difficulty</th>
-                <th style={{ width: '120px' }}>Status</th>
-                <th style={{ width: '220px', textAlign: 'center' }}>Actions</th>
+                <th style={{ width: '110px' }}>Difficulty</th>
+                <th style={{ width: '150px' }}>Status</th>
+                <th style={{ width: '270px', minWidth: '270px', textAlign: 'center' }}>Actions</th>
               </tr>
             </thead>
             <tbody>
               {filteredProblems.map(p => {
                 const prog = progressMap.get(p.id);
                 const status = prog ? prog.status : 'unreviewed';
-                
-                let statusColor = 'var(--text-secondary)';
-                if (status === 'reviewing') statusColor = 'var(--text-primary)';
-                if (status === 'mastered') statusColor = 'var(--text-primary)';
 
                 return (
                   <tr key={p.id}>
@@ -423,14 +419,26 @@ export default function ProblemsClient({ problems, userProgress, enabledSheets =
                         {p.difficulty}
                       </span>
                     </td>
-                    <td style={{ fontSize: '0.8rem', fontWeight: 'bold', textTransform: 'uppercase', color: statusColor }}>
-                      {status === 'unreviewed' && '[ ] UNREVIEWED'}
-                      {status === 'reviewing' && `[*] D:${prog?.interval_days}d (EF:${prog?.ease_factor})`}
-                      {status === 'mastered' && `[M] MASTERED`}
-                      {status === 'cooling' && `[SNOOZED] (${(prog as any)?.cooling_queue_tier === 'primary' ? 'PRIMARY 3D' : 'WAITING QUEUE'})`}
+                    <td>
+                      {status === 'unreviewed' && (
+                        <span className="badge-status badge-status-unreviewed">[ ] UNREVIEWED</span>
+                      )}
+                      {status === 'reviewing' && (
+                        <span className="badge-status badge-status-reviewing">
+                          [*] D:{prog?.interval_days}d (EF:{prog?.ease_factor})
+                        </span>
+                      )}
+                      {status === 'mastered' && (
+                        <span className="badge-status badge-status-mastered">[M] MASTERED</span>
+                      )}
+                      {status === 'cooling' && (
+                        <span className="badge-status badge-status-cooling">
+                          [Zzz] SNOOZED ({(prog as any)?.cooling_queue_tier === 'primary' ? 'PRI 3D' : 'WAITING'})
+                        </span>
+                      )}
                     </td>
                     <td>
-                      <div style={{ display: 'flex', gap: '8px', justifyContent: 'center' }}>
+                      <div style={{ display: 'flex', gap: '6px', justifyContent: 'center', flexWrap: 'wrap' }}>
                         {/* Outer Solve Link */}
                         <a
                           href={p.leetcode_url}

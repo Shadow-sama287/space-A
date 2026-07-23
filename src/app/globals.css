@@ -236,6 +236,7 @@ body {
   user-select: none;
   position: relative;
   transition: transform 0.05s, box-shadow 0.05s;
+  white-space: nowrap;
 }
 
 .btn:hover {
@@ -270,10 +271,11 @@ body {
 }
 
 .btn-small {
-  padding: 0.4rem 0.8rem;
-  font-size: 0.85rem;
+  padding: 0.35rem 0.65rem;
+  font-size: 0.8rem;
   border-width: 2px;
   box-shadow: 2px 2px 0px 0px var(--shadow-color);
+  white-space: nowrap;
 }
 
 .btn-small:hover {
@@ -544,31 +546,82 @@ body {
 
 /* PROBLEMS TABLE LIST */
 .problem-table-container {
-  overflow-x: auto;
+  overflow: visible;
 }
 
 .problem-table {
   width: 100%;
-  border-collapse: collapse;
-  margin-top: 1rem;
+  border-collapse: separate;
+  border-spacing: 0;
+  margin-top: 0px;
 }
 
 .problem-table th {
   background-color: var(--bg-secondary);
-  border: 2px solid var(--border-color);
+  border-top: 2px solid var(--border-color);
+  border-bottom: 2px solid var(--border-color);
+  border-right: 2px solid var(--border-color);
   padding: 0.75rem;
   font-weight: bold;
   text-align: left;
   text-transform: uppercase;
+  position: sticky;
+  top: 83px;
+  z-index: 50;
+}
+
+.problem-table th:first-child {
+  border-left: 2px solid var(--border-color);
 }
 
 .problem-table td {
-  border: 2px solid var(--border-color);
+  border-bottom: 2px solid var(--border-color);
+  border-right: 2px solid var(--border-color);
   padding: 0.75rem;
+}
+
+.problem-table td:first-child {
+  border-left: 2px solid var(--border-color);
 }
 
 .problem-table tr:hover td {
   background-color: var(--bg-secondary);
+}
+
+/* BRUTALIST STATUS BADGES */
+.badge-status {
+  display: inline-block;
+  padding: 0.2rem 0.45rem;
+  font-size: 0.75rem;
+  font-weight: 900;
+  font-family: var(--font-mono);
+  text-transform: uppercase;
+  border: 1px solid var(--border-color);
+  white-space: nowrap;
+}
+
+.badge-status-unreviewed {
+  background-color: transparent;
+  color: var(--text-secondary);
+  border-style: dashed;
+}
+
+.badge-status-reviewing {
+  background-color: var(--bg-secondary);
+  color: var(--text-primary);
+  border: 1.5px solid var(--border-color);
+}
+
+.badge-status-mastered {
+  background-color: var(--text-primary);
+  color: var(--bg-primary);
+  border: 1.5px solid var(--border-color);
+}
+
+.badge-status-cooling {
+  background-color: var(--bg-tertiary);
+  color: var(--text-primary);
+  border: 1.5px solid var(--border-color);
 }
 
 /* MODAL OVERLAYS */
