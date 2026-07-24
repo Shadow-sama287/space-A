@@ -12,14 +12,16 @@ export default async function ProblemsPage() {
     data: { user },
   } = await supabase.auth.getUser();
 
-  // Fetch profile to get enabled sheets
+  // Fetch profile to get enabled sheets and algorithm preferences
   const { data: profile } = await supabase
     .from('profiles')
-    .select('enabled_sheets')
+    .select('enabled_sheets, algorithm, target_retention')
     .eq('id', user?.id || '')
     .single();
 
   const enabledSheets: string[] = profile?.enabled_sheets || ['striver_sde', 'striver_a2z'];
+  const algorithm: 'sm2' | 'fsrs' = (profile?.algorithm as 'sm2' | 'fsrs') || 'fsrs';
+  const targetRetention: number = profile?.target_retention !== undefined ? Number(profile.target_retention) : 0.90;
 
   // 2. Fetch all problems (handles PostgREST 1000 limit)
   const problems = await fetchAllProblems(supabase);
@@ -39,6 +41,8 @@ export default async function ProblemsPage() {
         problems={problems || []}
         userProgress={userProgress || []}
         enabledSheets={enabledSheets}
+        algorithm={algorithm}
+        targetRetention={targetRetention}
       />
     </div>
   );

@@ -156,7 +156,7 @@ export default function SettingsClient({
   defaultSheet: initialDefaultSheet,
   dailyGoal: initialDailyGoal,
   currentTheme: initialTheme,
-  algorithm: initialAlgorithm = 'sm2',
+  algorithm: initialAlgorithm = 'fsrs',
   targetRetention: initialTargetRetention = 0.90,
   sheetProgressList,
 }: SettingsClientProps) {

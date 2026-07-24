@@ -23,7 +23,7 @@ export default async function ReviewPage() {
     .single();
 
   const enabledSheets: string[] = profile?.enabled_sheets || ['striver_sde', 'striver_a2z'];
-  const algorithm: 'sm2' | 'fsrs' = (profile?.algorithm as 'sm2' | 'fsrs') || 'sm2';
+  const algorithm: 'sm2' | 'fsrs' = (profile?.algorithm as 'sm2' | 'fsrs') || 'fsrs';
   const targetRetention: number = profile?.target_retention !== undefined ? Number(profile.target_retention) : 0.90;
 
   // Fetch problems due today or earlier

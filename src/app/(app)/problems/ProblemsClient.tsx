@@ -8,6 +8,7 @@ import { coolOffProblemAction, resumeProblemAction } from '@/app/actions/cool-of
 import ActiveRecallWidget from '@/components/ActiveRecallWidget';
 import ScratchpadModal from '@/components/ScratchpadModal';
 import { getProblemSubSheets } from '@/lib/neetcodeHelpers';
+import SpacedRepetitionModal from '@/components/SpacedRepetitionModal';
 
 interface Problem {
   id: string;
@@ -35,9 +36,17 @@ interface ProblemsClientProps {
   problems: Problem[];
   userProgress: UserProblem[];
   enabledSheets?: string[];
+  algorithm?: 'sm2' | 'fsrs';
+  targetRetention?: number;
 }
 
-export default function ProblemsClient({ problems, userProgress, enabledSheets = ['striver_sde', 'striver_a2z', 'tle_31', 'neetcode_all', 'neetcode_250', 'neetcode_150', 'blind_75'] }: ProblemsClientProps) {
+export default function ProblemsClient({ 
+  problems, 
+  userProgress, 
+  enabledSheets = ['striver_sde', 'striver_a2z', 'tle_31', 'neetcode_all', 'neetcode_250', 'neetcode_150', 'blind_75'],
+  algorithm = 'fsrs',
+  targetRetention = 0.90
+}: ProblemsClientProps) {
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
 
@@ -55,6 +64,9 @@ export default function ProblemsClient({ problems, userProgress, enabledSheets =
 
   // CP Walkthrough Modal state
   const [isCPModalOpen, setIsCPModalOpen] = useState(false);
+
+  // Spaced Repetition Guide Modal state
+  const [isGuideModalOpen, setIsGuideModalOpen] = useState(false);
 
   // Back to Top scroll listener
   const [showScrollTop, setShowScrollTop] = useState(false);
@@ -256,9 +268,39 @@ export default function ProblemsClient({ problems, userProgress, enabledSheets =
       {/* FILTER CONTROL BAR */}
       {problems.length > 0 && (
         <div className="card" style={{ padding: '1rem', marginBottom: '1.5rem' }}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem', paddingBottom: '0.5rem', borderBottom: '2px solid #000' }}>
-            <div style={{ fontSize: '0.85rem', fontWeight: 'bold' }}>
-              TOTAL LOADED PROBLEMS: {problems.length}
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem', paddingBottom: '0.5rem', borderBottom: '2px solid #000', flexWrap: 'wrap', gap: '0.5rem' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', flexWrap: 'wrap' }}>
+              <div style={{ fontSize: '0.85rem', fontWeight: 'bold' }}>
+                TOTAL LOADED PROBLEMS: {problems.length}
+              </div>
+
+              {/* ACTIVE ALGORITHM TAG */}
+              <div style={{ display: 'flex', alignItems: 'center', gap: '0.35rem' }}>
+                <div style={{
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: '6px',
+                  padding: '0.2rem 0.5rem',
+                  backgroundColor: 'var(--text-primary)',
+                  color: 'var(--bg-primary)',
+                  fontFamily: 'monospace',
+                  fontSize: '0.75rem',
+                  fontWeight: 900,
+                  border: '1px solid var(--border-color)',
+                  textTransform: 'uppercase'
+                }}>
+                  <div style={{ width: '6px', height: '6px', backgroundColor: 'var(--bg-primary)', borderRadius: '50%', animation: 'blink 1.5s infinite' }}></div>
+                  {algorithm === 'fsrs' ? `FSRS-V5 (${Math.round(targetRetention * 100)}%)` : 'SM-2 CLASSIC'}
+                </div>
+                <button 
+                  onClick={() => setIsGuideModalOpen(true)} 
+                  className="btn btn-small" 
+                  style={{ padding: '0.1rem 0.4rem', minWidth: '24px' }}
+                  title="Spaced Repetition Algorithm Guide"
+                >
+                  ?
+                </button>
+              </div>
             </div>
 
             <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
@@ -581,6 +623,13 @@ export default function ProblemsClient({ problems, userProgress, enabledSheets =
         problemTitle={scratchpadProblem?.title || ''}
         onClose={() => setScratchpadProblem(null)}
         onSave={() => setScratchpadProblem(null)}
+      />
+
+      {/* SPACED REPETITION GUIDE MODAL */}
+      <SpacedRepetitionModal 
+        isOpen={isGuideModalOpen} 
+        onClose={() => setIsGuideModalOpen(false)} 
+        defaultTab={algorithm === 'fsrs' ? 'fsrs' : 'sm2'}
       />
 
       {/* STICKY FLOATING BRUTALIST BACK TO TOP BUTTON */}

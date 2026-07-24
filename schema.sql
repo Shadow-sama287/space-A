@@ -12,7 +12,7 @@ CREATE TABLE IF NOT EXISTS public.profiles (
     default_sheet TEXT DEFAULT 'striver_sde',
     daily_goal INTEGER DEFAULT 10,
     theme TEXT DEFAULT 'monochrome',
-    algorithm TEXT DEFAULT 'sm2',
+    algorithm TEXT DEFAULT 'fsrs',
     target_retention NUMERIC DEFAULT 0.90,
     created_at TIMESTAMPTZ DEFAULT NOW()
 );
@@ -132,8 +132,8 @@ CREATE POLICY "Users can insert their own review logs"
 CREATE OR REPLACE FUNCTION public.handle_new_user()
 RETURNS trigger AS $$
 BEGIN
-    INSERT INTO public.profiles (id, email, streak, last_active_date)
-    VALUES (new.id, new.email, 0, NULL);
+    INSERT INTO public.profiles (id, email, streak, last_active_date, algorithm)
+    VALUES (new.id, new.email, 0, NULL, 'fsrs');
     RETURN new;
 END;
 $$ LANGUAGE plpgsql SECURITY DEFINER;

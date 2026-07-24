@@ -128,51 +128,36 @@ export default function SpacedRepetitionModal({
                 {/* SVG GRAPH */}
                 <div style={{ backgroundColor: 'var(--bg-primary)', border: '2px solid var(--border-color)', padding: '0.75rem', marginBottom: '0.75rem' }}>
                   <svg viewBox="0 0 600 220" style={{ width: '100%', height: 'auto', display: 'block' }}>
-                    {/* Grid lines */}
                     <line x1="50" y1="30" x2="570" y2="30" stroke="var(--border-color)" strokeWidth="1" strokeDasharray="3 3" opacity="0.3"/>
                     <line x1="50" y1="80" x2="570" y2="80" stroke="var(--border-color)" strokeWidth="1" strokeDasharray="3 3" opacity="0.3"/>
                     <line x1="50" y1="130" x2="570" y2="130" stroke="var(--border-color)" strokeWidth="1" strokeDasharray="3 3" opacity="0.3"/>
                     <line x1="50" y1="180" x2="570" y2="180" stroke="var(--border-color)" strokeWidth="2"/>
                     <line x1="50" y1="20" x2="50" y2="180" stroke="var(--border-color)" strokeWidth="2"/>
 
-                    {/* Y Axis Labels */}
                     <text x="15" y="35" fill="var(--text-primary)" fontSize="10" fontWeight="bold" fontFamily="monospace">100%</text>
                     <text x="25" y="110" fill="var(--text-primary)" fontSize="10" fontWeight="bold" fontFamily="monospace">50%</text>
                     <text x="32" y="184" fill="var(--text-primary)" fontSize="10" fontWeight="bold" fontFamily="monospace">0%</text>
 
-                    {/* Curve 1: Without Spaced Repetition (Red/Dashed Fast Decay) */}
-                    <path
-                      d="M 50 30 Q 100 140 220 175"
-                      fill="none"
-                      stroke="#ff4444"
-                      strokeWidth="3"
-                      strokeDasharray="6 4"
-                    />
+                    <path d="M 50 30 Q 100 140 220 175" fill="none" stroke="#ff4444" strokeWidth="3" strokeDasharray="6 4" />
                     <text x="120" y="165" fill="#ff4444" fontSize="10" fontWeight="bold" fontFamily="monospace">
                       ❌ Single Study: 80% forgotten in 7 days
                     </text>
 
-                    {/* Curve 2: Review 1 at Day 1 */}
                     <path d="M 50 30 Q 80 100 110 120" fill="none" stroke="var(--text-primary)" strokeWidth="2.5" />
-                    {/* Spike 1 */}
                     <line x1="110" y1="120" x2="110" y2="30" stroke="#00cc66" strokeWidth="2" strokeDasharray="2 2" />
                     <circle cx="110" cy="30" r="4" fill="#00cc66" />
                     <text x="100" y="20" fill="#00cc66" fontSize="9" fontWeight="bold" fontFamily="monospace">Rev 1</text>
 
-                    {/* Curve 3: Review 2 at Day 4 */}
                     <path d="M 110 30 Q 180 80 230 100" fill="none" stroke="var(--text-primary)" strokeWidth="2.5" />
-                    {/* Spike 2 */}
                     <line x1="230" y1="100" x2="230" y2="30" stroke="#00cc66" strokeWidth="2" strokeDasharray="2 2" />
                     <circle cx="230" cy="30" r="4" fill="#00cc66" />
                     <text x="220" y="20" fill="#00cc66" fontSize="9" fontWeight="bold" fontFamily="monospace">Rev 2</text>
 
-                    {/* Curve 4: Review 3 at Day 14 (Long Flat Tail) */}
                     <path d="M 230 30 Q 380 50 560 65" fill="none" stroke="#00cc66" strokeWidth="3" />
                     <text x="340" y="45" fill="#00cc66" fontSize="10" fontWeight="bold" fontFamily="monospace">
                       ✓ Spaced Recall: Permanent Retention
                     </text>
 
-                    {/* X Axis Labels */}
                     <text x="50" y="200" fill="var(--text-primary)" fontSize="10" fontWeight="bold" fontFamily="monospace">Day 0</text>
                     <text x="110" y="200" fill="var(--text-primary)" fontSize="10" fontWeight="bold" fontFamily="monospace">Day 1</text>
                     <text x="230" y="200" fill="var(--text-primary)" fontSize="10" fontWeight="bold" fontFamily="monospace">Day 4</text>
@@ -202,7 +187,7 @@ export default function SpacedRepetitionModal({
                     2. Expanding Intervals
                   </div>
                   <div style={{ fontSize: '0.75rem', color: 'var(--text-secondary)' }}>
-                    Instead of reviewing daily, intervals expand dynamically (e.g. 1d $\rightarrow$ 4d $\rightarrow$ 12d $\rightarrow$ 35d) so you spend time only on what you are close to forgetting.
+                    Instead of reviewing daily, intervals expand dynamically (e.g. 1d &rarr; 4d &rarr; 12d &rarr; 35d) so you spend time only on what you are close to forgetting.
                   </div>
                 </div>
 
@@ -231,7 +216,7 @@ export default function SpacedRepetitionModal({
                   SuperMemo-2 (SM-2): How Legacy Anki Scheduling Works
                 </h4>
                 <p style={{ color: 'var(--text-primary)', marginBottom: '0.75rem' }}>
-                  Created by Piotr Woźniak in 1987, <strong>SM-2</strong> relies on an <strong>Ease Factor ($EF$)</strong> with a default starting value of <strong>2.5</strong> and consecutive repetition counts.
+                  Created by Piotr Woźniak in 1987, <strong>SM-2</strong> relies on an <strong>Ease Factor (EF)</strong> with a default starting value of <strong>2.5</strong> and consecutive repetition counts. Unlike FSRS, SM-2 <strong>does not have intra-day learning steps</strong>. It schedules everything in increments of days.
                 </p>
 
                 {/* FORMULA & COMPUTATION BOX */}
@@ -243,71 +228,94 @@ export default function SpacedRepetitionModal({
                     <li><strong>Repetition 1 (Pass):</strong> Next Interval = 1 Day</li>
                     <li><strong>Repetition 2 (Pass):</strong> Next Interval = 4 Days</li>
                     <li><strong>Repetition n &gt; 2:</strong> Next Interval = Previous Interval &times; EF</li>
-                    <li><strong>Ease Factor Formula:</strong> $EF' = EF + (0.1 - (5 - q) \times (0.08 + (5 - q) \times 0.02))$</li>
-                    <li><strong>Quality $q$ Mapping:</strong> Again = 0 (Fail), Hard = 3, Good = 4, Easy = 5</li>
                   </ul>
                 </div>
 
-                {/* SVG INTERVAL MULTIPLIER CHART */}
-                <div style={{ backgroundColor: 'var(--bg-primary)', border: '2px solid var(--border-color)', padding: '0.75rem' }}>
-                  <div style={{ fontSize: '0.7rem', fontWeight: 900, textTransform: 'uppercase', marginBottom: '0.5rem' }}>
-                    SM-2 EXPANDING INTERVAL TIMELINE (EF = 2.5)
-                  </div>
-                  <svg viewBox="0 0 580 120" style={{ width: '100%', height: 'auto', display: 'block' }}>
-                    <line x1="30" y1="70" x2="550" y2="70" stroke="var(--border-color)" strokeWidth="3"/>
+                <h4 style={{ fontWeight: 900, textTransform: 'uppercase', marginBottom: '0.5rem', marginTop: '1.5rem', borderBottom: '2px solid var(--border-color)', paddingBottom: '0.5rem' }}>
+                  What Happens When You Grade a Problem?
+                </h4>
+                
+                <div style={{ backgroundColor: 'var(--bg-primary)', border: '2px solid var(--border-color)', padding: '0.75rem', marginTop: '1rem' }}>
+                  <svg viewBox="0 0 600 260" style={{ width: '100%', height: 'auto', display: 'block' }}>
+                    {/* Central Review Node */}
+                    <rect x="20" y="110" width="100" height="40" fill="var(--bg-secondary)" stroke="var(--border-color)" strokeWidth="2" />
+                    <text x="70" y="135" fill="var(--text-primary)" fontSize="12" fontWeight="bold" fontFamily="monospace" textAnchor="middle">
+                      REVIEW
+                    </text>
+
+                    {/* Path 1: AGAIN */}
+                    <path d="M 120 120 Q 150 40 200 40" fill="none" stroke="#ff4444" strokeWidth="3" />
+                    <rect x="200" y="20" width="80" height="40" fill="var(--bg-primary)" stroke="#ff4444" strokeWidth="2" />
+                    <text x="240" y="45" fill="#ff4444" fontSize="12" fontWeight="bold" fontFamily="monospace" textAnchor="middle">AGAIN</text>
                     
-                    {/* Node 1 */}
-                    <circle cx="50" cy="70" r="10" fill="var(--text-primary)"/>
-                    <text x="50" y="45" fill="var(--text-primary)" fontSize="10" fontWeight="bold" fontFamily="monospace" textAnchor="middle">Day 0</text>
-                    <text x="50" y="95" fill="var(--text-secondary)" fontSize="9" fontFamily="monospace" textAnchor="middle">Initial</text>
+                    <path d="M 280 40 L 330 40" fill="none" stroke="var(--border-color)" strokeWidth="2" strokeDasharray="4 4" />
+                    <rect x="330" y="25" width="140" height="30" fill="var(--bg-secondary)" stroke="var(--border-color)" strokeWidth="1" />
+                    <text x="400" y="45" fill="var(--text-primary)" fontSize="10" fontFamily="monospace" textAnchor="middle">EF drops ~0.8 (Hell!)</text>
 
-                    {/* Arrow 1 */}
-                    <path d="M 65 55 Q 105 30 145 55" fill="none" stroke="var(--border-color)" strokeWidth="2" markerEnd="url(#arrow)"/>
-                    <text x="105" y="32" fill="var(--text-primary)" fontSize="9" fontWeight="bold" fontFamily="monospace" textAnchor="middle">+1 Day</text>
+                    <path d="M 470 40 L 510 40" fill="none" stroke="var(--text-primary)" strokeWidth="2" />
+                    <rect x="510" y="25" width="70" height="30" fill="var(--text-primary)" stroke="var(--border-color)" strokeWidth="1" />
+                    <text x="545" y="45" fill="var(--bg-primary)" fontSize="10" fontWeight="bold" fontFamily="monospace" textAnchor="middle">+1 DAY</text>
 
-                    {/* Node 2 */}
-                    <circle cx="150" cy="70" r="10" fill="var(--text-primary)"/>
-                    <text x="150" y="45" fill="var(--text-primary)" fontSize="10" fontWeight="bold" fontFamily="monospace" textAnchor="middle">Day 1</text>
+                    {/* Path 2: HARD */}
+                    <path d="M 120 125 Q 150 100 200 100" fill="none" stroke="#ffaa00" strokeWidth="3" />
+                    <rect x="200" y="80" width="80" height="40" fill="var(--bg-primary)" stroke="#ffaa00" strokeWidth="2" />
+                    <text x="240" y="105" fill="#ffaa00" fontSize="12" fontWeight="bold" fontFamily="monospace" textAnchor="middle">HARD</text>
 
-                    {/* Arrow 2 */}
-                    <path d="M 165 55 Q 225 25 285 55" fill="none" stroke="var(--border-color)" strokeWidth="2"/>
-                    <text x="225" y="28" fill="var(--text-primary)" fontSize="9" fontWeight="bold" fontFamily="monospace" textAnchor="middle">+4 Days</text>
+                    <path d="M 280 100 L 330 100" fill="none" stroke="var(--border-color)" strokeWidth="2" strokeDasharray="4 4" />
+                    <rect x="330" y="85" width="140" height="30" fill="var(--bg-secondary)" stroke="var(--border-color)" strokeWidth="1" />
+                    <text x="400" y="105" fill="var(--text-primary)" fontSize="10" fontFamily="monospace" textAnchor="middle">EF drops ~0.14</text>
 
-                    {/* Node 3 */}
-                    <circle cx="290" cy="70" r="10" fill="var(--text-primary)"/>
-                    <text x="290" y="45" fill="var(--text-primary)" fontSize="10" fontWeight="bold" fontFamily="monospace" textAnchor="middle">Day 5</text>
+                    <path d="M 470 100 L 510 100" fill="none" stroke="var(--text-primary)" strokeWidth="2" />
+                    <rect x="510" y="85" width="70" height="30" fill="var(--text-primary)" stroke="var(--border-color)" strokeWidth="1" />
+                    <text x="545" y="105" fill="var(--bg-primary)" fontSize="10" fontWeight="bold" fontFamily="monospace" textAnchor="middle">+1 TO 4d</text>
 
-                    {/* Arrow 3 */}
-                    <path d="M 305 55 Q 385 20 465 55" fill="none" stroke="var(--border-color)" strokeWidth="2"/>
-                    <text x="385" y="24" fill="var(--text-primary)" fontSize="9" fontWeight="bold" fontFamily="monospace" textAnchor="middle">+10 Days (4 × 2.5)</text>
+                    {/* Path 3: GOOD */}
+                    <path d="M 120 135 Q 150 160 200 160" fill="none" stroke="#00cc66" strokeWidth="3" />
+                    <rect x="200" y="140" width="80" height="40" fill="var(--bg-primary)" stroke="#00cc66" strokeWidth="2" />
+                    <text x="240" y="165" fill="#00cc66" fontSize="12" fontWeight="bold" fontFamily="monospace" textAnchor="middle">GOOD</text>
 
-                    {/* Node 4 */}
-                    <circle cx="470" cy="70" r="10" fill="#00cc66"/>
-                    <text x="470" y="45" fill="#00cc66" fontSize="10" fontWeight="bold" fontFamily="monospace" textAnchor="middle">Day 15</text>
-                    <text x="470" y="95" fill="#00cc66" fontSize="9" fontFamily="monospace" textAnchor="middle">+25 Days next</text>
+                    <path d="M 280 160 L 330 160" fill="none" stroke="var(--border-color)" strokeWidth="2" strokeDasharray="4 4" />
+                    <rect x="330" y="145" width="140" height="30" fill="var(--bg-secondary)" stroke="var(--border-color)" strokeWidth="1" />
+                    <text x="400" y="165" fill="var(--text-primary)" fontSize="10" fontFamily="monospace" textAnchor="middle">EF remains same</text>
+
+                    <path d="M 470 160 L 510 160" fill="none" stroke="var(--text-primary)" strokeWidth="2" />
+                    <rect x="510" y="145" width="70" height="30" fill="var(--text-primary)" stroke="var(--border-color)" strokeWidth="1" />
+                    <text x="545" y="165" fill="var(--bg-primary)" fontSize="10" fontWeight="bold" fontFamily="monospace" textAnchor="middle">+1 TO 4d</text>
+
+                    {/* Path 4: EASY */}
+                    <path d="M 120 140 Q 150 220 200 220" fill="none" stroke="var(--text-primary)" strokeWidth="3" />
+                    <rect x="200" y="200" width="80" height="40" fill="var(--bg-primary)" stroke="var(--text-primary)" strokeWidth="2" />
+                    <text x="240" y="225" fill="var(--text-primary)" fontSize="12" fontWeight="bold" fontFamily="monospace" textAnchor="middle">EASY</text>
+
+                    <path d="M 280 220 L 330 220" fill="none" stroke="var(--border-color)" strokeWidth="2" strokeDasharray="4 4" />
+                    <rect x="330" y="205" width="140" height="30" fill="var(--bg-secondary)" stroke="var(--border-color)" strokeWidth="1" />
+                    <text x="400" y="225" fill="var(--text-primary)" fontSize="10" fontFamily="monospace" textAnchor="middle">EF jumps +0.10</text>
+
+                    <path d="M 470 220 L 510 220" fill="none" stroke="var(--text-primary)" strokeWidth="2" />
+                    <rect x="510" y="205" width="70" height="30" fill="var(--text-primary)" stroke="var(--border-color)" strokeWidth="1" />
+                    <text x="545" y="225" fill="var(--bg-primary)" fontSize="10" fontWeight="bold" fontFamily="monospace" textAnchor="middle">+4+ DAYS</text>
                   </svg>
                 </div>
+
               </div>
 
               {/* SM-2 PROS & CONS */}
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
-                <div style={{ border: '2px solid var(--border-color)', padding: '0.85rem', backgroundColor: 'var(--bg-primary)' }}>
-                  <div style={{ fontWeight: 900, textTransform: 'uppercase', marginBottom: '0.4rem', color: '#00cc66' }}>
-                    ✓ Advantages of SM-2
-                  </div>
-                  <ul style={{ paddingLeft: '1rem', fontSize: '0.75rem', display: 'flex', flexDirection: 'column', gap: '0.3rem' }}>
-                    <li>Simple, predictable mathematical model.</li>
-                    <li>Low computational overhead.</li>
-                    <li>Proven effectiveness for flashcards over 35+ years.</li>
-                  </ul>
-                </div>
-
                 <div style={{ border: '2px solid var(--border-color)', padding: '0.85rem', backgroundColor: 'var(--bg-primary)' }}>
                   <div style={{ fontWeight: 900, textTransform: 'uppercase', marginBottom: '0.4rem', color: '#ff4444' }}>
                     ⚠️ The &quot;Ease Hell&quot; Problem
                   </div>
                   <div style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', lineHeight: '1.4' }}>
                     Failing a problem drops Ease Factor down to 1.3. Once stuck in Ease Hell, SM-2 schedules reviews every few days forever even after you master the pattern.
+                  </div>
+                </div>
+
+                <div style={{ border: '2px solid var(--border-color)', padding: '0.85rem', backgroundColor: 'var(--bg-primary)' }}>
+                  <div style={{ fontWeight: 900, textTransform: 'uppercase', marginBottom: '0.4rem', color: '#00cc66' }}>
+                    💡 No Intra-Day Learning
+                  </div>
+                  <div style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', lineHeight: '1.4' }}>
+                    Unlike FSRS, SM-2 simply schedules everything for tomorrow. If you need immediate reinforcement on a brand new problem, you have to do it manually outside the Queue.
                   </div>
                 </div>
               </div>
@@ -326,91 +334,100 @@ export default function SpacedRepetitionModal({
                 <h4 style={{ fontWeight: 900, textTransform: 'uppercase', marginBottom: '0.5rem' }}>
                   FSRS-v5: Free Spaced Repetition Scheduler
                 </h4>
-                <p style={{ color: 'var(--text-primary)', marginBottom: '0.75rem' }}>
-                  FSRS is a open-source, machine-learning-driven algorithm based on the scientific <strong>Three-Component Model of Memory</strong>. It reduces daily review load by <strong>20% to 30%</strong> while maintaining your desired retention rate.
+                <p style={{ color: 'var(--text-primary)', marginBottom: '0.75rem', fontSize: '0.8rem' }}>
+                  FSRS categorizes your problems into two distinct phases: <strong>The Learning Phase</strong> (uses short, intra-day steps measured in minutes) and <strong>The Review Phase</strong> (schedules in days based on your Target Retention).
                 </p>
 
-                {/* THREE COMPONENT MEMORY MODEL */}
-                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '0.75rem', marginBottom: '0.75rem' }}>
-                  <div style={{ border: '2px solid var(--border-color)', padding: '0.75rem', backgroundColor: 'var(--bg-primary)' }}>
-                    <div style={{ fontWeight: 900, fontSize: '0.8rem', color: '#00f0ff' }}>
-                      1. Difficulty ($D$)
-                    </div>
-                    <div style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', marginTop: '2px' }}>
-                      Inherent problem difficulty (1 to 10 scale). Dynamically adjusted based on your performance.
-                    </div>
-                  </div>
-
-                  <div style={{ border: '2px solid var(--border-color)', padding: '0.75rem', backgroundColor: 'var(--bg-primary)' }}>
-                    <div style={{ fontWeight: 900, fontSize: '0.8rem', color: '#00cc66' }}>
-                      2. Stability (S)
-                    </div>
-                    <div style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', marginTop: '2px' }}>
-                      Days required for recall probability to drop from 100% down to 90%. Higher stability = longer intervals.
-                    </div>
-                  </div>
-
-                  <div style={{ border: '2px solid var(--border-color)', padding: '0.75rem', backgroundColor: 'var(--bg-primary)' }}>
-                    <div style={{ fontWeight: 900, fontSize: '0.8rem', color: '#ff79c6' }}>
-                      3. Retrievability (R)
-                    </div>
-                    <div style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', marginTop: '2px' }}>
-                      Probability (0-100%) that you remember the pattern today: R(t, S) = (1 + t / (9 &times; S))⁻¹.
-                    </div>
-                  </div>
-                </div>
-
-                {/* FSRS RETRIEVABILITY DECAY SVG GRAPH */}
-                <div style={{ backgroundColor: 'var(--bg-primary)', border: '2px solid var(--border-color)', padding: '0.75rem' }}>
-                  <div style={{ fontSize: '0.7rem', fontWeight: 900, textTransform: 'uppercase', marginBottom: '0.5rem' }}>
-                    FSRS RETRIEVABILITY CURVE & TARGET RETENTION (90%)
-                  </div>
-                  <svg viewBox="0 0 580 180" style={{ width: '100%', height: 'auto', display: 'block' }}>
-                    {/* Target Retention 90% Line */}
-                    <line x1="50" y1="50" x2="550" y2="50" stroke="#00cc66" strokeWidth="2" strokeDasharray="4 4" />
-                    <text x="55" y="42" fill="#00cc66" fontSize="10" fontWeight="bold" fontFamily="monospace">
-                      Target Retention Threshold (e.g. 90%)
-                    </text>
-
-                    {/* Axes */}
-                    <line x1="50" y1="20" x2="50" y2="150" stroke="var(--border-color)" strokeWidth="2" />
-                    <line x1="50" y1="150" x2="550" y2="150" stroke="var(--border-color)" strokeWidth="2" />
-
-                    <text x="15" y="25" fill="var(--text-primary)" fontSize="9" fontWeight="bold" fontFamily="monospace">100%</text>
-                    <text x="20" y="54" fill="#00cc66" fontSize="9" fontWeight="bold" fontFamily="monospace">90%</text>
-                    <text x="25" y="154" fill="var(--text-primary)" fontSize="9" fontWeight="bold" fontFamily="monospace">0%</text>
-
-                    {/* Decay Curve */}
-                    <path d="M 50 20 Q 250 45 420 50" fill="none" stroke="var(--text-primary)" strokeWidth="3" />
+                <h4 style={{ fontWeight: 900, textTransform: 'uppercase', marginBottom: '0.5rem', marginTop: '1.5rem', borderBottom: '2px solid var(--border-color)', paddingBottom: '0.5rem' }}>
+                  What Happens When You Grade a Problem?
+                </h4>
+                
+                <div style={{ backgroundColor: 'var(--bg-primary)', border: '2px solid var(--border-color)', padding: '0.75rem', marginTop: '1rem' }}>
+                  <svg viewBox="0 0 600 280" style={{ width: '100%', height: 'auto', display: 'block' }}>
                     
-                    {/* Optimal Review Point */}
-                    <circle cx="420" cy="50" r="6" fill="#00f0ff" stroke="var(--border-color)" strokeWidth="2" />
-                    <line x1="420" y1="50" x2="420" y2="150" stroke="#00f0ff" strokeWidth="1.5" strokeDasharray="3 3" />
-                    
-                    <text x="420" y="166" fill="#00f0ff" fontSize="10" fontWeight="bold" fontFamily="monospace" textAnchor="middle">
-                      Scheduled Review Date (t = Interval)
-                    </text>
+                    {/* Zones */}
+                    <rect x="20" y="10" width="350" height="260" fill="var(--bg-secondary)" stroke="var(--border-color)" strokeWidth="1" strokeDasharray="4 4" opacity="0.5" />
+                    <text x="195" y="30" fill="var(--text-secondary)" fontSize="10" fontWeight="bold" fontFamily="monospace" textAnchor="middle">LEARNING PHASE (MINUTES)</text>
 
-                    <text x="240" y="85" fill="var(--text-secondary)" fontSize="9" fontFamily="monospace">
-                      FSRS calculates exact day t when R(t, S) = Target Retention
-                    </text>
+                    <rect x="380" y="10" width="200" height="260" fill="var(--bg-secondary)" stroke="var(--border-color)" strokeWidth="1" strokeDasharray="4 4" opacity="0.5" />
+                    <text x="480" y="30" fill="var(--text-secondary)" fontSize="10" fontWeight="bold" fontFamily="monospace" textAnchor="middle">REVIEW PHASE (DAYS)</text>
+
+                    {/* Central Node */}
+                    <rect x="40" y="120" width="80" height="40" fill="var(--bg-primary)" stroke="var(--border-color)" strokeWidth="2" />
+                    <text x="80" y="145" fill="var(--text-primary)" fontSize="12" fontWeight="bold" fontFamily="monospace" textAnchor="middle">GRADE</text>
+
+                    {/* Path 1: AGAIN */}
+                    <path d="M 120 130 Q 150 60 170 60" fill="none" stroke="#ff4444" strokeWidth="3" />
+                    <rect x="170" y="40" width="70" height="40" fill="var(--bg-primary)" stroke="#ff4444" strokeWidth="2" />
+                    <text x="205" y="65" fill="#ff4444" fontSize="12" fontWeight="bold" fontFamily="monospace" textAnchor="middle">AGAIN</text>
+                    
+                    <path d="M 240 60 L 290 60" fill="none" stroke="var(--text-primary)" strokeWidth="2" />
+                    <rect x="290" y="45" width="60" height="30" fill="var(--text-primary)" stroke="var(--border-color)" strokeWidth="1" />
+                    <text x="320" y="65" fill="var(--bg-primary)" fontSize="10" fontWeight="bold" fontFamily="monospace" textAnchor="middle">~1m</text>
+
+                    {/* Path 2: HARD */}
+                    <path d="M 120 135 Q 150 115 170 115" fill="none" stroke="#ffaa00" strokeWidth="3" />
+                    <rect x="170" y="95" width="70" height="40" fill="var(--bg-primary)" stroke="#ffaa00" strokeWidth="2" />
+                    <text x="205" y="120" fill="#ffaa00" fontSize="12" fontWeight="bold" fontFamily="monospace" textAnchor="middle">HARD</text>
+
+                    <path d="M 240 115 L 290 115" fill="none" stroke="var(--text-primary)" strokeWidth="2" />
+                    <rect x="290" y="100" width="60" height="30" fill="var(--text-primary)" stroke="var(--border-color)" strokeWidth="1" />
+                    <text x="320" y="120" fill="var(--bg-primary)" fontSize="10" fontWeight="bold" fontFamily="monospace" textAnchor="middle">~5m</text>
+
+                    {/* Path 3: GOOD */}
+                    <path d="M 120 145 Q 150 170 170 170" fill="none" stroke="#00cc66" strokeWidth="3" />
+                    <rect x="170" y="150" width="70" height="40" fill="var(--bg-primary)" stroke="#00cc66" strokeWidth="2" />
+                    <text x="205" y="175" fill="#00cc66" fontSize="12" fontWeight="bold" fontFamily="monospace" textAnchor="middle">GOOD</text>
+
+                    <path d="M 240 170 L 290 170" fill="none" stroke="var(--text-primary)" strokeWidth="2" />
+                    <rect x="290" y="155" width="60" height="30" fill="var(--text-primary)" stroke="var(--border-color)" strokeWidth="1" />
+                    <text x="320" y="175" fill="var(--bg-primary)" fontSize="10" fontWeight="bold" fontFamily="monospace" textAnchor="middle">~10m</text>
+                    
+                    <path d="M 350 170 L 400 170" fill="none" stroke="var(--border-color)" strokeWidth="2" strokeDasharray="4 4" />
+                    <rect x="400" y="155" width="160" height="30" fill="var(--bg-primary)" stroke="var(--border-color)" strokeWidth="1" />
+                    <text x="480" y="175" fill="var(--text-primary)" fontSize="10" fontFamily="monospace" textAnchor="middle">Graduates (~3d)</text>
+
+                    {/* Path 4: EASY */}
+                    <path d="M 120 150 Q 150 230 170 230" fill="none" stroke="var(--text-primary)" strokeWidth="3" />
+                    <rect x="170" y="210" width="70" height="40" fill="var(--bg-primary)" stroke="var(--text-primary)" strokeWidth="2" />
+                    <text x="205" y="235" fill="var(--text-primary)" fontSize="12" fontWeight="bold" fontFamily="monospace" textAnchor="middle">EASY</text>
+
+                    <path d="M 240 230 L 400 230" fill="none" stroke="var(--border-color)" strokeWidth="2" strokeDasharray="4 4" />
+                    <text x="320" y="225" fill="var(--text-secondary)" fontSize="10" fontFamily="monospace" textAnchor="middle">Bypass</text>
+                    <rect x="400" y="215" width="160" height="30" fill="var(--bg-primary)" stroke="var(--border-color)" strokeWidth="1" />
+                    <text x="480" y="235" fill="var(--text-primary)" fontSize="10" fontFamily="monospace" textAnchor="middle">Graduates (~8d)</text>
+
                   </svg>
                 </div>
               </div>
 
-              {/* FSRS SUMMARY COMPARISON */}
+              {/* FSRS BEST PRACTICES */}
               <div style={{ border: '2px solid var(--border-color)', padding: '1rem', backgroundColor: 'var(--bg-primary)' }}>
-                <h4 style={{ fontWeight: 900, textTransform: 'uppercase', marginBottom: '0.4rem' }}>
-                  ⚙️ Customizable Target Retention Slider in Space A
+                <h4 style={{ fontWeight: 900, textTransform: 'uppercase', marginBottom: '0.75rem', color: 'var(--text-primary)' }}>
+                  Best Practices
                 </h4>
-                <p style={{ color: 'var(--text-primary)', fontSize: '0.8rem', lineHeight: '1.4' }}>
-                  Unlike rigid legacy SM-2, FSRS lets you set your desired memory retention in Settings:
-                </p>
-                <ul style={{ paddingLeft: '1.25rem', marginTop: '0.4rem', fontSize: '0.75rem', display: 'flex', flexDirection: 'column', gap: '0.3rem' }}>
-                  <li><strong>80% Retention:</strong> Casual review workload (cuts reviews by ~35%).</li>
-                  <li><strong>90% Retention (Recommended):</strong> Standard balance of high retention & optimal review pacing.</li>
-                  <li><strong>95% Retention:</strong> Intensive interview prep mode for upcoming FAANG OAs.</li>
-                </ul>
+                
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
+                  <div style={{ borderLeft: '2px solid #00cc66', paddingLeft: '0.75rem' }}>
+                    <div style={{ fontWeight: 900, fontSize: '0.75rem', textTransform: 'uppercase', marginBottom: '0.2rem' }}>1. Default to GOOD</div>
+                    <div style={{ fontSize: '0.75rem', color: 'var(--text-secondary)' }}>If you solved the problem within a reasonable timeframe (e.g., 15-20 mins), press GOOD. Don't press EASY just because you feel confident. Let the algorithm naturally expand the intervals.</div>
+                  </div>
+                  
+                  <div style={{ borderLeft: '2px solid var(--text-primary)', paddingLeft: '0.75rem' }}>
+                    <div style={{ fontWeight: 900, fontSize: '0.75rem', textTransform: 'uppercase', marginBottom: '0.2rem' }}>2. Reserve EASY for Trivial Problems</div>
+                    <div style={{ fontSize: '0.75rem', color: 'var(--text-secondary)' }}>Only press EASY if the entire optimal solution instantly flashes into your mind without any effort. Overusing EASY will lead to forgetting patterns down the line.</div>
+                  </div>
+
+                  <div style={{ borderLeft: '2px solid #ff4444', paddingLeft: '0.75rem' }}>
+                    <div style={{ fontWeight: 900, fontSize: '0.75rem', textTransform: 'uppercase', marginBottom: '0.2rem' }}>3. Don't Fear the AGAIN Button</div>
+                    <div style={{ fontSize: '0.75rem', color: 'var(--text-secondary)' }}>If you had to look at the solution, you must press AGAIN. Falsely pressing HARD or GOOD will inflate stability, causing it to be scheduled too far in the future.</div>
+                  </div>
+
+                  <div style={{ borderLeft: '2px solid #00f0ff', paddingLeft: '0.75rem' }}>
+                    <div style={{ fontWeight: 900, fontSize: '0.75rem', textTransform: 'uppercase', marginBottom: '0.2rem' }}>4. Trust the Learning Steps</div>
+                    <div style={{ fontSize: '0.75rem', color: 'var(--text-secondary)' }}>If you grade a new problem as GOOD and it reappears in your queue 10 mins later, this is not a bug! This is FSRS solidifying the neural pathway before sending it away for days.</div>
+                  </div>
+                </div>
               </div>
 
             </div>

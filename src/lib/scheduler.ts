@@ -28,7 +28,7 @@ export interface ReviewScheduleResult {
  */
 export function calculateNextReview(input: ReviewScheduleInput): ReviewScheduleResult {
   const {
-    algorithm = 'sm2',
+    algorithm = 'fsrs',
     targetRetention = 0.90,
     rating,
     currentInterval,

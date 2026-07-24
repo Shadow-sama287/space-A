@@ -35,7 +35,7 @@ interface ReviewClientProps {
 
 export default function ReviewClient({
   initialDueProblems,
-  algorithm = 'sm2',
+  algorithm = 'fsrs',
   targetRetention = 0.90,
 }: ReviewClientProps) {
   const router = useRouter();
@@ -129,9 +129,38 @@ export default function ReviewClient({
     <div style={{ maxWidth: '600px', margin: '0 auto' }}>
       {/* PROGRESS TRACKER */}
       <div className="flex-between mb-1" style={{ fontSize: '0.8rem', fontWeight: 'bold' }}>
-        <span style={{ textTransform: 'uppercase' }}>
-          Active Session
-        </span>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
+          <span style={{ textTransform: 'uppercase' }}>
+            Active Session
+          </span>
+          {/* ACTIVE ALGORITHM TAG */}
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.35rem' }}>
+            <div style={{
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: '6px',
+              padding: '0.2rem 0.5rem',
+              backgroundColor: 'var(--text-primary)',
+              color: 'var(--bg-primary)',
+              fontFamily: 'monospace',
+              fontSize: '0.75rem',
+              fontWeight: 900,
+              border: '1px solid var(--border-color)',
+              textTransform: 'uppercase'
+            }}>
+              <div style={{ width: '6px', height: '6px', backgroundColor: 'var(--bg-primary)', borderRadius: '50%', animation: 'blink 1.5s infinite' }}></div>
+              {algorithm === 'fsrs' ? `FSRS-V5 (${Math.round(targetRetention * 100)}%)` : 'SM-2 CLASSIC'}
+            </div>
+            <button 
+              onClick={() => setIsSRModalOpen(true)} 
+              className="btn btn-small" 
+              style={{ padding: '0.1rem 0.4rem', minWidth: '24px' }}
+              title="Spaced Repetition Algorithm Guide"
+            >
+              ?
+            </button>
+          </div>
+        </div>
         <span>
           PROBLEM {currentIndex + 1} OF {problems.length} DUE
         </span>
@@ -208,9 +237,6 @@ export default function ReviewClient({
                   Grade Performance:
                 </span>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '0.35rem' }}>
-                  <span style={{ fontSize: '0.65rem', fontFamily: 'monospace', fontWeight: 900, backgroundColor: 'var(--text-primary)', color: 'var(--bg-primary)', padding: '0.15rem 0.4rem', border: '1px solid var(--border-color)' }}>
-                    ENGINE: {algorithm.toUpperCase() === 'FSRS' ? `FSRS-v5 (${Math.round(targetRetention * 100)}%)` : 'SM-2 CLASSIC'}
-                  </span>
                   <button
                     type="button"
                     onClick={() => setIsSRModalOpen(true)}

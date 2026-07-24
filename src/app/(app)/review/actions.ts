@@ -13,13 +13,14 @@ export async function submitReview(problemId: string, rating: number, clientLoca
   if (!user) throw new Error('Unauthorized');
 
   // 0. Fetch user profile for algorithm preference
-  const { data: profile } = await supabase
+  const { data: profileData } = await supabase
     .from('profiles')
     .select('algorithm, target_retention, streak, last_active_date, max_streak')
     .eq('id', user.id)
     .maybeSingle();
 
-  const algorithm = profile?.algorithm || 'sm2';
+  const profile = profileData || { algorithm: 'fsrs', target_retention: 0.90, streak: 0, max_streak: 0 };
+  const algorithm = profile?.algorithm || 'fsrs';
   const targetRetention = profile?.target_retention || 0.90;
 
   // 1. Fetch current progress if any

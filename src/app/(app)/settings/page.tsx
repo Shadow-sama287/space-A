@@ -26,7 +26,7 @@ export default async function SettingsPage() {
   const defaultSheet: string = profile?.default_sheet || 'striver_sde';
   const dailyGoal: number = profile?.daily_goal || 10;
   const currentTheme: string = profile?.theme || 'monochrome';
-  const algorithm: 'sm2' | 'fsrs' = (profile?.algorithm as 'sm2' | 'fsrs') || 'sm2';
+  const algorithm: 'sm2' | 'fsrs' = (profile?.algorithm as 'sm2' | 'fsrs') || 'fsrs';
   const targetRetention: number = profile?.target_retention !== undefined ? Number(profile.target_retention) : 0.90;
   const maxStreak: number = profile?.max_streak || profile?.streak || 0;
 

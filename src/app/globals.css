@@ -744,5 +744,8 @@ select option {
   box-shadow: 3px 3px 0px 0px #000000;
 }
 
-
-
+@keyframes blink {
+  0% { opacity: 1; }
+  50% { opacity: 0.2; }
+  100% { opacity: 1; }
+}
