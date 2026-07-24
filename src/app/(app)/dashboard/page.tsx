@@ -124,23 +124,27 @@ export default async function DashboardPage() {
   const maxForecastCount = Math.max(...forecast.map(f => f.count), 1);
 
   // === 28-DAY CALENDAR HEATMAP ===
-  const historyDates = new Set(
-    (history || []).map(h => {
-      return new Date(h.reviewed_at).toDateString();
-    })
-  );
+  // Build a count map: dateStr → number of reviews that day
+  const historyCountMap = new Map<string, number>();
+  (history || []).forEach(h => {
+    const dateStr = new Date(h.reviewed_at).toDateString();
+    historyCountMap.set(dateStr, (historyCountMap.get(dateStr) ?? 0) + 1);
+  });
 
   const heatmapDays = Array.from({ length: 28 }).map((_, i) => {
     const d = new Date();
     d.setDate(d.getDate() - (27 - i));
     const dateStr = d.toDateString();
-    const hasReviewed = historyDates.has(dateStr);
+    const count = historyCountMap.get(dateStr) ?? 0;
     return {
       dayNum: d.getDate(),
-      hasReviewed,
+      count,
       label: d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' }),
     };
   });
+
+  // Dynamic max: busiest day = darkest shade (even if only 1 review)
+  const heatmapMax = Math.max(...heatmapDays.map(d => d.count), 1);
 
   // === COMPUTE CATEGORY STATS ===
   const categoryStatsMap = new Map<string, { category: string, total: number, solved: number, sheet: string }>();
@@ -307,18 +311,38 @@ export default async function DashboardPage() {
           <div className="card">
             <h3 className="card-title">28-Day Review Activity</h3>
             <p className="mb-3" style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', textTransform: 'uppercase' }}>
-              Days you completed at least one spaced repetition review
+              Review intensity over the past 28 days
             </p>
             <div className="heatmap-grid">
-              {heatmapDays.map((d, index) => (
-                <div 
-                  key={index} 
-                  title={d.label}
-                  className={`heatmap-day ${d.hasReviewed ? 'heatmap-active' : ''}`}
-                >
-                  {d.dayNum}
-                </div>
+              {heatmapDays.map((d, index) => {
+                let level = 0;
+                if (d.count > 0) {
+                  const ratio = d.count / heatmapMax;
+                  if (ratio <= 0.25) level = 1;
+                  else if (ratio <= 0.50) level = 2;
+                  else if (ratio <= 0.75) level = 3;
+                  else level = 4;
+                }
+                const tooltipText = d.count === 0
+                  ? `${d.label} — No reviews`
+                  : `${d.label} — ${d.count} review${d.count > 1 ? 's' : ''}`;
+                return (
+                  <div
+                    key={index}
+                    title={tooltipText}
+                    className={`heatmap-day heatmap-level-${level}`}
+                  >
+                    {d.dayNum}
+                  </div>
+                );
+              })}
+            </div>
+            <div className="heatmap-legend">
+              <span>Less</span>
+              {[0, 1, 2, 3, 4].map(l => (
+                <div key={l} className={`heatmap-legend-swatch heatmap-level-${l}`} />
               ))}
+              <span>More</span>
             </div>
           </div>
         </div>

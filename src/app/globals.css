@@ -491,25 +491,81 @@ body {
 .text-center { text-align: center; }
 .text-uppercase { text-transform: uppercase; }
 
-/* CUSTOM HEATMAP GRID */
+/* HEATMAP — GitHub-style 5-level intensity (monochrome, theme-aware) */
 .heatmap-grid {
   display: grid;
   grid-template-columns: repeat(7, 1fr);
-  gap: 4px;
+  gap: 5px;
 }
 
 .heatmap-day {
   aspect-ratio: 1;
-  border: 1px solid var(--border-color);
+  border: 1.5px solid var(--border-color);
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 0.7rem;
+  font-size: 0.62rem;
+  font-weight: 600;
+  transition: transform 0.12s ease, box-shadow 0.12s ease;
+  cursor: default;
+  position: relative;
 }
 
-.heatmap-active {
-  background-color: var(--text-primary);
+.heatmap-day:hover {
+  transform: scale(1.18);
+  z-index: 2;
+  box-shadow: 2px 2px 0px var(--border-color);
+}
+
+/* Level 0 — no activity */
+.heatmap-level-0 {
+  background: transparent;
+  color: var(--text-secondary);
+}
+
+/* Level 1 — very low (~1–25% of max) */
+.heatmap-level-1 {
+  background: color-mix(in srgb, var(--text-primary) 20%, transparent);
+  color: var(--text-primary);
+}
+
+/* Level 2 — low-medium (~26–50% of max) */
+.heatmap-level-2 {
+  background: color-mix(in srgb, var(--text-primary) 45%, transparent);
   color: var(--bg-primary);
+}
+
+/* Level 3 — medium-high (~51–75% of max) */
+.heatmap-level-3 {
+  background: color-mix(in srgb, var(--text-primary) 70%, transparent);
+  color: var(--bg-primary);
+}
+
+/* Level 4 — peak activity (>75% of max / busiest day) */
+.heatmap-level-4 {
+  background: var(--text-primary);
+  color: var(--bg-primary);
+}
+
+/* Legend strip */
+.heatmap-legend {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  margin-top: 10px;
+  font-size: 0.62rem;
+  text-transform: uppercase;
+  font-weight: 700;
+  color: var(--text-secondary);
+  justify-content: flex-end;
+  letter-spacing: 0.03em;
+}
+
+.heatmap-legend-swatch {
+  width: 13px;
+  height: 13px;
+  border: 1.5px solid var(--border-color);
+  flex-shrink: 0;
 }
 
 /* SIMPLE BAR CHART */
