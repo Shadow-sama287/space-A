@@ -56,7 +56,14 @@ export default async function DashboardPage() {
     // If more than 48 hours have passed without activity, reset streak
     if (diffInDays > 2.0) {
       effectiveStreak = 0;
-      supabase.from('profiles').update({ streak: 0 }).eq('id', user.id).then(() => {});
+      try {
+        await supabase.from('profiles').update({ 
+          streak: 0,
+          max_streak: profile?.max_streak || 0
+        }).eq('id', user.id);
+      } catch (err) {
+        console.error('Failed to reset streak:', err);
+      }
     }
   }
 
@@ -136,18 +143,18 @@ export default async function DashboardPage() {
 
   return (
     <div>
-      <div className="flex-between mb-3" style={{ borderBottom: '3px solid var(--border-color)', paddingBottom: '0.75rem' }}>
-        <h1 style={{ fontSize: '2rem', fontWeight: 900, textTransform: 'uppercase' }}>
+      <div className="flex-between mb-3 border-b-brutal">
+        <h1 className="text-2xl font-black text-uppercase">
           Dashboard
         </h1>
-        <div style={{ fontWeight: 'bold', fontSize: '0.9rem', textTransform: 'uppercase' }}>
+        <div className="font-bold text-sm text-uppercase">
           User: {profile?.email}
         </div>
       </div>
 
       {/* NO PROBLEMS SEEDED WARNING */}
       {dbProblemsCount === 0 && (
-        <div className="card" style={{ backgroundColor: 'var(--bg-secondary)', borderStyle: 'dashed', marginBottom: '2rem' }}>
+        <div className="card bg-secondary border-dashed mb-4">
           <h3 className="card-title">Setup Required</h3>
           <p className="mb-2">Your database contains no problems. Please navigate to the Explorer tab and seed the database first.</p>
           <Link href="/problems" className="btn btn-black">
@@ -159,64 +166,54 @@ export default async function DashboardPage() {
       {/* TOP STATS GRIDS */}
       <div className="grid-3 mb-4">
         {/* DUE COUNT */}
-        <div className="card text-center" style={{ display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center', gap: '1rem', padding: '1.25rem', height: '100%' }}>
+        <div className="card text-center flex-col-center h-full gap-1 p-5">
           
           {dueProblemsCount > 0 && (
-            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
+            <div className="flex-col-center">
               <div className="stat-value">{dueProblemsCount}</div>
               <div className="stat-label">Due Reviews Today</div>
             </div>
           )}
 
           {/* DAILY GOAL WIDGET */}
-          <div style={{ 
-            borderTop: dueProblemsCount > 0 ? '2px dashed var(--border-color)' : 'none', 
-            width: '100%', 
-            paddingTop: dueProblemsCount > 0 ? '0.75rem' : '0', 
-            marginTop: dueProblemsCount > 0 ? '-0.25rem' : '0', 
-            display: 'flex', 
-            flexDirection: 'column', 
-            alignItems: 'center',
-            flexGrow: dueProblemsCount === 0 ? 1 : 0,
-            justifyContent: dueProblemsCount === 0 ? 'center' : 'flex-start'
-          }}>
+          <div className={`daily-goal-wrapper ${dueProblemsCount > 0 ? 'daily-goal-active' : 'daily-goal-empty'}`}>
             {!dailyGoal ? (
-              <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '0.25rem' }}>
-                <span style={{ fontSize: dueProblemsCount === 0 ? '0.9rem' : '0.7rem', color: 'var(--text-secondary)', textTransform: 'uppercase' }}>Daily Goal Not Set</span>
-                <Link href="/settings" className="btn btn-outline btn-small" style={{ fontSize: dueProblemsCount === 0 ? '0.8rem' : '0.65rem', marginTop: dueProblemsCount === 0 ? '0.5rem' : '0' }}>
+              <div className="flex-col-center gap-xs">
+                <span className={`text-uppercase text-secondary ${dueProblemsCount === 0 ? 'text-sm' : 'text-xs'}`}>Daily Goal Not Set</span>
+                <Link href="/settings" className="btn btn-outline btn-small" className={`${dueProblemsCount === 0 ? 'text-sm mt-1' : 'text-xxs'}`}>
                   SET GOAL
                 </Link>
               </div>
             ) : (
-              <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+              <div className="flex-col-center">
                 {problemsSolvedTodayCount === dailyGoal ? (
-                  <div className="stat-value glitch-text" style={{ fontSize: dueProblemsCount === 0 ? '3.5rem' : '1.5rem', lineHeight: 1 }}>
+                  <div className="stat-value glitch-text" className={`${dueProblemsCount === 0 ? 'text-huge' : 'text-xl'} leading-none`}>
                     0
                   </div>
                 ) : problemsSolvedTodayCount > dailyGoal ? (
-                  <div className="stat-value glitch-text" style={{ fontSize: dueProblemsCount === 0 ? '3.5rem' : '1.5rem', lineHeight: 1 }}>
+                  <div className="stat-value glitch-text" className={`${dueProblemsCount === 0 ? 'text-huge' : 'text-xl'} leading-none`}>
                     {problemsSolvedTodayCount}
                   </div>
                 ) : (
-                  <div style={{ display: 'flex', alignItems: 'baseline', gap: '0.5rem' }}>
-                    <div className="stat-value" style={{ fontSize: dueProblemsCount === 0 ? '3.5rem' : '1.5rem', lineHeight: 1 }}>{problemsSolvedTodayCount}</div>
-                    <div style={{ fontSize: dueProblemsCount === 0 ? '1.5rem' : '0.9rem', color: 'var(--text-secondary)', fontWeight: 'bold' }}>/ {dailyGoal}</div>
+                  <div className="flex-baseline">
+                    <div className="stat-value" className={`${dueProblemsCount === 0 ? 'text-huge' : 'text-xl'} leading-none`}>{problemsSolvedTodayCount}</div>
+                    <div className={`font-bold text-secondary ${dueProblemsCount === 0 ? 'text-xl' : 'text-sm'}`}>/ {dailyGoal}</div>
                   </div>
                 )}
-                <div className="stat-label" style={{ fontSize: dueProblemsCount === 0 ? '0.85rem' : '0.65rem', margin: dueProblemsCount === 0 ? '0.5rem 0 0 0' : '0.2rem 0 0 0' }}>
+                <div className="stat-label" className={`${dueProblemsCount === 0 ? 'text-sm mt-1' : 'text-xxs my-sm'}`}>
                   {problemsSolvedTodayCount > dailyGoal ? 'Total Solved Today' : 'Daily Goal Progress'}
                 </div>
               </div>
             )}
           </div>
 
-          <div style={{ width: '100%', marginTop: 'auto' }}>
+          <div className="w-full mt-auto">
             {dueProblemsCount > 0 ? (
-              <Link href="/review" className="btn btn-black" style={{ width: '100%', textTransform: 'uppercase', textDecoration: 'none' }}>
+              <Link href="/review" className="btn btn-black w-full text-uppercase no-underline">
                 Start Review Session
               </Link>
             ) : (
-              <button disabled className="btn btn-outline" style={{ width: '100%', textTransform: 'uppercase', cursor: 'not-allowed' }}>
+              <button disabled className="btn btn-outline w-full text-uppercase cursor-not-allowed">
                 Queue Clear
               </button>
             )}
@@ -224,17 +221,17 @@ export default async function DashboardPage() {
         </div>
 
         {/* STREAK */}
-        <div className="card text-center" style={{ display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center', gap: '0.4rem', padding: '1.25rem', height: '100%' }}>
-          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
+        <div className="card text-center flex-col-center h-full gap-sm p-5">
+          <div className="flex-col-center">
             <div className="stat-value">{effectiveStreak}d</div>
             <div className="stat-label">Daily Solve Streak</div>
           </div>
 
-          <div style={{ margin: '0.2rem 0' }}>
+          <div className="my-sm">
             <Streak3DCanvas streak={effectiveStreak} lastActiveDate={profile?.last_active_date} />
           </div>
 
-          <p suppressHydrationWarning style={{ fontSize: '0.7rem', color: 'var(--text-secondary)', textTransform: 'uppercase' }}>
+          <p suppressHydrationWarning className="text-xs text-secondary text-uppercase">
             {profile?.last_active_date 
               ? `Last active: ${profile.last_active_date.split('T')[0]}`
               : 'Start your streak today!'}
@@ -242,22 +239,22 @@ export default async function DashboardPage() {
         </div>
 
         {/* SOLVING SUMMARY */}
-        <div className="card text-center" style={{ display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center', gap: '8px', padding: '1.25rem', height: '100%' }}>
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px', width: '100%' }}>
-            <div className="stat-box" style={{ display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center', padding: '0.6rem' }}>
-              <div className="stat-value" style={{ fontSize: '1.5rem' }}>{reviewingCount}</div>
-              <div className="stat-label" style={{ fontSize: '0.65rem' }}>Reviewing</div>
+        <div className="card text-center flex-col-center gap-2 p-5 h-full">
+          <div className="grid-cols-2 gap-2">
+            <div className="stat-box flex-col-center p-2">
+              <div className="stat-value text-xl">{reviewingCount}</div>
+              <div className="stat-label text-xxs">Reviewing</div>
             </div>
-            <div className="stat-box" style={{ display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center', padding: '0.6rem' }}>
-              <div className="stat-value" style={{ fontSize: '1.5rem' }}>{masteredCount}</div>
-              <div className="stat-label" style={{ fontSize: '0.65rem' }}>Mastered</div>
+            <div className="stat-box flex-col-center p-2">
+              <div className="stat-value text-xl">{masteredCount}</div>
+              <div className="stat-label text-xxs">Mastered</div>
             </div>
           </div>
-          <div className="stat-box" style={{ width: '100%', display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center', padding: '0.6rem' }}>
-            <div className="stat-value" style={{ fontSize: '1.5rem' }}>
-              {activeProblems.length} <span style={{ fontSize: '0.9rem', color: 'var(--text-secondary)' }}>/ {enabledSheets.reduce((acc, sheet) => acc + (SHEET_TOTALS[sheet]?.total || 0), 0)}</span>
+          <div className="stat-box w-full flex-col-center p-2">
+            <div className="stat-value text-xl">
+              {activeProblems.length} <span className="text-sm text-secondary">/ {enabledSheets.reduce((acc, sheet) => acc + (SHEET_TOTALS[sheet]?.total || 0), 0)}</span>
             </div>
-            <div className="stat-label" style={{ fontSize: '0.65rem' }}>Active Sheet Solved</div>
+            <div className="stat-label text-xxs">Active Sheet Solved</div>
           </div>
         </div>
       </div>
@@ -269,12 +266,12 @@ export default async function DashboardPage() {
       />
 
       {/* ACTIVE SHEETS SUMMARY BANNER */}
-      <div className="card mb-4" style={{ padding: '0.85rem 1.25rem', backgroundColor: 'var(--bg-secondary)', borderLeft: '6px solid #000' }}>
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '0.5rem' }}>
-          <div style={{ fontFamily: 'monospace', fontSize: '0.85rem', fontWeight: 'bold' }}>
+      <div className="card mb-4 p-5 bg-secondary border-l-brutal">
+        <div className="flex-between flex-wrap gap-2">
+          <div className="font-mono text-sm font-bold">
             ACTIVE SHEETS: {enabledSheets.length > 0 ? enabledSheets.map(s => (SHEET_TOTALS[s]?.label || s.toUpperCase())).join(' | ') : 'NONE ENABLED'}
           </div>
-          <Link href="/settings" className="btn btn-sm btn-black" style={{ textTransform: 'uppercase', fontSize: '0.75rem', textDecoration: 'none' }}>
+          <Link href="/settings" className="btn btn-sm btn-black text-uppercase text-xs no-underline">
             MANAGE SHEETS
           </Link>
         </div>
