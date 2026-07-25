@@ -285,8 +285,8 @@ export default async function DashboardPage() {
         {/* LEFT COLUMN: CHARTS */}
         <DashboardChartsClient 
           activeProblems={activeProblems}
-          history={history}
-          allHistory={allHistory}
+          history={history || []}
+          allHistory={allHistory || []}
         />
 
         {/* RIGHT COLUMN: PROGRESS BY TOPIC WIDGET */}
