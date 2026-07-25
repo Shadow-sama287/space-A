@@ -252,7 +252,7 @@ export default async function DashboardPage() {
       {/* TOP STATS GRIDS */}
       <div className="grid-3 mb-4">
         {/* DUE COUNT */}
-        <div className="card text-center" style={{ display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center', gap: '1rem', padding: '1.25rem', minHeight: '100%' }}>
+        <div className="card text-center" style={{ display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center', gap: '1rem', padding: '1.25rem', height: '100%' }}>
           
           {dueProblemsCount > 0 && (
             <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
@@ -317,7 +317,7 @@ export default async function DashboardPage() {
         </div>
 
         {/* STREAK */}
-        <div className="card text-center" style={{ display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center', gap: '0.4rem', padding: '1rem' }}>
+        <div className="card text-center" style={{ display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center', gap: '0.4rem', padding: '1.25rem', height: '100%' }}>
           <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
             <div className="stat-value">{effectiveStreak}d</div>
             <div className="stat-label">Daily Solve Streak</div>
@@ -335,7 +335,7 @@ export default async function DashboardPage() {
         </div>
 
         {/* SOLVING SUMMARY */}
-        <div className="card text-center" style={{ display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center', gap: '8px', padding: '1rem' }}>
+        <div className="card text-center" style={{ display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center', gap: '8px', padding: '1.25rem', height: '100%' }}>
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px', width: '100%' }}>
             <div className="stat-box" style={{ display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center', padding: '0.6rem' }}>
               <div className="stat-value" style={{ fontSize: '1.5rem' }}>{reviewingCount}</div>
