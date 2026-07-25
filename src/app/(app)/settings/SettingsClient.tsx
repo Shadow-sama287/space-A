@@ -26,6 +26,7 @@ interface SettingsClientProps {
   enabledSheets: string[];
   defaultSheet: string;
   dailyGoal: number;
+  problemsSolvedToday?: number;
   currentTheme: string;
   algorithm?: 'sm2' | 'fsrs';
   targetRetention?: number;
@@ -155,6 +156,7 @@ export default function SettingsClient({
   enabledSheets: initialEnabledSheets,
   defaultSheet: initialDefaultSheet,
   dailyGoal: initialDailyGoal,
+  problemsSolvedToday = 0,
   currentTheme: initialTheme,
   algorithm: initialAlgorithm = 'fsrs',
   targetRetention: initialTargetRetention = 0.90,
@@ -163,7 +165,7 @@ export default function SettingsClient({
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
 
-  const achievements = calculateAchievements({ solvedCount, masteredCount, streak, maxStreak });
+  const achievements = calculateAchievements({ solvedCount, masteredCount, streak, maxStreak, problemsSolvedToday, dailyGoal: initialDailyGoal });
   const unlockedCount = achievements.filter(a => a.isUnlocked).length;
 
   // Navigation & Search State

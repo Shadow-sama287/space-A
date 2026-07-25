@@ -1,6 +1,6 @@
 import { createClient } from '@/lib/supabase/server';
 import SettingsClient from './SettingsClient';
-import { fetchAllUserProblems } from '@/lib/supabase/queries';
+import { fetchAllUserProblems, fetchAllReviewHistory } from '@/lib/supabase/queries';
 
 export const dynamic = 'force-dynamic';
 
@@ -32,11 +32,19 @@ export default async function SettingsPage() {
 
   // Fetch user progress for calculation using joined problem data
   const userProblemsData = await fetchAllUserProblems(supabase, user.id);
+  const allHistory = await fetchAllReviewHistory(supabase, user.id);
 
   const activeProblems = userProblemsData || [];
 
   const solvedCount = activeProblems.length;
   const masteredCount = activeProblems.filter(up => up.status === 'mastered').length;
+
+  const todayDateStr = new Date().toDateString();
+  const problemsSolvedTodayCount = new Set(
+    (allHistory || [])
+      .filter((h: any) => new Date(h.reviewed_at).toDateString() === todayDateStr)
+      .map((h: any) => h.problem_id)
+  ).size;
 
   const SHEET_TOTALS: Record<string, { label: string, total: number }> = {
     'striver_sde': { label: 'Striver SDE Sheet (191 Problems)', total: 191 },
@@ -79,6 +87,7 @@ export default async function SettingsPage() {
         enabledSheets={enabledSheets}
         defaultSheet={defaultSheet}
         dailyGoal={dailyGoal}
+        problemsSolvedToday={problemsSolvedTodayCount}
         currentTheme={currentTheme}
         algorithm={algorithm}
         targetRetention={targetRetention}

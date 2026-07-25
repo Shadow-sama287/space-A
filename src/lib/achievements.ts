@@ -1,6 +1,6 @@
 export interface Achievement {
   id: string;
-  category: 'SOLVE' | 'MASTERY' | 'STREAK' | 'CORE';
+  category: 'SOLVE' | 'MASTERY' | 'STREAK' | 'CORE' | 'DAILY' | 'UNIQUE';
   name: string;
   desc: string;
   target: number;
@@ -14,8 +14,10 @@ export function calculateAchievements(params: {
   masteredCount: number;
   streak: number;
   maxStreak: number;
+  problemsSolvedToday?: number;
+  dailyGoal?: number;
 }): Achievement[] {
-  const { solvedCount, masteredCount, streak, maxStreak } = params;
+  const { solvedCount, masteredCount, streak, maxStreak, problemsSolvedToday = 0, dailyGoal = 0 } = params;
   const bestStreak = Math.max(streak, maxStreak);
 
   return [
@@ -133,6 +135,70 @@ export function calculateAchievements(params: {
       current: bestStreak,
       isUnlocked: bestStreak >= 30,
       badgeCode: '[ CORE-05 ]',
+    },
+
+    // === DAILY SOLVE MILESTONES ===
+    {
+      id: 'VIBE_CHECK',
+      category: 'DAILY',
+      name: 'VIBE CHECK',
+      desc: 'Solve 2 problems in a single day',
+      target: 2,
+      current: problemsSolvedToday,
+      isUnlocked: problemsSolvedToday >= 2,
+      badgeCode: '[ DLY-01 ]',
+    },
+    {
+      id: 'LOCKED_IN',
+      category: 'DAILY',
+      name: 'LOCKED IN',
+      desc: 'Solve 5 problems in a single day',
+      target: 5,
+      current: problemsSolvedToday,
+      isUnlocked: problemsSolvedToday >= 5,
+      badgeCode: '[ DLY-02 ]',
+    },
+    {
+      id: 'TOUCH_GRASS',
+      category: 'DAILY',
+      name: 'TOUCH GRASS',
+      desc: 'Solve 10 problems in a single day',
+      target: 10,
+      current: problemsSolvedToday,
+      isUnlocked: problemsSolvedToday >= 10,
+      badgeCode: '[ DLY-03 ]',
+    },
+    {
+      id: 'UNEXISTING_ENTITY',
+      category: 'DAILY',
+      name: 'UNEXISTING ENTITY',
+      desc: 'Solve 20 problems in a single day (Are you hacking?!)',
+      target: 20,
+      current: problemsSolvedToday,
+      isUnlocked: problemsSolvedToday >= 20,
+      badgeCode: '[ DLY-04 ]',
+    },
+
+    // === UNIQUE GOAL MILESTONES ===
+    {
+      id: 'ABSOLUTE_ZERO',
+      category: 'UNIQUE',
+      name: 'ABSOLUTE ZERO',
+      desc: 'Hit exactly your daily goal amount!',
+      target: dailyGoal > 0 ? dailyGoal : 1,
+      current: problemsSolvedToday,
+      isUnlocked: dailyGoal > 0 && problemsSolvedToday >= dailyGoal,
+      badgeCode: '[ UNQ-01 ]',
+    },
+    {
+      id: 'PUSHING_PAST_THE_LIMITS',
+      category: 'UNIQUE',
+      name: 'PUSHING PAST THE LIMITS',
+      desc: 'Surpass your daily goal and trigger the glitched counter!',
+      target: dailyGoal > 0 ? dailyGoal + 1 : 2,
+      current: problemsSolvedToday,
+      isUnlocked: dailyGoal > 0 && problemsSolvedToday > dailyGoal,
+      badgeCode: '[ UNQ-02 ]',
     },
   ];
 }
