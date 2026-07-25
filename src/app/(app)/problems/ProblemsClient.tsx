@@ -9,6 +9,8 @@ import ActiveRecallWidget from '@/components/ActiveRecallWidget';
 import ScratchpadModal from '@/components/ScratchpadModal';
 import { getProblemSubSheets } from '@/lib/neetcodeHelpers';
 import SpacedRepetitionModal from '@/components/SpacedRepetitionModal';
+import ProblemGraphModal from '@/components/ProblemGraphModal';
+import { ExternalLink, Pencil, Waypoints, CheckSquare } from 'lucide-react';
 
 interface Problem {
   id: string;
@@ -90,6 +92,7 @@ export default function ProblemsClient({
   // Modal state
   const [reviewProblem, setReviewProblem] = useState<Problem | null>(null);
   const [scratchpadProblem, setScratchpadProblem] = useState<Problem | null>(null);
+  const [graphProblem, setGraphProblem] = useState<{ problem: Problem; prog: UserProblem } | null>(null);
   const [reviewRating, setReviewRating] = useState<number | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -437,7 +440,7 @@ export default function ProblemsClient({
                 <th>Problem Title</th>
                 <th style={{ width: '110px' }}>Difficulty</th>
                 <th style={{ width: '150px' }}>Status</th>
-                <th style={{ width: '270px', minWidth: '270px', textAlign: 'center' }}>Actions</th>
+                <th style={{ width: '200px', minWidth: '200px', textAlign: 'center' }}>Actions</th>
               </tr>
             </thead>
             <tbody>
@@ -484,35 +487,49 @@ export default function ProblemsClient({
                       )}
                     </td>
                     <td>
-                      <div style={{ display: 'flex', gap: '6px', justifyContent: 'center', flexWrap: 'wrap' }}>
+                      <div style={{ display: 'flex', gap: '6px', justifyContent: 'center', flexWrap: 'nowrap' }}>
                         {/* Outer Solve Link */}
                         <a
                           href={p.leetcode_url}
                           target="_blank"
                           rel="noopener noreferrer"
                           className="btn btn-small"
-                          style={{ boxShadow: 'none' }}
+                          style={{ boxShadow: 'none', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '0.4rem' }}
+                          title="Solve on External Platform"
                         >
-                          SOLVE ↗
+                          <ExternalLink size={16} />
                         </a>
 
                         {/* Scratchpad Canvas Modal Trigger */}
                         <button
                           onClick={() => setScratchpadProblem(p)}
                           className="btn btn-small"
-                          style={{ boxShadow: 'none', backgroundColor: 'var(--bg-secondary)', border: '2px solid var(--border-color)' }}
+                          style={{ boxShadow: 'none', backgroundColor: 'var(--bg-secondary)', border: '2px solid var(--border-color)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '0.4rem' }}
                           title="Open tldraw Canvas Scratchpad"
                         >
-                          DRAW
+                          <Pencil size={16} />
                         </button>
+
+                        {/* Learning Graph Trigger — only if reviewed at least once */}
+                        {prog && (
+                          <button
+                            onClick={() => setGraphProblem({ problem: p, prog })}
+                            className="btn btn-small"
+                            style={{ boxShadow: 'none', backgroundColor: 'var(--bg-secondary)', border: '2px solid var(--border-color)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '0.4rem' }}
+                            title="View Learning Graph"
+                          >
+                            <Waypoints size={16} />
+                          </button>
+                        )}
 
                         {/* Review Modal Trigger */}
                         <button
                           onClick={() => setReviewProblem(p)}
                           className="btn btn-small btn-black"
-                          style={{ boxShadow: 'none' }}
+                          style={{ boxShadow: 'none', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '0.4rem' }}
+                          title="Review Problem"
                         >
-                          REVIEW
+                          <CheckSquare size={16} />
                         </button>
                       </div>
                     </td>
@@ -630,6 +647,17 @@ export default function ProblemsClient({
         isOpen={isGuideModalOpen} 
         onClose={() => setIsGuideModalOpen(false)} 
         defaultTab={algorithm === 'fsrs' ? 'fsrs' : 'sm2'}
+      />
+
+      {/* LEARNING GRAPH MODAL */}
+      <ProblemGraphModal
+        isOpen={!!graphProblem}
+        onClose={() => setGraphProblem(null)}
+        problemId={graphProblem?.problem.id ?? ''}
+        problemTitle={graphProblem?.problem.title ?? ''}
+        currentInterval={graphProblem?.prog?.interval_days ?? 0}
+        currentStatus={graphProblem?.prog?.status ?? 'reviewing'}
+        nextReviewDate={graphProblem?.prog?.next_review_date ?? null}
       />
 
       {/* STICKY FLOATING BRUTALIST BACK TO TOP BUTTON */}
