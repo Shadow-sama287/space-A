@@ -218,6 +218,15 @@ export default async function DashboardPage() {
 
   const categoryStats = Array.from(categoryStatsMap.values());
 
+  // === DAILY GOAL CALCULATIONS ===
+  const dailyGoal = profile?.daily_goal;
+  const todayDateStr = new Date().toDateString();
+  const problemsSolvedTodayCount = new Set(
+    (allHistory || [])
+      .filter((h: any) => new Date(h.reviewed_at).toDateString() === todayDateStr)
+      .map((h: any) => h.problem_id)
+  ).size;
+
   return (
     <div>
       <div className="flex-between mb-3" style={{ borderBottom: '3px solid var(--border-color)', paddingBottom: '0.75rem' }}>
@@ -243,12 +252,58 @@ export default async function DashboardPage() {
       {/* TOP STATS GRIDS */}
       <div className="grid-3 mb-4">
         {/* DUE COUNT */}
-        <div className="card text-center" style={{ display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center', gap: '1rem', padding: '1.25rem' }}>
-          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
-            <div className="stat-value">{dueProblemsCount}</div>
-            <div className="stat-label">Due Reviews Today</div>
+        <div className="card text-center" style={{ display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center', gap: '1rem', padding: '1.25rem', minHeight: '100%' }}>
+          
+          {dueProblemsCount > 0 && (
+            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
+              <div className="stat-value">{dueProblemsCount}</div>
+              <div className="stat-label">Due Reviews Today</div>
+            </div>
+          )}
+
+          {/* DAILY GOAL WIDGET */}
+          <div style={{ 
+            borderTop: dueProblemsCount > 0 ? '2px dashed var(--border-color)' : 'none', 
+            width: '100%', 
+            paddingTop: dueProblemsCount > 0 ? '0.75rem' : '0', 
+            marginTop: dueProblemsCount > 0 ? '-0.25rem' : '0', 
+            display: 'flex', 
+            flexDirection: 'column', 
+            alignItems: 'center',
+            flexGrow: dueProblemsCount === 0 ? 1 : 0,
+            justifyContent: dueProblemsCount === 0 ? 'center' : 'flex-start'
+          }}>
+            {!dailyGoal ? (
+              <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '0.25rem' }}>
+                <span style={{ fontSize: dueProblemsCount === 0 ? '0.9rem' : '0.7rem', color: 'var(--text-secondary)', textTransform: 'uppercase' }}>Daily Goal Not Set</span>
+                <Link href="/settings" className="btn btn-outline btn-small" style={{ fontSize: dueProblemsCount === 0 ? '0.8rem' : '0.65rem', marginTop: dueProblemsCount === 0 ? '0.5rem' : '0' }}>
+                  SET GOAL
+                </Link>
+              </div>
+            ) : (
+              <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+                {problemsSolvedTodayCount === dailyGoal ? (
+                  <div className="stat-value glitch-text" style={{ fontSize: dueProblemsCount === 0 ? '3.5rem' : '1.5rem', lineHeight: 1 }}>
+                    0
+                  </div>
+                ) : problemsSolvedTodayCount > dailyGoal ? (
+                  <div className="stat-value glitch-text" style={{ fontSize: dueProblemsCount === 0 ? '3.5rem' : '1.5rem', lineHeight: 1 }}>
+                    {problemsSolvedTodayCount}
+                  </div>
+                ) : (
+                  <div style={{ display: 'flex', alignItems: 'baseline', gap: '0.5rem' }}>
+                    <div className="stat-value" style={{ fontSize: dueProblemsCount === 0 ? '3.5rem' : '1.5rem', lineHeight: 1 }}>{problemsSolvedTodayCount}</div>
+                    <div style={{ fontSize: dueProblemsCount === 0 ? '1.5rem' : '0.9rem', color: 'var(--text-secondary)', fontWeight: 'bold' }}>/ {dailyGoal}</div>
+                  </div>
+                )}
+                <div className="stat-label" style={{ fontSize: dueProblemsCount === 0 ? '0.85rem' : '0.65rem', margin: dueProblemsCount === 0 ? '0.5rem 0 0 0' : '0.2rem 0 0 0' }}>
+                  {problemsSolvedTodayCount > dailyGoal ? 'Total Solved Today' : 'Daily Goal Progress'}
+                </div>
+              </div>
+            )}
           </div>
-          <div style={{ width: '100%' }}>
+
+          <div style={{ width: '100%', marginTop: 'auto' }}>
             {dueProblemsCount > 0 ? (
               <Link href="/review" className="btn btn-black" style={{ width: '100%', textTransform: 'uppercase', textDecoration: 'none' }}>
                 Start Review Session

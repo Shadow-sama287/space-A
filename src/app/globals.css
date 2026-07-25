@@ -819,3 +819,20 @@ select option {
 .bg-solid-black {
   background: var(--text-primary);
 }
+
+/* GLITCH EFFECT */
+@keyframes brutalistGlitch {
+  0% { transform: translate(0); text-shadow: none; }
+  20% { transform: translate(-2px, 2px); text-shadow: 2px 2px 0px var(--text-secondary); }
+  40% { transform: translate(2px, -2px); text-shadow: -2px -2px 0px var(--text-secondary); }
+  60% { transform: translate(-2px, -2px); text-shadow: 2px -2px 0px var(--text-secondary); }
+  80% { transform: translate(2px, 2px); text-shadow: -2px 2px 0px var(--text-secondary); }
+  100% { transform: translate(0); text-shadow: none; }
+}
+
+.glitch-text {
+  display: inline-block;
+  animation: brutalistGlitch 0.4s infinite;
+  font-weight: 900;
+  position: relative;
+}
