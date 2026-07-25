@@ -67,3 +67,38 @@ export async function fetchAllUserProblems(supabase: SupabaseClient, userId: str
 
   return allUserProblems;
 }
+
+/**
+ * Fetches all review_history for a user, handling PostgREST's 1,000-row limit
+ * by making paged chunk requests. Only selects problem_id and reviewed_at
+ * to minimize payload size when determining first-review dates.
+ */
+export async function fetchAllReviewHistory(supabase: SupabaseClient, userId: string): Promise<any[]> {
+  if (!userId) return [];
+
+  const allHistory: any[] = [];
+  const PAGE_SIZE = 1000;
+  let page = 0;
+  let hasMore = true;
+
+  while (hasMore) {
+    const { data, error } = await supabase
+      .from('review_history')
+      .select('problem_id, reviewed_at')
+      .eq('user_id', userId)
+      .range(page * PAGE_SIZE, (page + 1) * PAGE_SIZE - 1);
+
+    if (error || !data || data.length === 0) {
+      hasMore = false;
+    } else {
+      allHistory.push(...data);
+      if (data.length < PAGE_SIZE) {
+        hasMore = false;
+      } else {
+        page++;
+      }
+    }
+  }
+
+  return allHistory;
+}

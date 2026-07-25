@@ -6,8 +6,9 @@ import CoolOffDashboardCard from '@/components/CoolOffDashboardCard';
 import { striverProblems } from '@/data/striverSheet';
 import { striverA2ZProblems } from '@/data/striverA2ZSheet';
 import { tle31Problems } from '@/data/tle31Sheet';
-import { fetchAllUserProblems } from '@/lib/supabase/queries';
+import { fetchAllUserProblems, fetchAllReviewHistory } from '@/lib/supabase/queries';
 import { getProblemSubSheets } from '@/lib/neetcodeHelpers';
+import SevenDayReviewWidget from '@/components/SevenDayReviewWidget';
 
 export const dynamic = 'force-dynamic';
 
@@ -30,12 +31,14 @@ export default async function DashboardPage() {
     { data: profile },
     userProblemsData,
     { data: history },
-    { count: dbProblemsCount }
+    { count: dbProblemsCount },
+    allHistory
   ] = await Promise.all([
     supabase.from('profiles').select('*').eq('id', user.id).single(),
     fetchAllUserProblems(supabase, user.id),
     supabase.from('review_history').select('reviewed_at').eq('user_id', user.id).gte('reviewed_at', twentyEightDaysAgo.toISOString()).range(0, 5000),
-    supabase.from('problems').select('*', { count: 'exact', head: true })
+    supabase.from('problems').select('*', { count: 'exact', head: true }),
+    fetchAllReviewHistory(supabase, user.id)
   ]);
 
   const enabledSheets: string[] = profile?.enabled_sheets || ['striver_sde', 'striver_a2z'];
@@ -145,6 +148,52 @@ export default async function DashboardPage() {
 
   // Dynamic max: busiest day = darkest shade (even if only 1 review)
   const heatmapMax = Math.max(...heatmapDays.map(d => d.count), 1);
+
+  // === 7-DAY PAST REVIEW (NEW VS OLD) ===
+  const firstReviewMap = new Map<string, string>();
+  allHistory.forEach(h => {
+    const d = new Date(h.reviewed_at);
+    const dateKey = `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+    if (!firstReviewMap.has(h.problem_id)) {
+      firstReviewMap.set(h.problem_id, dateKey);
+    } else {
+      const existingDate = firstReviewMap.get(h.problem_id)!;
+      if (dateKey < existingDate) {
+        firstReviewMap.set(h.problem_id, dateKey);
+      }
+    }
+  });
+
+  const past7DaysReviews = Array.from({ length: 7 }).map((_, i) => {
+    const d = new Date();
+    d.setDate(d.getDate() - (6 - i));
+    const dateKey = `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+    
+    let newCount = 0;
+    let oldCount = 0;
+
+    allHistory.forEach(h => {
+      const hd = new Date(h.reviewed_at);
+      const hDateKey = `${hd.getFullYear()}-${String(hd.getMonth()+1).padStart(2,'0')}-${String(hd.getDate()).padStart(2,'0')}`;
+      
+      if (hDateKey === dateKey) {
+        if (firstReviewMap.get(h.problem_id) === dateKey) {
+          newCount++;
+        } else {
+          oldCount++;
+        }
+      }
+    });
+
+    return {
+      label: d.toLocaleDateString('en-US', { weekday: 'short', day: '2-digit' }),
+      newCount,
+      oldCount,
+      totalCount: newCount + oldCount
+    };
+  });
+  
+  const maxPastReviewCount = Math.max(...past7DaysReviews.map(f => f.totalCount), 1);
 
   // === COMPUTE CATEGORY STATS ===
   const categoryStatsMap = new Map<string, { category: string, total: number, solved: number, sheet: string }>();
@@ -345,6 +394,14 @@ export default async function DashboardPage() {
               <span>More</span>
             </div>
           </div>
+
+          {/* 7-DAY PAST REVIEW: NEW VS OLD WIDGET */}
+          <SevenDayReviewWidget
+            past7DaysReviews={past7DaysReviews}
+            maxPastReviewCount={maxPastReviewCount}
+            allHistory={allHistory}
+            firstReviewMap={firstReviewMap}
+          />
         </div>
 
         {/* RIGHT COLUMN: PROGRESS BY TOPIC WIDGET */}

@@ -805,3 +805,17 @@ select option {
   50% { opacity: 0.2; }
   100% { opacity: 1; }
 }
+
+/* NEW VS OLD GRAPH COLORS */
+.bg-hatched {
+  background: repeating-linear-gradient(
+    45deg,
+    var(--text-primary),
+    var(--text-primary) 2px,
+    transparent 2px,
+    transparent 6px
+  );
+}
+.bg-solid-black {
+  background: var(--text-primary);
+}
