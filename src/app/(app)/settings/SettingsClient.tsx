@@ -181,6 +181,7 @@ export default function SettingsClient({
   const [togglingSheet, setTogglingSheet] = useState<string | null>(null);
   const [statusMsg, setStatusMsg] = useState<{ text: string; isError: boolean } | null>(null);
   const [isSRModalOpen, setIsSRModalOpen] = useState(false);
+  const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
 
   // Toggle Sheet Handler
   async function handleToggleSheet(sheetId: string, currentEnabled: boolean) {
@@ -247,27 +248,18 @@ export default function SettingsClient({
     }
   }
 
-  // Update Preferences Handler
-  async function handlePreferenceChange(updates: {
-    defaultSheet?: string;
-    dailyGoal?: number;
-    algorithm?: 'sm2' | 'fsrs';
-    targetRetention?: number;
-  }) {
+  // Save Preferences Handler
+  async function savePreferences() {
     setStatusMsg(null);
-    if (updates.defaultSheet !== undefined) setDefaultSheet(updates.defaultSheet);
-    if (updates.dailyGoal !== undefined) setDailyGoal(updates.dailyGoal);
-    if (updates.algorithm !== undefined) setAlgorithm(updates.algorithm);
-    if (updates.targetRetention !== undefined) setTargetRetention(updates.targetRetention);
-
     try {
       const res = await updatePreferencesAction({
-        defaultSheet: updates.defaultSheet !== undefined ? updates.defaultSheet : defaultSheet,
-        dailyGoal: updates.dailyGoal !== undefined ? updates.dailyGoal : dailyGoal,
-        algorithm: updates.algorithm !== undefined ? updates.algorithm : algorithm,
-        targetRetention: updates.targetRetention !== undefined ? updates.targetRetention : targetRetention,
+        defaultSheet,
+        dailyGoal,
+        algorithm,
+        targetRetention,
       });
-      setStatusMsg({ text: res?.warning || 'PREFERENCE SAVED!', isError: false });
+      setStatusMsg({ text: res?.warning || 'PREFERENCES SAVED!', isError: false });
+      setHasUnsavedChanges(false);
       startTransition(() => {
         router.refresh();
       });
@@ -707,9 +699,20 @@ export default function SettingsClient({
           {/* CATEGORY 3: PREFERENCES */}
           {(activeTab === 'preferences' || searchQuery) && (
             <div className="card">
-              <h3 className="card-title mb-3" style={{ borderBottom: '2px solid var(--border-color)', paddingBottom: '0.5rem', fontSize: '1rem' }}>
-                PREFERENCES & SPACED REPETITION ENGINE
-              </h3>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '2px solid var(--border-color)', paddingBottom: '0.5rem', marginBottom: '1.25rem' }}>
+                <h3 className="card-title" style={{ margin: 0, fontSize: '1rem' }}>
+                  PREFERENCES & SPACED REPETITION ENGINE
+                </h3>
+                {hasUnsavedChanges && (
+                  <button
+                    onClick={savePreferences}
+                    className="btn btn-black btn-sm"
+                    style={{ fontSize: '0.75rem', padding: '0.3rem 0.8rem', fontFamily: 'monospace' }}
+                  >
+                    💾 SAVE PREFERENCES
+                  </button>
+                )}
+              </div>
 
               <div style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
                 
@@ -760,7 +763,7 @@ export default function SettingsClient({
                       <div style={{ display: 'flex', border: '2px solid var(--border-color)', backgroundColor: 'var(--bg-primary)' }}>
                         <button
                           type="button"
-                          onClick={() => handlePreferenceChange({ algorithm: 'sm2' })}
+                          onClick={() => { setAlgorithm('sm2'); setHasUnsavedChanges(true); }}
                           style={{
                             padding: '0.5rem 0.85rem',
                             fontFamily: 'monospace',
@@ -777,7 +780,7 @@ export default function SettingsClient({
                         </button>
                         <button
                           type="button"
-                          onClick={() => handlePreferenceChange({ algorithm: 'fsrs' })}
+                          onClick={() => { setAlgorithm('fsrs'); setHasUnsavedChanges(true); }}
                           style={{
                             padding: '0.5rem 0.85rem',
                             fontFamily: 'monospace',
@@ -813,7 +816,7 @@ export default function SettingsClient({
                           max="0.95"
                           step="0.01"
                           value={targetRetention}
-                          onChange={(e) => handlePreferenceChange({ targetRetention: parseFloat(e.target.value) })}
+                          onChange={(e) => { setTargetRetention(parseFloat(e.target.value)); setHasUnsavedChanges(true); }}
                           style={{ width: '100%', accentColor: 'var(--text-primary)', cursor: 'pointer', height: '24px' }}
                         />
 
@@ -841,7 +844,7 @@ export default function SettingsClient({
 
                     <select
                       value={defaultSheet}
-                      onChange={(e) => handlePreferenceChange({ defaultSheet: e.target.value })}
+                      onChange={(e) => { setDefaultSheet(e.target.value); setHasUnsavedChanges(true); }}
                       className="input"
                       style={{ height: '36px', fontSize: '0.75rem', fontFamily: 'monospace', fontWeight: 'bold', padding: '0.35rem' }}
                     >
@@ -872,7 +875,8 @@ export default function SettingsClient({
                             setIsCustomGoal(true);
                           } else {
                             setIsCustomGoal(false);
-                            handlePreferenceChange({ dailyGoal: Number(val) });
+                            setDailyGoal(Number(val));
+                            setHasUnsavedChanges(true);
                           }
                         }}
                         className="input"
@@ -892,8 +896,7 @@ export default function SettingsClient({
                             min="1"
                             max="100"
                             value={dailyGoal}
-                            onChange={(e) => setDailyGoal(Number(e.target.value))}
-                            onBlur={() => handlePreferenceChange({ dailyGoal })}
+                            onChange={(e) => { setDailyGoal(Number(e.target.value)); setHasUnsavedChanges(true); }}
                             className="input"
                             style={{ height: '36px', width: '80px', fontSize: '0.75rem', fontFamily: 'monospace', fontWeight: 'bold', padding: '0.35rem' }}
                           />
