@@ -180,27 +180,27 @@ export default async function DashboardPage() {
             {!dailyGoal ? (
               <div className="flex-col-center gap-xs">
                 <span className={`text-uppercase text-secondary ${dueProblemsCount === 0 ? 'text-sm' : 'text-xs'}`}>Daily Goal Not Set</span>
-                <Link href="/settings" className="btn btn-outline btn-small" className={`${dueProblemsCount === 0 ? 'text-sm mt-1' : 'text-xxs'}`}>
+                <Link href="/settings" className={`btn btn-outline btn-small ${dueProblemsCount === 0 ? 'text-sm mt-1' : 'text-xxs'}`}>
                   SET GOAL
                 </Link>
               </div>
             ) : (
               <div className="flex-col-center">
                 {problemsSolvedTodayCount === dailyGoal ? (
-                  <div className="stat-value glitch-text" className={`${dueProblemsCount === 0 ? 'text-huge' : 'text-xl'} leading-none`}>
+                  <div className={`stat-value glitch-text ${dueProblemsCount === 0 ? 'text-huge' : 'text-xl'} leading-none`}>
                     0
                   </div>
                 ) : problemsSolvedTodayCount > dailyGoal ? (
-                  <div className="stat-value glitch-text" className={`${dueProblemsCount === 0 ? 'text-huge' : 'text-xl'} leading-none`}>
+                  <div className={`stat-value glitch-text ${dueProblemsCount === 0 ? 'text-huge' : 'text-xl'} leading-none`}>
                     {problemsSolvedTodayCount}
                   </div>
                 ) : (
                   <div className="flex-baseline">
-                    <div className="stat-value" className={`${dueProblemsCount === 0 ? 'text-huge' : 'text-xl'} leading-none`}>{problemsSolvedTodayCount}</div>
+                    <div className={`stat-value ${dueProblemsCount === 0 ? 'text-huge' : 'text-xl'} leading-none`}>{problemsSolvedTodayCount}</div>
                     <div className={`font-bold text-secondary ${dueProblemsCount === 0 ? 'text-xl' : 'text-sm'}`}>/ {dailyGoal}</div>
                   </div>
                 )}
-                <div className="stat-label" className={`${dueProblemsCount === 0 ? 'text-sm mt-1' : 'text-xxs my-sm'}`}>
+                <div className={`stat-label ${dueProblemsCount === 0 ? 'text-sm mt-1' : 'text-xxs my-sm'}`}>
                   {problemsSolvedTodayCount > dailyGoal ? 'Total Solved Today' : 'Daily Goal Progress'}
                 </div>
               </div>
