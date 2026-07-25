@@ -174,6 +174,7 @@ export default function SettingsClient({
   const [enabledSheets, setEnabledSheets] = useState<string[]>(initialEnabledSheets);
   const [defaultSheet, setDefaultSheet] = useState<string>(initialDefaultSheet);
   const [dailyGoal, setDailyGoal] = useState<number>(initialDailyGoal);
+  const [isCustomGoal, setIsCustomGoal] = useState(![1, 2, 3, 5].includes(initialDailyGoal));
   const [activeTheme, setActiveTheme] = useState<string>(initialTheme);
   const [algorithm, setAlgorithm] = useState<'sm2' | 'fsrs'>(initialAlgorithm);
   const [targetRetention, setTargetRetention] = useState<number>(initialTargetRetention);
@@ -862,17 +863,44 @@ export default function SettingsClient({
                       </div>
                     </div>
 
-                    <select
-                      value={dailyGoal}
-                      onChange={(e) => handlePreferenceChange({ dailyGoal: Number(e.target.value) })}
-                      className="input"
-                      style={{ height: '36px', fontSize: '0.75rem', fontFamily: 'monospace', fontWeight: 'bold', padding: '0.35rem' }}
-                    >
-                      <option value={5}>5 PROBLEMS / DAY</option>
-                      <option value={10}>10 PROBLEMS / DAY (RECOMMENDED)</option>
-                      <option value={15}>15 PROBLEMS / DAY</option>
-                      <option value={20}>20 PROBLEMS / DAY</option>
-                    </select>
+                    <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
+                      <select
+                        value={isCustomGoal ? 'custom' : dailyGoal}
+                        onChange={(e) => {
+                          const val = e.target.value;
+                          if (val === 'custom') {
+                            setIsCustomGoal(true);
+                          } else {
+                            setIsCustomGoal(false);
+                            handlePreferenceChange({ dailyGoal: Number(val) });
+                          }
+                        }}
+                        className="input"
+                        style={{ height: '36px', fontSize: '0.75rem', fontFamily: 'monospace', fontWeight: 'bold', padding: '0.35rem', flex: isCustomGoal ? 0 : 1 }}
+                      >
+                        <option value={1}>1 PROBLEM / DAY</option>
+                        <option value={2}>2 PROBLEMS / DAY</option>
+                        <option value={3}>3 PROBLEMS / DAY</option>
+                        <option value={5}>5 PROBLEMS / DAY</option>
+                        <option value="custom">CUSTOM</option>
+                      </select>
+                      
+                      {isCustomGoal && (
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', flex: 1 }}>
+                          <input
+                            type="number"
+                            min="1"
+                            max="100"
+                            value={dailyGoal}
+                            onChange={(e) => setDailyGoal(Number(e.target.value))}
+                            onBlur={() => handlePreferenceChange({ dailyGoal })}
+                            className="input"
+                            style={{ height: '36px', width: '80px', fontSize: '0.75rem', fontFamily: 'monospace', fontWeight: 'bold', padding: '0.35rem' }}
+                          />
+                          <span style={{ fontSize: '0.75rem', fontFamily: 'monospace', fontWeight: 'bold', whiteSpace: 'nowrap' }}>/ DAY</span>
+                        </div>
+                      )}
+                    </div>
                   </div>
                 )}
 
