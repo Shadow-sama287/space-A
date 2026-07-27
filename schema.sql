@@ -165,3 +165,27 @@ CREATE POLICY "Users can view their own feedback"
     TO authenticated
     USING (auth.uid() = user_id);
 
+-- SCRATCHPADS TABLE
+CREATE TABLE IF NOT EXISTS public.scratchpads (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    user_id UUID NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
+    problem_id UUID NOT NULL REFERENCES public.problems(id) ON DELETE CASCADE,
+    state JSONB NOT NULL,
+    updated_at TIMESTAMPTZ DEFAULT NOW(),
+    UNIQUE(user_id, problem_id)
+);
+
+ALTER TABLE public.scratchpads ENABLE ROW LEVEL SECURITY;
+
+CREATE POLICY "Users can view their own scratchpad"
+    ON public.scratchpads FOR SELECT
+    USING (auth.uid() = user_id);
+
+CREATE POLICY "Users can insert their own scratchpad"
+    ON public.scratchpads FOR INSERT
+    WITH CHECK (auth.uid() = user_id);
+
+CREATE POLICY "Users can update their own scratchpad"
+    ON public.scratchpads FOR UPDATE
+    USING (auth.uid() = user_id);
+
