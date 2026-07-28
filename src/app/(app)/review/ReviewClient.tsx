@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useTransition } from 'react';
+import { useState, useTransition, useEffect, useCallback } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { submitReview } from './actions';
@@ -8,7 +8,7 @@ import { submitReview } from './actions';
 import { coolOffProblemAction } from '@/app/actions/cool-off-actions';
 import ActiveRecallWidget from '@/components/ActiveRecallWidget';
 
-import { calculateNextReview, predictAllIntervals } from '@/lib/scheduler';
+import { predictAllIntervals } from '@/lib/scheduler';
 import SpacedRepetitionModal from '@/components/SpacedRepetitionModal';
 
 interface DueProblem {
@@ -39,17 +39,44 @@ export default function ReviewClient({
   targetRetention = 0.90,
 }: ReviewClientProps) {
   const router = useRouter();
-  const [isPending, startTransition] = useTransition();
+  const [, startTransition] = useTransition();
 
   const [problems, setProblems] = useState<DueProblem[]>(initialDueProblems);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [showGrading, setShowGrading] = useState(false);
+  const [selectedRating, setSelectedRating] = useState<number | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
+
+  // Sync state if initialDueProblems changes from server revalidation
+  useEffect(() => {
+    setProblems(initialDueProblems);
+    setCurrentIndex(prev => (initialDueProblems.length > 0 && prev >= initialDueProblems.length ? initialDueProblems.length - 1 : prev));
+  }, [initialDueProblems]);
+
+  // Right Queue Sidebar state
+  const [isSidebarOpen, setIsSidebarOpen] = useState(true);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [diffFilter, setDiffFilter] = useState<'ALL' | 'EASY' | 'MEDIUM' | 'HARD'>('ALL');
 
   const [isSRModalOpen, setIsSRModalOpen] = useState(false);
 
   const hasDue = problems.length > 0 && currentIndex < problems.length;
   const currentProblem = hasDue ? problems[currentIndex] : null;
+
+  // Remove problem from active queue and advance index safely
+  const removeProblemFromQueue = useCallback((problemId: string) => {
+    setProblems(prev => {
+      const nextList = prev.filter(p => p.id !== problemId);
+      setCurrentIndex(currIdx => {
+        if (nextList.length === 0) return 0;
+        if (currIdx >= nextList.length) return nextList.length - 1;
+        return currIdx;
+      });
+      return nextList;
+    });
+    setSelectedRating(null);
+    setShowGrading(false);
+  }, []);
 
   // Calculate real-time dynamic predicted next intervals for current problem
   const predictedIntervals = currentProblem
@@ -65,18 +92,19 @@ export default function ReviewClient({
       })
     : { 0: 1, 1: 3, 2: 7, 3: 14 };
 
-  async function handleGrade(rating: number) {
-    if (!currentProblem) return;
+  const handleSaveReview = useCallback(async () => {
+    if (!currentProblem || selectedRating === null || isSubmitting) return;
     setIsSubmitting(true);
+
+    const problemIdToReview = currentProblem.id;
 
     try {
       const d = new Date();
       const localDateStr = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
-      await submitReview(currentProblem.id, rating, localDateStr);
+      await submitReview(problemIdToReview, selectedRating, localDateStr);
       
-      // Update states
-      setShowGrading(false);
-      setCurrentIndex(prev => prev + 1);
+      // Instantly remove solved problem from local queue and update index
+      removeProblemFromQueue(problemIdToReview);
       
       startTransition(() => {
         router.refresh();
@@ -86,16 +114,17 @@ export default function ReviewClient({
     } finally {
       setIsSubmitting(false);
     }
-  }
+  }, [currentProblem, selectedRating, isSubmitting, removeProblemFromQueue, router]);
 
   async function handleCoolOff() {
-    if (!currentProblem) return;
+    if (!currentProblem || isSubmitting) return;
     setIsSubmitting(true);
+    const problemIdToCool = currentProblem.id;
+
     try {
-      const res = await coolOffProblemAction(currentProblem.id);
+      const res = await coolOffProblemAction(problemIdToCool);
       if (res.success) {
-        setShowGrading(false);
-        setCurrentIndex(prev => prev + 1);
+        removeProblemFromQueue(problemIdToCool);
         startTransition(() => {
           router.refresh();
         });
@@ -108,6 +137,41 @@ export default function ReviewClient({
       setIsSubmitting(false);
     }
   }
+
+  // Keyboard Shortcuts (1-4 select rating, Enter submits, Q toggles sidebar, S snoozes)
+  useEffect(() => {
+    function handleKeyDown(e: KeyboardEvent) {
+      if (['INPUT', 'TEXTAREA'].includes((e.target as HTMLElement)?.tagName)) {
+        return;
+      }
+
+      if (e.key === '1') {
+        setShowGrading(true);
+        setSelectedRating(0);
+      } else if (e.key === '2') {
+        setShowGrading(true);
+        setSelectedRating(1);
+      } else if (e.key === '3') {
+        setShowGrading(true);
+        setSelectedRating(2);
+      } else if (e.key === '4') {
+        setShowGrading(true);
+        setSelectedRating(3);
+      } else if (e.key === 'Enter' && selectedRating !== null) {
+        e.preventDefault();
+        handleSaveReview();
+      } else if (e.key === 'q' || e.key === 'Q') {
+        setIsSidebarOpen(prev => !prev);
+      } else if (e.key === 's' || e.key === 'S') {
+        if (showGrading) handleCoolOff();
+      } else if (e.key === 'Escape') {
+        setSelectedRating(null);
+      }
+    }
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [selectedRating, showGrading, handleSaveReview]);
 
   if (!hasDue) {
     return (
@@ -125,17 +189,43 @@ export default function ReviewClient({
     );
   }
 
+  // Filter due problems for the sidebar queue
+  const filteredProblems = problems.filter((p) => {
+    const matchesSearch = p.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                          p.category.toLowerCase().includes(searchQuery.toLowerCase());
+    const matchesDiff = diffFilter === 'ALL' || p.difficulty.toUpperCase() === diffFilter;
+    return matchesSearch && matchesDiff;
+  });
+
   return (
-    <div style={{ maxWidth: '600px', margin: '0 auto' }}>
-      {/* PROGRESS TRACKER */}
-      <div className="flex-between mb-1" style={{ fontSize: '0.8rem', fontWeight: 'bold' }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
-          <span style={{ textTransform: 'uppercase' }}>
-            Active Session
+    <div
+      style={{
+        display: 'flex',
+        flexDirection: 'column',
+        border: '3px solid var(--border-color)',
+        backgroundColor: 'var(--bg-primary)',
+        boxShadow: '6px 6px 0px 0px var(--shadow-color)',
+      }}
+    >
+      {/* TOP SESSION HEADER */}
+      <div
+        style={{
+          display: 'flex',
+          justifyContent: 'space-between',
+          alignItems: 'center',
+          padding: '0.75rem 1.25rem',
+          borderBottom: '2px solid var(--border-color)',
+          backgroundColor: 'var(--bg-secondary)',
+          flexWrap: 'wrap',
+          gap: '0.75rem',
+        }}
+      >
+        <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+          <span style={{ fontWeight: 900, fontSize: '0.85rem', fontFamily: 'monospace', textTransform: 'uppercase' }}>
+            ACTIVE SESSION
           </span>
-          {/* ACTIVE ALGORITHM TAG */}
-          <div style={{ display: 'flex', alignItems: 'center', gap: '0.35rem' }}>
-            <div style={{
+          <div
+            style={{
               display: 'inline-flex',
               alignItems: 'center',
               gap: '6px',
@@ -146,40 +236,97 @@ export default function ReviewClient({
               fontSize: '0.75rem',
               fontWeight: 900,
               border: '1px solid var(--border-color)',
-              textTransform: 'uppercase'
-            }}>
-              <div style={{ width: '6px', height: '6px', backgroundColor: 'var(--bg-primary)', borderRadius: '50%', animation: 'blink 1.5s infinite' }}></div>
-              {algorithm === 'fsrs' ? `FSRS-V5 (${Math.round(targetRetention * 100)}%)` : 'SM-2 CLASSIC'}
-            </div>
-            <button 
-              onClick={() => setIsSRModalOpen(true)} 
-              className="btn btn-small" 
-              style={{ padding: '0.1rem 0.4rem', minWidth: '24px' }}
-              title="Spaced Repetition Algorithm Guide"
-            >
-              ?
-            </button>
+              textTransform: 'uppercase',
+            }}
+          >
+            <div style={{ width: '6px', height: '6px', backgroundColor: 'var(--bg-primary)', borderRadius: '50%', animation: 'blink 1.5s infinite' }}></div>
+            {algorithm === 'fsrs' ? `FSRS-V5 (${Math.round(targetRetention * 100)}%)` : 'SM-2 CLASSIC'}
           </div>
+          <button 
+            onClick={() => setIsSRModalOpen(true)} 
+            className="btn btn-small" 
+            style={{ padding: '0.1rem 0.45rem', minWidth: '24px', fontSize: '0.75rem' }}
+            title="Spaced Repetition Algorithm Guide"
+          >
+            ?
+          </button>
         </div>
-        <span>
-          PROBLEM {currentIndex + 1} OF {problems.length} DUE
-        </span>
-      </div>
-      
-      {/* MINI PROGRESS BAR */}
-      <div className="progress-bar-container mb-3" style={{ height: '10px' }}>
-        <div 
-          className="progress-bar-fill" 
-          style={{ width: `${((currentIndex) / problems.length) * 100}%` }}
-        />
+
+        <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
+          <span style={{ fontWeight: 900, fontSize: '0.8rem', fontFamily: 'monospace' }}>
+            PROBLEM {currentIndex + 1} OF {problems.length} DUE
+          </span>
+
+          {/* POLISHED BRUTALIST SIDEBAR TOGGLE BUTTON */}
+          <button
+            onClick={() => setIsSidebarOpen(prev => !prev)}
+            className="btn btn-black"
+            style={{
+              fontSize: '0.75rem',
+              fontWeight: 900,
+              textTransform: 'uppercase',
+              padding: '0.35rem 0.75rem',
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: '0.5rem',
+              cursor: 'pointer',
+              letterSpacing: '0.3px',
+            }}
+            title="Toggle Right Queue Sidebar (Shortcut: Q)"
+          >
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="square">
+              <rect x="3" y="3" width="18" height="18" rx="0" ry="0" />
+              <line x1="15" y1="3" x2="15" y2="21" />
+            </svg>
+            <span>{isSidebarOpen ? 'COLLAPSE QUEUE' : 'EXPAND QUEUE'}</span>
+            <span
+              style={{
+                backgroundColor: 'var(--bg-primary)',
+                color: 'var(--text-primary)',
+                padding: '0.1rem 0.4rem',
+                fontSize: '0.65rem',
+                fontWeight: 900,
+                border: '1px solid var(--border-color)',
+              }}
+            >
+              {problems.length} DUE
+            </span>
+          </button>
+        </div>
       </div>
 
-      {/* FLASHCARD */}
-      <div className="flashcard">
-        <div>
-          {/* HEADER DETAILS */}
-          <div className="flex-between" style={{ borderBottom: '2px solid var(--border-color)', paddingBottom: '0.5rem', marginBottom: '1.5rem' }}>
-            <span style={{ fontWeight: 'bold', textTransform: 'uppercase', fontSize: '0.85rem' }}>
+      {/* TOP DIFFICULTY GAUGE BAR (EASY: 33%, MEDIUM: 66%, HARD: 100%) */}
+      {(() => {
+        const diff = currentProblem?.difficulty?.toLowerCase() || '';
+        const fillWidth = diff === 'easy' ? '33.33%' : diff === 'medium' ? '66.66%' : diff === 'hard' ? '100%' : '0%';
+        return (
+          <div
+            style={{ height: '6px', backgroundColor: 'var(--bg-secondary)', borderBottom: '2px solid var(--border-color)' }}
+            title={`Difficulty Gauge: ${currentProblem?.difficulty || 'N/A'}`}
+          >
+            <div 
+              style={{ height: '100%', backgroundColor: 'var(--text-primary)', width: fillWidth, transition: 'width 0.35s cubic-bezier(0.4, 0, 0.2, 1)' }}
+            />
+          </div>
+        );
+      })()}
+
+      {/* HYBRID VARIANT 2: PUSH-GRID LAYOUT (MAIN STAGE LEFT, QUEUE SIDEBAR RIGHT) */}
+      <div
+        style={{
+          display: 'grid',
+          gridTemplateColumns: isSidebarOpen ? '1fr 340px' : '1fr',
+          gap: '1.25rem',
+          padding: '1.25rem',
+          transition: 'grid-template-columns 0.2s ease',
+        }}
+      >
+        {/* LEFT MAIN FLASHCARD STAGE */}
+        <div style={{ display: 'flex', flexDirection: 'column' }}>
+          
+          {/* PROBLEM HEADER */}
+          <div className="flex-between" style={{ borderBottom: '2px solid var(--border-color)', paddingBottom: '0.5rem', marginBottom: '1rem' }}>
+            <span style={{ fontWeight: 900, textTransform: 'uppercase', fontSize: '0.85rem', fontFamily: 'monospace' }}>
               {currentProblem?.category}
             </span>
             <span className={`badge-difficulty badge-${currentProblem?.difficulty.toLowerCase()}`}>
@@ -188,59 +335,72 @@ export default function ReviewClient({
           </div>
 
           {/* PROBLEM TITLE */}
-          <h2 style={{ fontSize: '1.5rem', fontWeight: 900, textTransform: 'uppercase', lineHeight: '1.2' }}>
+          <h2 style={{ fontSize: '1.6rem', fontWeight: 900, textTransform: 'uppercase', lineHeight: '1.25', marginBottom: '0.75rem' }}>
             {currentProblem?.title}
           </h2>
 
-          {/* PROBLEM STATS BOX */}
-          <div className="mt-2" style={{ border: '1px solid var(--border-color)', padding: '0.5rem', backgroundColor: 'var(--bg-secondary)', fontSize: '0.75rem' }}>
-            <span style={{ textTransform: 'uppercase', fontWeight: 'bold' }}>Previous Stats:</span> Reps: {currentProblem?.repetitions} | Ease Factor: {currentProblem?.ease_factor} | Last Interval: {currentProblem?.interval_days}d
+          {/* STATS STRIP */}
+          <div style={{ border: '1px solid var(--border-color)', padding: '0.5rem 0.75rem', backgroundColor: 'var(--bg-secondary)', fontSize: '0.75rem', fontFamily: 'monospace', marginBottom: '1.25rem' }}>
+            <span style={{ textTransform: 'uppercase', fontWeight: 900 }}>Previous Stats:</span> Reps: {currentProblem?.repetitions} | Ease Factor: {currentProblem?.ease_factor} | Last Interval: {currentProblem?.interval_days}d
           </div>
-        </div>
 
-        <div className="flashcard-content">
-          {/* LEETCODE LINK */}
+          {/* LEETCODE LINK WITH SVG ICON */}
           <div className="mb-3">
             <a
               href={currentProblem?.leetcode_url}
               target="_blank"
               rel="noopener noreferrer"
               className="btn"
-              style={{ width: '100%', textTransform: 'uppercase', textAlign: 'center' }}
+              style={{
+                width: '100%',
+                textTransform: 'uppercase',
+                textAlign: 'center',
+                fontSize: '0.85rem',
+                display: 'inline-flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                gap: '0.5rem',
+              }}
             >
-              Solve on LeetCode ↗
+              <span>Solve on LeetCode</span>
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="square">
+                <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6" />
+                <polyline points="15 3 21 3 21 9" />
+                <line x1="10" y1="14" x2="21" y2="3" />
+              </svg>
             </a>
           </div>
 
-          {/* ACTIVE RECALL & TLDRAW SCRATCHPAD WIDGET */}
+          {/* ACTIVE RECALL WIDGET */}
           {currentProblem && (
-            <ActiveRecallWidget
-              problemId={currentProblem.id}
-              problemTitle={currentProblem.title}
-            />
+            <div style={{ marginBottom: '1.25rem' }}>
+              <ActiveRecallWidget
+                problemId={currentProblem.id}
+                problemTitle={currentProblem.title}
+              />
+            </div>
           )}
 
-          <div style={{ marginTop: '1.25rem' }}>
-          {/* GRADING LOGIC */}
-          {!showGrading ? (
-            <button
-              onClick={() => setShowGrading(true)}
-              className="btn btn-black"
-              style={{ width: '100%', textTransform: 'uppercase' }}
-            >
-              Show Grading Options
-            </button>
-          ) : (
-            <div>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.5rem' }}>
-                <span style={{ fontSize: '0.75rem', fontWeight: 900, textTransform: 'uppercase', fontFamily: 'monospace' }}>
-                  Grade Performance:
-                </span>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '0.35rem' }}>
+          {/* SAFE TWO-STEP GRADING CONTAINER */}
+          <div style={{ marginTop: '1rem' }}>
+            {!showGrading ? (
+              <button
+                onClick={() => setShowGrading(true)}
+                className="btn btn-black"
+                style={{ width: '100%', textTransform: 'uppercase', padding: '0.75rem', fontSize: '0.9rem', letterSpacing: '0.5px' }}
+              >
+                SHOW GRADING OPTIONS
+              </button>
+            ) : (
+              <div style={{ border: '2px solid var(--border-color)', padding: '1rem', backgroundColor: 'var(--bg-secondary)' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.65rem' }}>
+                  <span style={{ fontSize: '0.75rem', fontWeight: 900, textTransform: 'uppercase', fontFamily: 'monospace' }}>
+                    1. SELECT RATING (1-4) & 2. CONFIRM SAVE:
+                  </span>
                   <button
                     type="button"
                     onClick={() => setIsSRModalOpen(true)}
-                    title="What is Spaced Repetition? Click to open guide"
+                    title="Spaced Repetition Guide"
                     style={{
                       display: 'inline-flex',
                       alignItems: 'center',
@@ -255,90 +415,219 @@ export default function ReviewClient({
                       fontSize: '0.7rem',
                       fontFamily: 'monospace',
                       cursor: 'pointer',
-                      boxShadow: '1px 1px 0px 0px var(--shadow-color)',
                     }}
                   >
                     ?
                   </button>
                 </div>
-              </div>
-              
-              <div className="rating-bar">
-                <button
-                  disabled={isSubmitting}
-                  onClick={() => handleGrade(0)}
-                  className="btn btn-small"
-                  style={{ textTransform: 'uppercase', fontSize: '0.7rem', display: 'flex', flexDirection: 'column', alignItems: 'center', padding: '0.4rem 0.2rem' }}
-                >
-                  <span style={{ fontWeight: 900 }}>AGAIN</span>
-                  <span style={{ fontSize: '0.65rem', opacity: 0.8 }}>+{predictedIntervals[0]}d</span>
-                </button>
-                <button
-                  disabled={isSubmitting}
-                  onClick={() => handleGrade(1)}
-                  className="btn btn-small"
-                  style={{ textTransform: 'uppercase', fontSize: '0.7rem', display: 'flex', flexDirection: 'column', alignItems: 'center', padding: '0.4rem 0.2rem' }}
-                >
-                  <span style={{ fontWeight: 900 }}>HARD</span>
-                  <span style={{ fontSize: '0.65rem', opacity: 0.8 }}>+{predictedIntervals[1]}d</span>
-                </button>
-                <button
-                  disabled={isSubmitting}
-                  onClick={() => handleGrade(2)}
-                  className="btn btn-small"
-                  style={{ textTransform: 'uppercase', fontSize: '0.7rem', display: 'flex', flexDirection: 'column', alignItems: 'center', padding: '0.4rem 0.2rem' }}
-                >
-                  <span style={{ fontWeight: 900 }}>GOOD</span>
-                  <span style={{ fontSize: '0.65rem', opacity: 0.8 }}>+{predictedIntervals[2]}d</span>
-                </button>
-                <button
-                  disabled={isSubmitting}
-                  onClick={() => handleGrade(3)}
-                  className="btn btn-small btn-black"
-                  style={{ textTransform: 'uppercase', fontSize: '0.7rem', display: 'flex', flexDirection: 'column', alignItems: 'center', padding: '0.4rem 0.2rem' }}
-                >
-                  <span style={{ fontWeight: 900 }}>EASY</span>
-                  <span style={{ fontSize: '0.65rem', opacity: 0.9 }}>+{predictedIntervals[3]}d</span>
-                </button>
-              </div>
 
-              <div style={{ display: 'flex', gap: '0.5rem', marginTop: '0.75rem' }}>
-                <button
-                  disabled={isSubmitting}
-                  onClick={handleCoolOff}
-                  title="Snooze this question for 3 days to recover with a fresh mind and break frustration"
-                  className="btn btn-outline"
-                  style={{
-                    flex: 1,
-                    fontSize: '0.75rem',
-                    textTransform: 'uppercase',
-                    border: '2px solid var(--border-color)',
-                    backgroundColor: 'var(--bg-secondary)',
-                    display: 'inline-flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    gap: '0.4rem',
-                  }}
-                >
-                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="square">
-                    <circle cx="12" cy="12" r="9"/>
-                    <polyline points="12 6 12 12 15 15"/>
-                    <path d="M12 2v2M12 20v2M2 12h2M20 12h2"/>
-                  </svg>
-                  [ SNOOZE ]
-                </button>
-                <button
-                  onClick={() => setShowGrading(false)}
-                  className="btn btn-outline"
-                  style={{ flex: 1, fontSize: '0.75rem', textTransform: 'uppercase', border: 'none' }}
-                >
-                  [Hide Options]
-                </button>
+                {/* 4 GRADE RATING BUTTONS (SELECTION ONLY) */}
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '0.5rem', marginBottom: '0.75rem' }}>
+                  {[
+                    { grade: 0, label: 'AGAIN', key: '1' },
+                    { grade: 1, label: 'HARD', key: '2' },
+                    { grade: 2, label: 'GOOD', key: '3' },
+                    { grade: 3, label: 'EASY', key: '4' },
+                  ].map(({ grade, label, key }) => {
+                    const isSelected = selectedRating === grade;
+                    const days = predictedIntervals[grade as 0 | 1 | 2 | 3];
+                    return (
+                      <button
+                        key={grade}
+                        type="button"
+                        onClick={() => setSelectedRating(grade)}
+                        style={{
+                          padding: '0.55rem 0.2rem',
+                          fontFamily: 'monospace',
+                          fontSize: '0.75rem',
+                          fontWeight: 900,
+                          textTransform: 'uppercase',
+                          border: isSelected ? '3px solid var(--text-primary)' : '2px solid var(--border-color)',
+                          backgroundColor: isSelected ? 'var(--text-primary)' : 'var(--bg-primary)',
+                          color: isSelected ? 'var(--bg-primary)' : 'var(--text-primary)',
+                          boxShadow: isSelected ? '3px 3px 0px 0px var(--shadow-color)' : 'none',
+                          cursor: 'pointer',
+                          display: 'flex',
+                          flexDirection: 'column',
+                          alignItems: 'center',
+                          transition: 'all 0.1s ease',
+                        }}
+                      >
+                        <span style={{ fontSize: '0.65rem', opacity: 0.7 }}>[{key}]</span>
+                        <span style={{ fontWeight: 900 }}>{label}</span>
+                        <span style={{ fontSize: '0.65rem', opacity: 0.85 }}>+{days}d</span>
+                      </button>
+                    );
+                  })}
+                </div>
+
+                {/* DYNAMIC TWO-STEP SUBMIT & SAVE BUTTON */}
+                {selectedRating !== null ? (
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+                    <div style={{ fontSize: '0.7rem', fontFamily: 'monospace', color: 'var(--text-secondary)', textAlign: 'center' }}>
+                      Selected: <strong>{['AGAIN', 'HARD', 'GOOD', 'EASY'][selectedRating]}</strong> (+{predictedIntervals[selectedRating as 0|1|2|3]}d interval). Press Enter or click below to save.
+                    </div>
+                    <button
+                      disabled={isSubmitting}
+                      onClick={handleSaveReview}
+                      className="btn btn-black"
+                      style={{ width: '100%', textTransform: 'uppercase', padding: '0.75rem', fontSize: '0.85rem', letterSpacing: '0.5px' }}
+                    >
+                      {isSubmitting ? 'SAVING REVIEW...' : 'SUBMIT & SAVE REVIEW [ENTER]'}
+                    </button>
+                  </div>
+                ) : (
+                  <div style={{ fontSize: '0.7rem', fontFamily: 'monospace', color: 'var(--text-secondary)', textTransform: 'uppercase', textAlign: 'center', fontStyle: 'italic', padding: '0.2rem' }}>
+                    Click a rating button or press [1-4] to select grade
+                  </div>
+                )}
+
+                {/* SNOOZE / HIDE OPTIONS BAR */}
+                <div style={{ display: 'flex', gap: '0.5rem', marginTop: '0.75rem' }}>
+                  <button
+                    disabled={isSubmitting}
+                    onClick={handleCoolOff}
+                    title="Snooze this question for 3 days (Shortcut: S)"
+                    className="btn btn-outline"
+                    style={{
+                      flex: 1,
+                      fontSize: '0.7rem',
+                      textTransform: 'uppercase',
+                      border: '2px solid var(--border-color)',
+                      backgroundColor: 'var(--bg-primary)',
+                      display: 'inline-flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      gap: '0.35rem',
+                      padding: '0.35rem',
+                    }}
+                  >
+                    [ SNOOZE (S) ]
+                  </button>
+                  <button
+                    onClick={() => {
+                      setShowGrading(false);
+                      setSelectedRating(null);
+                    }}
+                    className="btn btn-outline"
+                    style={{ flex: 1, fontSize: '0.7rem', textTransform: 'uppercase', border: 'none', padding: '0.35rem' }}
+                  >
+                    [Hide Options]
+                  </button>
+                </div>
               </div>
-            </div>
-          )}
+            )}
           </div>
         </div>
+
+        {/* RIGHT-SIDE QUEUE SIDEBAR */}
+        {isSidebarOpen && (
+          <div
+            style={{
+              border: '2px solid var(--border-color)',
+              backgroundColor: 'var(--bg-secondary)',
+              padding: '0.85rem',
+              display: 'flex',
+              flexDirection: 'column',
+              gap: '0.75rem',
+            }}
+          >
+            {/* SIDEBAR HEADER */}
+            <div style={{ paddingBottom: '0.5rem', borderBottom: '2px solid var(--border-color)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              <span style={{ fontWeight: 900, fontFamily: 'monospace', textTransform: 'uppercase', fontSize: '0.8rem' }}>
+                QUEUE SIDEBAR ({problems.length})
+              </span>
+              <button
+                onClick={() => setIsSidebarOpen(false)}
+                className="btn btn-small"
+                style={{ fontSize: '0.65rem', padding: '0.15rem 0.35rem' }}
+              >
+                [X]
+              </button>
+            </div>
+
+            {/* SEARCH & FILTER CONTROLS */}
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+              <input
+                type="text"
+                placeholder="Search queue..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                style={{
+                  width: '100%',
+                  padding: '0.45rem 0.5rem',
+                  border: '2px solid var(--border-color)',
+                  backgroundColor: 'var(--bg-primary)',
+                  fontFamily: 'monospace',
+                  fontSize: '0.75rem',
+                  color: 'var(--text-primary)',
+                }}
+              />
+
+              <div style={{ display: 'flex', gap: '0.25rem' }}>
+                {(['ALL', 'EASY', 'MEDIUM', 'HARD'] as const).map((df) => (
+                  <button
+                    key={df}
+                    onClick={() => setDiffFilter(df)}
+                    style={{
+                      flex: 1,
+                      padding: '0.25rem 0',
+                      fontFamily: 'monospace',
+                      fontSize: '0.65rem',
+                      fontWeight: 900,
+                      border: diffFilter === df ? '2px solid var(--text-primary)' : '1px solid var(--border-color)',
+                      backgroundColor: diffFilter === df ? 'var(--text-primary)' : 'var(--bg-primary)',
+                      color: diffFilter === df ? 'var(--bg-primary)' : 'var(--text-primary)',
+                      cursor: 'pointer',
+                    }}
+                  >
+                    {df}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {/* QUEUE LIST CARDS */}
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.45rem' }}>
+              {filteredProblems.map((p) => {
+                const originalIndex = problems.findIndex((item) => item.id === p.id);
+                const isActive = originalIndex === currentIndex;
+                return (
+                  <div
+                    key={p.id}
+                    onClick={() => {
+                      setCurrentIndex(originalIndex);
+                      setSelectedRating(null);
+                    }}
+                    style={{
+                      padding: '0.55rem',
+                      border: '2px solid var(--border-color)',
+                      backgroundColor: isActive ? 'var(--text-primary)' : 'var(--bg-primary)',
+                      color: isActive ? 'var(--bg-primary)' : 'var(--text-primary)',
+                      cursor: 'pointer',
+                      fontFamily: 'monospace',
+                      fontSize: '0.75rem',
+                      transition: 'all 0.1s ease',
+                    }}
+                  >
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontWeight: 900 }}>
+                      <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', maxWidth: '200px' }}>
+                        #{originalIndex + 1} {p.title}
+                      </span>
+                      <span className={`badge-difficulty badge-${p.difficulty.toLowerCase()}`} style={{ fontSize: '0.6rem', padding: '0.1rem 0.3rem' }}>
+                        {p.difficulty}
+                      </span>
+                    </div>
+                    <div style={{ fontSize: '0.65rem', opacity: 0.85, marginTop: '3px', display: 'flex', justifyContent: 'space-between' }}>
+                      <span>{p.category}</span>
+                      <span>Reps: {p.repetitions}</span>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        )}
       </div>
 
       {/* SPACED REPETITION EXPLANATORY MODAL */}
