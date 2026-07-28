@@ -26,7 +26,10 @@ export default async function ReviewPage() {
   const algorithm: 'sm2' | 'fsrs' = (profile?.algorithm as 'sm2' | 'fsrs') || 'fsrs';
   const targetRetention: number = profile?.target_retention !== undefined ? Number(profile.target_retention) : 0.90;
 
-  // Fetch problems due today or earlier
+  // Fetch problems due today or earlier (using end of today to include all items scheduled for current calendar day)
+  const endOfToday = new Date();
+  endOfToday.setHours(23, 59, 59, 999);
+
   const { data: dueData } = await supabase
     .from('user_problems')
     .select(`
@@ -52,7 +55,7 @@ export default async function ReviewPage() {
     `)
     .eq('user_id', user.id)
     .neq('status', 'cooling')
-    .lte('next_review_date', new Date().toISOString())
+    .lte('next_review_date', endOfToday.toISOString())
     .range(0, 5000);
 
   // Map database response to a flat type structure, filtering by enabled sheets

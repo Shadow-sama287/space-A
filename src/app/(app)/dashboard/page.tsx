@@ -76,9 +76,11 @@ export default async function DashboardPage() {
   });
 
   // === CALCULATE STATS ===
-  const now = new Date();
+  const endOfToday = new Date();
+  endOfToday.setHours(23, 59, 59, 999);
+
   const dueProblemsCount = activeProblems.filter((up: any) => {
-    return up.status !== 'cooling' && new Date(up.next_review_date) <= now;
+    return up.status !== 'cooling' && new Date(up.next_review_date) <= endOfToday;
   }).length;
 
   const masteredCount = activeProblems.filter((up: any) => up.status === 'mastered').length;
