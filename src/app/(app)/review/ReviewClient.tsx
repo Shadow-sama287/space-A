@@ -47,6 +47,12 @@ export default function ReviewClient({
   const [selectedRating, setSelectedRating] = useState<number | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
+  // Feature 1: Toast Notification State
+  const [toastMessage, setToastMessage] = useState<string | null>(null);
+
+  // Feature 2: Keyboard Shortcuts Modal State
+  const [isShortcutsModalOpen, setIsShortcutsModalOpen] = useState(false);
+
   // Sync state if initialDueProblems changes from server revalidation
   useEffect(() => {
     setProblems(initialDueProblems);
@@ -62,6 +68,14 @@ export default function ReviewClient({
 
   const hasDue = problems.length > 0 && currentIndex < problems.length;
   const currentProblem = hasDue ? problems[currentIndex] : null;
+
+  // Trigger Toast Notification helper
+  const triggerToast = useCallback((msg: string) => {
+    setToastMessage(msg);
+    setTimeout(() => {
+      setToastMessage(null);
+    }, 4000);
+  }, []);
 
   // Remove problem from active queue and advance index safely
   const removeProblemFromQueue = useCallback((problemId: string) => {
@@ -97,6 +111,9 @@ export default function ReviewClient({
     setIsSubmitting(true);
 
     const problemIdToReview = currentProblem.id;
+    const problemTitle = currentProblem.title;
+    const ratingLabel = ['AGAIN', 'HARD', 'GOOD', 'EASY'][selectedRating];
+    const nextDays = predictedIntervals[selectedRating as 0 | 1 | 2 | 3];
 
     try {
       const d = new Date();
@@ -106,6 +123,9 @@ export default function ReviewClient({
       // Instantly remove solved problem from local queue and update index
       removeProblemFromQueue(problemIdToReview);
       
+      // Trigger Toast Banner
+      triggerToast(`REVIEW SAVED: "${problemTitle}" -> ${ratingLabel} (+${nextDays}d)`);
+
       startTransition(() => {
         router.refresh();
       });
@@ -114,17 +134,19 @@ export default function ReviewClient({
     } finally {
       setIsSubmitting(false);
     }
-  }, [currentProblem, selectedRating, isSubmitting, removeProblemFromQueue, router]);
+  }, [currentProblem, selectedRating, isSubmitting, predictedIntervals, removeProblemFromQueue, triggerToast, router]);
 
   async function handleCoolOff() {
     if (!currentProblem || isSubmitting) return;
     setIsSubmitting(true);
     const problemIdToCool = currentProblem.id;
+    const problemTitle = currentProblem.title;
 
     try {
       const res = await coolOffProblemAction(problemIdToCool);
       if (res.success) {
         removeProblemFromQueue(problemIdToCool);
+        triggerToast(`SNOOZED: "${problemTitle}" snoozed for 3 days`);
         startTransition(() => {
           router.refresh();
         });
@@ -138,7 +160,7 @@ export default function ReviewClient({
     }
   }
 
-  // Keyboard Shortcuts (1-4 select rating, Enter submits, Q toggles sidebar, S snoozes)
+  // Keyboard Shortcuts (1-4 select rating, Enter submits, Q toggles sidebar, S snoozes, Esc closes)
   useEffect(() => {
     function handleKeyDown(e: KeyboardEvent) {
       if (['INPUT', 'TEXTAREA'].includes((e.target as HTMLElement)?.tagName)) {
@@ -166,6 +188,7 @@ export default function ReviewClient({
         if (showGrading) handleCoolOff();
       } else if (e.key === 'Escape') {
         setSelectedRating(null);
+        setIsShortcutsModalOpen(false);
       }
     }
 
@@ -250,6 +273,31 @@ export default function ReviewClient({
           >
             ?
           </button>
+
+          {/* FEATURE 2: KEYBOARD SHORTCUTS REFERENCE PILL */}
+          <button
+            onClick={() => setIsShortcutsModalOpen(true)}
+            className="btn btn-small"
+            style={{
+              padding: '0.2rem 0.5rem',
+              fontSize: '0.75rem',
+              fontWeight: 900,
+              fontFamily: 'monospace',
+              textTransform: 'uppercase',
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: '0.35rem',
+              backgroundColor: 'var(--bg-primary)',
+              color: 'var(--text-primary)',
+            }}
+            title="View Keyboard Shortcuts Cheatsheet"
+          >
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="square">
+              <rect x="2" y="4" width="20" height="16" rx="0" ry="0" />
+              <path d="M6 8h.01M10 8h.01M14 8h.01M18 8h.01M6 12h.01M10 12h.01M14 12h.01M18 12h.01M8 16h8" />
+            </svg>
+            <span>SHORTCUTS</span>
+          </button>
         </div>
 
         <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
@@ -324,6 +372,32 @@ export default function ReviewClient({
         {/* LEFT MAIN FLASHCARD STAGE */}
         <div style={{ display: 'flex', flexDirection: 'column' }}>
           
+          {/* FEATURE 1: TOAST NOTIFICATION BANNER */}
+          {toastMessage && (
+            <div
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: '0.65rem',
+                padding: '0.65rem 0.85rem',
+                marginBottom: '1rem',
+                backgroundColor: 'var(--text-primary)',
+                color: 'var(--bg-primary)',
+                fontWeight: 900,
+                fontFamily: 'monospace',
+                fontSize: '0.8rem',
+                border: '2px solid var(--border-color)',
+                boxShadow: '3px 3px 0px 0px var(--shadow-color)',
+                animation: 'fadeIn 0.2s ease',
+              }}
+            >
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="square">
+                <polyline points="20 6 9 17 4 12" />
+              </svg>
+              <span>{toastMessage}</span>
+            </div>
+          )}
+
           {/* PROBLEM HEADER */}
           <div className="flex-between" style={{ borderBottom: '2px solid var(--border-color)', paddingBottom: '0.5rem', marginBottom: '1rem' }}>
             <span style={{ fontWeight: 900, textTransform: 'uppercase', fontSize: '0.85rem', fontFamily: 'monospace' }}>
@@ -629,6 +703,91 @@ export default function ReviewClient({
           </div>
         )}
       </div>
+
+      {/* FEATURE 2: KEYBOARD SHORTCUTS CHEATSHEET MODAL */}
+      {isShortcutsModalOpen && (
+        <div
+          style={{
+            position: 'fixed',
+            inset: 0,
+            zIndex: 99999,
+            backgroundColor: 'rgba(0,0,0,0.65)',
+            backdropFilter: 'blur(4px)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            padding: '1rem',
+          }}
+          onClick={(e) => {
+            if (e.target === e.currentTarget) setIsShortcutsModalOpen(false);
+          }}
+        >
+          <div
+            className="card"
+            style={{
+              maxWidth: '520px',
+              width: '100%',
+              backgroundColor: 'var(--bg-primary)',
+              border: '3px solid var(--border-color)',
+              boxShadow: '8px 8px 0px 0px var(--shadow-color)',
+              padding: '1.25rem',
+            }}
+          >
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '2px solid var(--border-color)', paddingBottom: '0.5rem', marginBottom: '1rem' }}>
+              <div>
+                <span style={{ fontSize: '0.7rem', fontWeight: 900, fontFamily: 'monospace', color: 'var(--text-secondary)' }}>
+                  SPACE A • REVIEW ENGINE
+                </span>
+                <h3 style={{ fontSize: '1.15rem', fontWeight: 900, textTransform: 'uppercase', margin: '2px 0 0 0' }}>
+                  KEYBOARD SHORTCUTS CHEATSHEET
+                </h3>
+              </div>
+              <button onClick={() => setIsShortcutsModalOpen(false)} className="btn btn-black btn-small">
+                [X]
+              </button>
+            </div>
+
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.6rem', fontFamily: 'monospace', fontSize: '0.8rem' }}>
+              {[
+                { key: '1', action: 'Select AGAIN rating (+1d)' },
+                { key: '2', action: 'Select HARD rating (+3d)' },
+                { key: '3', action: 'Select GOOD rating (+7d)' },
+                { key: '4', action: 'Select EASY rating (+14d)' },
+                { key: 'ENTER', action: 'Submit & Save selected review grade' },
+                { key: 'Q', action: 'Toggle Right Queue Sidebar panel' },
+                { key: 'S', action: 'Snooze / Cool-off problem for 3 days' },
+                { key: 'ESC', action: 'Clear selection / Close active modal' },
+              ].map(({ key, action }) => (
+                <div
+                  key={key}
+                  style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'space-between',
+                    padding: '0.45rem 0.65rem',
+                    border: '1.5px solid var(--border-color)',
+                    backgroundColor: 'var(--bg-secondary)',
+                  }}
+                >
+                  <span style={{ color: 'var(--text-primary)' }}>{action}</span>
+                  <span
+                    style={{
+                      padding: '0.15rem 0.45rem',
+                      backgroundColor: 'var(--text-primary)',
+                      color: 'var(--bg-primary)',
+                      fontWeight: 900,
+                      fontSize: '0.75rem',
+                      border: '1px solid var(--border-color)',
+                    }}
+                  >
+                    {key}
+                  </span>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* SPACED REPETITION EXPLANATORY MODAL */}
       <SpacedRepetitionModal
